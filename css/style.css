@@ -1155,6 +1155,48 @@ body {
 
 /* ── Fun 탭 ── */
 
+.quote-card {
+  border-top: 4px solid #f472b6;
+  background: linear-gradient(165deg, #fdf2f8 0%, var(--card) 50%);
+  margin-bottom: 0.875rem;
+}
+
+.quote-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.quote-card-badge {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #db2777;
+}
+
+.quote-card-tag {
+  font-size: 0.75rem;
+  color: #be185d;
+  background: #fce7f3;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.daily-quote {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.65;
+  color: var(--text);
+  quotes: none;
+}
+
+.daily-quote::before,
+.daily-quote::after {
+  content: none;
+}
+
 .fun-hero {
   text-align: center;
   padding: 0.5rem 0 1.25rem;
@@ -1322,10 +1364,10 @@ body {
   border: 1px solid #a7f3d0;
 }
 
-.fortune-chip-avoid {
-  background: #fef2f2;
-  color: #991b1b;
-  border: 1px solid #fecaca;
+.fortune-chip-caution {
+  background: #fff7ed;
+  color: #9a3412;
+  border: 1px solid #fed7aa;
 }
 
 .fortune-stamp {
@@ -1393,10 +1435,19 @@ body {
       border-color: #047857;
     }
 
-    .fortune-chip-avoid {
-      background: #7f1d1d;
-      color: #fca5a5;
-      border-color: #991b1b;
+    .fortune-chip-caution {
+      background: #7c2d12;
+      color: #fdba74;
+      border-color: #9a3412;
+    }
+
+    .quote-card {
+      background: linear-gradient(165deg, #500724 0%, var(--card) 50%);
+    }
+
+    .quote-card-tag {
+      background: #831843;
+      color: #fbcfe8;
     }
 
     .fun-coming {
@@ -1422,10 +1473,19 @@ body {
     border-color: #047857;
   }
 
-  .fortune-chip-avoid {
-    background: #7f1d1d;
-    color: #fca5a5;
-    border-color: #991b1b;
+  .fortune-chip-caution {
+    background: #7c2d12;
+    color: #fdba74;
+    border-color: #9a3412;
+  }
+
+  .quote-card {
+    background: linear-gradient(165deg, #500724 0%, var(--card) 50%);
+  }
+
+  .quote-card-tag {
+    background: #831843;
+    color: #fbcfe8;
   }
 
   .fun-coming {

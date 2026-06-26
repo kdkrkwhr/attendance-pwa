@@ -127,6 +127,14 @@
           <p class="fun-hero-desc">출퇴근 말고 가볍게 즐기는 공간이에요</p>
         </section>
 
+        <section class="card quote-card" id="quoteCard">
+          <div class="quote-card-header">
+            <span class="quote-card-badge">💬 오늘의 한마디</span>
+            <span class="quote-card-tag" id="dailyQuoteTag"></span>
+          </div>
+          <blockquote class="daily-quote" id="dailyQuoteText">오늘의 한마디를 불러오는 중…</blockquote>
+        </section>
+
         <section class="card fortune-card" id="fortuneCard">
           <div class="fortune-card-header">
             <span class="fortune-card-badge">오늘의 운세</span>
@@ -146,8 +154,8 @@
             </div>
             <p class="fortune-text" id="fortuneText"></p>
             <div class="fortune-chips">
-              <span class="fortune-chip fortune-chip-lucky">🍀 행운 <strong id="fortuneLucky"></strong></span>
-              <span class="fortune-chip fortune-chip-avoid">🙅 피하기 <strong id="fortuneAvoid"></strong></span>
+              <span class="fortune-chip fortune-chip-lucky">🍀 이렇게 하면 좋아요 <strong id="fortuneLucky"></strong></span>
+              <span class="fortune-chip fortune-chip-caution">💡 오늘은 이건 삼가요 <strong id="fortuneCaution"></strong></span>
             </div>
             <p class="fortune-stamp" id="fortuneStamp">오늘 확인 완료</p>
           </div>
@@ -156,7 +164,6 @@
         <section class="card fun-coming">
           <h3 class="fun-coming-title">곧 올 기능 👀</h3>
           <ul class="fun-coming-list">
-            <li>오늘의 한마디</li>
             <li>점심 메뉴 룰렛</li>
             <li>팀 밈 보드</li>
           </ul>
@@ -220,7 +227,7 @@
           </div>
           <button type="button" class="btn btn-ghost" id="btnNotifyPermission">알림 권한 허용</button>
           <div class="setting-row setting-row-fortune">
-            <label for="fortuneNotify">오늘의 운세 (10:00)</label>
+            <label for="fortuneNotify">Fun 알림 — 한마디·운세 (10:00)</label>
             <input type="checkbox" id="fortuneNotify" checked>
           </div>
         </section>
