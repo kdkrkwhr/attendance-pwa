@@ -1,0 +1,303 @@
+/**
+ * Hermes OpenAI-compatible API 채팅 (설정 탭에서 URL·키 입력)
+ */
+const HERMES_CHAT_KEY = 'attendance-hermes-chat';
+const HERMES_SYSTEM_PROMPT =
+  '당신은 출퇴근 PWA 안의 간단한 AI 도우미입니다. 한국어로 짧고 명확하게 답하세요. ' +
+  '사용자가 명시적으로 요청하지 않으면 터미널·파일 조작 등 도구는 사용하지 마세요.';
+
+function getHermesChatConfig() {
+  const settings = typeof loadSettings === 'function' ? loadSettings() : {};
+  const cfg = window.APP_CONFIG?.hermesChat || {};
+  const baseUrl = (settings.hermesBaseUrl || cfg.defaultBaseUrl || '').trim().replace(/\/$/, '');
+  const apiKey = (settings.hermesApiKey || '').trim();
+  const model = (settings.hermesModel || cfg.defaultModel || 'hermes-agent').trim();
+  return { baseUrl, apiKey, model, systemPrompt: cfg.systemPrompt || HERMES_SYSTEM_PROMPT };
+}
+
+function isHermesConfigured() {
+  const { baseUrl, apiKey } = getHermesChatConfig();
+  return Boolean(baseUrl && apiKey);
+}
+
+function loadChatMessages() {
+  try {
+    const raw = localStorage.getItem(HERMES_CHAT_KEY);
+    const list = raw ? JSON.parse(raw) : [];
+    return Array.isArray(list) ? list : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveChatMessages(messages) {
+  const trimmed = messages.slice(-80);
+  localStorage.setItem(HERMES_CHAT_KEY, JSON.stringify(trimmed));
+}
+
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function formatChatTime(iso) {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso);
+    return d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return '';
+  }
+}
+
+function renderHermesChat() {
+  const listEl = document.getElementById('chatMessages');
+  const emptyEl = document.getElementById('chatEmpty');
+  const setupEl = document.getElementById('chatSetup');
+  if (!listEl) return;
+
+  const configured = isHermesConfigured();
+  if (setupEl) setupEl.classList.toggle('hidden', configured);
+  if (emptyEl) emptyEl.classList.toggle('hidden', !configured || loadChatMessages().length > 0);
+
+  const messages = loadChatMessages();
+  if (!configured) {
+    listEl.innerHTML = '';
+    return;
+  }
+
+  listEl.innerHTML = messages
+    .map((m) => {
+      const role = m.role === 'assistant' ? 'assistant' : 'user';
+      const body = escapeHtml(m.content || '').replace(/\n/g, '<br>');
+      const time = formatChatTime(m.at);
+      return `<div class="chat-bubble chat-bubble-${role}" role="article">
+        <p class="chat-bubble-text">${body}</p>
+        ${time ? `<span class="chat-bubble-time">${time}</span>` : ''}
+      </div>`;
+    })
+    .join('');
+
+  listEl.scrollTop = listEl.scrollHeight;
+}
+
+function setChatStatus(text, kind) {
+  const el = document.getElementById('chatStatus');
+  if (!el) return;
+  if (!text) {
+    el.classList.add('hidden');
+    el.textContent = '';
+    el.className = 'chat-status hidden';
+    return;
+  }
+  el.textContent = text;
+  el.className = `chat-status chat-status-${kind || 'info'}`;
+  el.classList.remove('hidden');
+}
+
+function setChatBusy(busy) {
+  const form = document.getElementById('chatForm');
+  const input = document.getElementById('chatInput');
+  const btn = document.getElementById('btnChatSend');
+  if (form) form.classList.toggle('is-busy', busy);
+  if (input) input.disabled = busy;
+  if (btn) btn.disabled = busy;
+}
+
+function setHermesTestStatus(text, kind) {
+  const el = document.getElementById('hermesTestStatus');
+  if (!el) return;
+  el.textContent = text || '';
+  const cls = kind === 'ok' ? 'ok' : kind === 'error' ? 'err' : '';
+  el.className = cls ? `sync-status ${cls}` : 'sync-status';
+}
+
+async function testHermesConnection() {
+  const { baseUrl, apiKey } = getHermesChatConfig();
+  if (!baseUrl || !apiKey) {
+    const msg = 'API 주소와 키를 입력해 주세요.';
+    setChatStatus(msg, 'error');
+    setHermesTestStatus(msg, 'error');
+    return false;
+  }
+
+  setHermesTestStatus('연결 확인 중…', '');
+  const root = baseUrl.replace(/\/v1\/?$/, '');
+  try {
+    const healthRes = await fetch(`${root}/health`, { method: 'GET', cache: 'no-store' });
+    if (!healthRes.ok) throw new Error(`health HTTP ${healthRes.status}`);
+
+    const modelsRes = await fetch(`${baseUrl}/models`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${apiKey}` },
+      cache: 'no-store',
+    });
+    if (!modelsRes.ok) throw new Error(`인증 실패 (HTTP ${modelsRes.status}). API 키를 확인하세요.`);
+
+    setChatStatus('Hermes 연결 성공', 'ok');
+    setHermesTestStatus('연결 성공', 'ok');
+    if (typeof renderHermesChat === 'function') renderHermesChat();
+    return true;
+  } catch (e) {
+    const msg = `연결 실패: ${e.message || e}. gateway·터널·CORS를 확인하세요.`;
+    setChatStatus(msg, 'error');
+    setHermesTestStatus(msg, 'error');
+    return false;
+  }
+}
+
+async function sendHermesChatMessage(userText) {
+  const text = (userText || '').trim();
+  if (!text) return;
+
+  const { baseUrl, apiKey, model, systemPrompt } = getHermesChatConfig();
+  if (!baseUrl || !apiKey) {
+    setChatStatus('설정에서 Hermes API 주소와 키를 입력해 주세요.', 'error');
+    return;
+  }
+
+  const messages = loadChatMessages();
+  const userMsg = { role: 'user', content: text, at: new Date().toISOString() };
+  messages.push(userMsg);
+  saveChatMessages(messages);
+  renderHermesChat();
+  setChatBusy(true);
+  setChatStatus('응답 생성 중…', 'info');
+
+  const apiMessages = [
+    { role: 'system', content: systemPrompt },
+    ...messages.map(({ role, content }) => ({ role, content })),
+  ];
+
+  try {
+    const res = await fetch(`${baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model,
+        messages: apiMessages,
+        stream: false,
+      }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const errMsg = data?.error?.message || data?.message || `HTTP ${res.status}`;
+      throw new Error(errMsg);
+    }
+
+    const reply = data?.choices?.[0]?.message?.content?.trim() || '(빈 응답)';
+    messages.push({ role: 'assistant', content: reply, at: new Date().toISOString() });
+    saveChatMessages(messages);
+    setChatStatus('', '');
+  } catch (e) {
+    setChatStatus(`전송 실패: ${e.message || e}`, 'error');
+  } finally {
+    setChatBusy(false);
+    renderHermesChat();
+  }
+}
+
+function handleChatSubmit(e) {
+  e.preventDefault();
+  const input = document.getElementById('chatInput');
+  if (!input || input.disabled) return;
+  const text = input.value;
+  input.value = '';
+  sendHermesChatMessage(text);
+}
+
+function handleChatClear() {
+  if (!confirm('대화 기록을 모두 지울까요?')) return;
+  localStorage.removeItem(HERMES_CHAT_KEY);
+  renderHermesChat();
+  setChatStatus('', '');
+}
+
+function handleChatGoSettings() {
+  if (typeof switchTab === 'function') switchTab('settings');
+  document.getElementById('hermesBaseUrl')?.focus();
+}
+
+function consumeChatDeepLink() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('tab') === 'chat') {
+    if (typeof switchTab === 'function') switchTab('chat');
+  }
+
+  const url = (params.get('hermes_url') || '').trim();
+  const key = (params.get('hermes_key') || '').trim();
+  if (!url && !key) return;
+  if (typeof loadSettings !== 'function' || typeof saveSettings !== 'function') return;
+
+  const settings = loadSettings();
+  let changed = false;
+  if (url) {
+    settings.hermesBaseUrl = url.replace(/\/$/, '');
+    changed = true;
+  }
+  if (key) {
+    settings.hermesApiKey = key;
+    changed = true;
+  }
+  if (changed) {
+    saveSettings(settings);
+    params.delete('hermes_url');
+    params.delete('hermes_key');
+    const qs = params.toString();
+    const next = `${window.location.pathname}${qs ? `?${qs}` : ''}${window.location.hash}`;
+    window.history.replaceState(null, '', next);
+    if (typeof renderSettings === 'function') renderSettings();
+    if (typeof renderHermesChat === 'function') renderHermesChat();
+  }
+}
+
+function seedHermesDevDefaults() {
+  if (typeof loadSettings !== 'function' || typeof saveSettings !== 'function') return;
+  const cfg = window.APP_CONFIG?.hermesChat?.devDefaults;
+  if (!cfg) return;
+  const host = window.location.hostname;
+  if (host !== 'localhost' && host !== '127.0.0.1') return;
+
+  const settings = loadSettings();
+  let changed = false;
+  if (!settings.hermesBaseUrl && cfg.baseUrl) {
+    settings.hermesBaseUrl = cfg.baseUrl;
+    changed = true;
+  }
+  if (!settings.hermesApiKey && cfg.apiKey) {
+    settings.hermesApiKey = cfg.apiKey;
+    changed = true;
+  }
+  if (changed) saveSettings(settings);
+}
+
+let hermesChatInited = false;
+
+function initHermesChat() {
+  if (hermesChatInited) return;
+  hermesChatInited = true;
+
+  seedHermesDevDefaults();
+
+  document.getElementById('chatForm')?.addEventListener('submit', handleChatSubmit);
+  document.getElementById('btnChatClear')?.addEventListener('click', handleChatClear);
+  document.getElementById('btnChatGoSettings')?.addEventListener('click', handleChatGoSettings);
+  document.getElementById('btnHermesTest')?.addEventListener('click', testHermesConnection);
+
+  const input = document.getElementById('chatInput');
+  if (input) {
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleChatSubmit(e);
+      }
+    });
+  }
+}

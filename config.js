@@ -27,4 +27,15 @@ window.APP_CONFIG = {
     defaultCenter: [37.5845, 126.8856],
     defaultZoom: 16,
   },
+  /**
+   * Hermes gateway OpenAI 호환 API (설정 탭에서 URL·키 저장, 이 기기 localStorage)
+   * GitHub Pages(HTTPS)에서는 Hermes도 HTTPS 터널(ngrok, Cloudflare Tunnel 등) 필요
+   */
+  hermesChat: {
+    defaultModel: 'hermes-agent',
+    /** 로컬 개발 시에만 자동 채움 (hostname localhost/127.0.0.1) */
+    devDefaults: {
+      baseUrl: 'http://127.0.0.1:8642/v1',
+    },
+  },
 };

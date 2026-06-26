@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=30">
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=30">
+  <link rel="stylesheet" href="css/style.css?v=31">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=31">
   <script>
     (function () {
       try {
@@ -264,6 +264,35 @@
         </div>
       </div>
 
+      <!-- AI 채팅 -->
+      <div class="tab-panel" id="tabChat" data-tab-panel="chat">
+        <section class="chat-hero">
+          <p class="chat-hero-emoji">💬</p>
+          <h2 class="chat-hero-title">AI 채팅</h2>
+          <p class="chat-hero-desc">PC의 Hermes gateway에 연결해 대화합니다</p>
+        </section>
+
+        <section class="card chat-setup" id="chatSetup">
+          <p class="chat-setup-title">연결 설정이 필요해요</p>
+          <p class="field-hint">설정 탭에서 Hermes API 주소(HTTPS 터널 URL)와 API 키를 입력한 뒤, PC에서 <code>hermes gateway</code>를 실행해 주세요.</p>
+          <button type="button" class="btn btn-primary btn-sm" id="btnChatGoSettings">설정으로 이동</button>
+        </section>
+
+        <section class="card chat-panel">
+          <div class="chat-panel-toolbar">
+            <span class="chat-panel-label">대화</span>
+            <button type="button" class="btn btn-ghost btn-sm" id="btnChatClear">기록 지우기</button>
+          </div>
+          <p class="chat-empty hidden" id="chatEmpty">아래에 메시지를 입력해 보세요.</p>
+          <div id="chatMessages" class="chat-messages" role="log" aria-live="polite"></div>
+          <p class="chat-status hidden" id="chatStatus"></p>
+          <form id="chatForm" class="chat-form">
+            <textarea id="chatInput" class="chat-input" rows="2" maxlength="4000" placeholder="메시지 입력…" aria-label="채팅 메시지"></textarea>
+            <button type="submit" class="btn btn-primary" id="btnChatSend">전송</button>
+          </form>
+        </section>
+      </div>
+
       <!-- 설정 -->
       <div class="tab-panel" id="tabSettings" data-tab-panel="settings">
         <section class="card card-install" id="installCard">
@@ -335,6 +364,25 @@
           </div>
         </section>
 
+        <section class="card">
+          <h2 class="card-title">Hermes AI 채팅</h2>
+          <p class="field-hint">PC에서 <code>hermes gateway</code> 실행 후, 외부(휴대폰·GitHub Pages)에서는 ngrok·Cloudflare Tunnel 등 <strong>HTTPS</strong> 주소가 필요합니다. API 키는 <code>~/.hermes/.env</code>의 <code>API_SERVER_KEY</code>와 동일하게 입력하세요. 휴대폰 최초 설정: <code>?tab=chat&amp;hermes_url=…&amp;hermes_key=…</code> 링크로 한 번에 넣을 수 있어요.</p>
+          <div class="setting-field">
+            <label for="hermesBaseUrl">API 주소</label>
+            <input type="url" id="hermesBaseUrl" class="text-input" placeholder="https://xxxx.ngrok-free.app/v1" inputmode="url" autocomplete="off">
+          </div>
+          <div class="setting-field">
+            <label for="hermesApiKey">API 키</label>
+            <input type="password" id="hermesApiKey" class="text-input" placeholder="API_SERVER_KEY" autocomplete="off">
+          </div>
+          <div class="setting-field">
+            <label for="hermesModel">모델 이름</label>
+            <input type="text" id="hermesModel" class="text-input" placeholder="hermes-agent" maxlength="64">
+          </div>
+          <button type="button" class="btn btn-ghost" id="btnHermesTest">연결 테스트</button>
+          <p class="sync-status" id="hermesTestStatus"></p>
+        </section>
+
         <section class="card" id="teamCard">
           <h2 class="card-title">팀 기록 (선택)</h2>
           <div class="setting-field">
@@ -371,6 +419,10 @@
         <span class="tab-icon">🍽️</span>
         <span class="tab-label">맛집</span>
       </button>
+      <button type="button" class="tab-btn" data-tab="chat">
+        <span class="tab-icon">💬</span>
+        <span class="tab-label">AI</span>
+      </button>
       <button type="button" class="tab-btn" data-tab="settings">
         <span class="tab-icon">⚙️</span>
         <span class="tab-label">설정</span>
@@ -378,11 +430,12 @@
     </nav>
   </div>
 
-  <script src="config.js?v=30"></script>
-  <script src="vendor/leaflet/leaflet.js?v=30"></script>
-  <script src="js/fortune.js?v=30"></script>
-  <script src="js/saju.js?v=30"></script>
-  <script src="js/lunch-map.js?v=30"></script>
-  <script src="js/app.js?v=30"></script>
+  <script src="config.js?v=31"></script>
+  <script src="vendor/leaflet/leaflet.js?v=31"></script>
+  <script src="js/fortune.js?v=31"></script>
+  <script src="js/saju.js?v=31"></script>
+  <script src="js/lunch-map.js?v=31"></script>
+  <script src="js/hermes-chat.js?v=31"></script>
+  <script src="js/app.js?v=31"></script>
 </body>
 </html>

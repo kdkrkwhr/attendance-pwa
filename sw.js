@@ -1,4 +1,4 @@
-const CACHE_NAME = 'attendance-pwa-v30';
+const CACHE_NAME = 'attendance-pwa-v31';
 
 const PRECACHE_ASSETS = [
   './',
@@ -9,6 +9,7 @@ const PRECACHE_ASSETS = [
   './js/fortune.js',
   './js/saju.js',
   './js/lunch-map.js',
+  './js/hermes-chat.js',
   './data/dmc_restaurants.json',
   './vendor/leaflet/leaflet.css',
   './vendor/leaflet/leaflet.js',

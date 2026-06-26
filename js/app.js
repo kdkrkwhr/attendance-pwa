@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '30';
+const APP_BUILD = '31';
 const APP_VERSION_KEY = 'attendance-app-version';
 
 const DEFAULT_SETTINGS = {
@@ -22,6 +22,9 @@ const DEFAULT_SETTINGS = {
   fortuneNotify: true,
   lunchRouletteNotify: true,
   birthDate: '',
+  hermesBaseUrl: '',
+  hermesApiKey: '',
+  hermesModel: 'hermes-agent',
 };
 
 let tickInterval = null;
@@ -442,6 +445,10 @@ function switchTab(tabName) {
         lunchMapInstance.invalidateSize();
       }
     }, 200);
+  }
+  if (tabName === 'chat') {
+    if (typeof initHermesChat === 'function') initHermesChat();
+    if (typeof renderHermesChat === 'function') renderHermesChat();
   }
 }
 
@@ -1230,6 +1237,12 @@ function renderSettings() {
   if (lunchRouletteNotifyEl) lunchRouletteNotifyEl.checked = settings.lunchRouletteNotify !== false;
   const birthDateEl = document.getElementById('birthDate');
   if (birthDateEl) birthDateEl.value = settings.birthDate || '';
+  const hermesBaseUrlEl = document.getElementById('hermesBaseUrl');
+  if (hermesBaseUrlEl) hermesBaseUrlEl.value = settings.hermesBaseUrl || '';
+  const hermesApiKeyEl = document.getElementById('hermesApiKey');
+  if (hermesApiKeyEl) hermesApiKeyEl.value = settings.hermesApiKey || '';
+  const hermesModelEl = document.getElementById('hermesModel');
+  if (hermesModelEl) hermesModelEl.value = settings.hermesModel || 'hermes-agent';
   applyTheme(settings.theme || 'system');
 }
 
@@ -1428,9 +1441,14 @@ function handleSettingsChange() {
     fortuneNotify: document.getElementById('fortuneNotify')?.checked !== false,
     lunchRouletteNotify: document.getElementById('lunchRouletteNotify')?.checked !== false,
     birthDate: (document.getElementById('birthDate')?.value || '').trim(),
+    hermesBaseUrl: (document.getElementById('hermesBaseUrl')?.value || '').trim().replace(/\/$/, ''),
+    hermesApiKey: (document.getElementById('hermesApiKey')?.value || '').trim(),
+    hermesModel: (document.getElementById('hermesModel')?.value || 'hermes-agent').trim() || 'hermes-agent',
   };
   saveSettings(settings);
   applyTheme(theme);
+
+  if (typeof renderHermesChat === 'function') renderHermesChat();
 
   const record = getTodayRecord();
   if (record?.checkIn && !record.checkOut) {
@@ -1530,6 +1548,8 @@ function init() {
   consumeWifiDeepLink();
   if (typeof consumeFunDeepLink === 'function') consumeFunDeepLink();
   if (typeof consumeLunchDeepLink === 'function') consumeLunchDeepLink();
+  if (typeof consumeChatDeepLink === 'function') consumeChatDeepLink();
+  if (typeof initHermesChat === 'function') initHermesChat();
   syncAppVersion().then(() => registerSW());
 
   window.addEventListener('beforeinstallprompt', (e) => {
@@ -1584,7 +1604,7 @@ function init() {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
 
-  ['notifyBefore', 'userName', 'birthDate', 'sheetUrl', 'themeMode', 'fortuneNotify', 'lunchRouletteNotify'].forEach((id) => {
+  ['notifyBefore', 'userName', 'birthDate', 'sheetUrl', 'themeMode', 'fortuneNotify', 'lunchRouletteNotify', 'hermesBaseUrl', 'hermesApiKey', 'hermesModel'].forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
     el.addEventListener('change', handleSettingsChange);
