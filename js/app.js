@@ -2,6 +2,7 @@ const STORAGE_KEY = 'attendance-records';
 const SETTINGS_KEY = 'attendance-settings';
 const NOTIFIED_KEY = 'attendance-notified';
 const WIFI_SUGGEST_KEY = 'attendance-wifi-suggest';
+const NETWORK_MORNING_STATE_KEY = 'attendance-network-morning-state';
 
 /** 8시간 근무 + 점심 1시간 (고정) */
 const WORK_HOURS = 8;
@@ -22,6 +23,7 @@ let checkInInputTouched = false;
 let checkInTimeDirty = false;
 let onCompanyNetwork = null;
 let networkCheckAt = 0;
+let morningPollInterval = null;
 const NETWORK_CACHE_MS = 60_000;
 
 // ── 회사 네트워크 ──────────────────────────────────────────
@@ -148,10 +150,108 @@ async function requireCompanyNetwork() {
 }
 
 async function refreshNetworkGuard() {
+  const previous = onCompanyNetwork;
   await checkCompanyNetwork(true);
   updateNetworkStatusUI();
   const canAttend = onCompanyNetwork || !isNetworkGuardActive();
   setAttendanceButtonsEnabled(canAttend);
+  evaluateMorningNetworkCheckIn(previous, onCompanyNetwork);
+  syncMorningNetworkPolling();
+}
+
+function getMorningDetectConfig() {
+  return window.APP_CONFIG?.morningCheckInDetect || { enabled: false };
+}
+
+function isMorningCheckInWindow(now = new Date()) {
+  const cfg = getMorningDetectConfig();
+  if (!cfg.enabled) return false;
+  const startHour = cfg.startHour ?? 8;
+  const endHour = cfg.endHour ?? 10;
+  const mins = now.getHours() * 60 + now.getMinutes();
+  return mins >= startHour * 60 && mins < (endHour + 1) * 60;
+}
+
+function loadNetworkMorningState() {
+  try {
+    const state = JSON.parse(localStorage.getItem(NETWORK_MORNING_STATE_KEY) || '{}');
+    if (state.dayKey !== todayKey()) {
+      return { dayKey: todayKey(), wasOnCompany: null, suggested: false, dismissed: false };
+    }
+    return state;
+  } catch {
+    return { dayKey: todayKey(), wasOnCompany: null, suggested: false, dismissed: false };
+  }
+}
+
+function saveNetworkMorningState(state) {
+  localStorage.setItem(NETWORK_MORNING_STATE_KEY, JSON.stringify({
+    ...state,
+    dayKey: todayKey(),
+  }));
+}
+
+function evaluateMorningNetworkCheckIn(wasOnCompany, isOnCompany) {
+  const cfg = getMorningDetectConfig();
+  if (!cfg.enabled || !isNetworkGuardActive() || !isMorningCheckInWindow()) return;
+
+  const record = getTodayRecord();
+  if (record?.checkIn || record?.checkOut) return;
+
+  const state = loadNetworkMorningState();
+  if (state.dismissed) {
+    saveNetworkMorningState({ ...state, wasOnCompany: isOnCompany });
+    return;
+  }
+
+  const existing = loadWifiSuggestion();
+  if (existing?.checkIn && formatDateKey(parseISO(existing.checkIn)) === todayKey()) {
+    saveNetworkMorningState({ ...state, wasOnCompany: isOnCompany });
+    return;
+  }
+
+  if (!isOnCompany) {
+    saveNetworkMorningState({ ...state, wasOnCompany: false });
+    return;
+  }
+
+  const referenceWasOff = wasOnCompany === false || state.wasOnCompany === false;
+  const transitioned = referenceWasOff && isOnCompany === true;
+  const firstDetectInWindow = !state.suggested && isOnCompany === true;
+
+  if (transitioned || firstDetectInWindow) {
+    saveWifiSuggestion(new Date().toISOString(), 'network');
+    saveNetworkMorningState({
+      ...state,
+      suggested: true,
+      wasOnCompany: true,
+    });
+  } else {
+    saveNetworkMorningState({ ...state, wasOnCompany: isOnCompany });
+  }
+}
+
+function syncMorningNetworkPolling() {
+  const cfg = getMorningDetectConfig();
+  if (!cfg.enabled || !isMorningCheckInWindow()) {
+    if (morningPollInterval) {
+      clearInterval(morningPollInterval);
+      morningPollInterval = null;
+    }
+    return;
+  }
+
+  if (morningPollInterval) return;
+
+  const intervalMs = cfg.pollIntervalMs ?? 60_000;
+  morningPollInterval = setInterval(async () => {
+    if (!isMorningCheckInWindow()) {
+      syncMorningNetworkPolling();
+      return;
+    }
+    await refreshNetworkGuard();
+    renderWifiSuggestion();
+  }, intervalMs);
 }
 
 function calcNetWorkSoFar(checkInISO, endISO = new Date().toISOString()) {
@@ -312,6 +412,7 @@ function applyWifiSuggestionToInput(iso) {
 
 function renderWifiSuggestion() {
   const box = document.getElementById('wifiSuggestBox');
+  const titleEl = document.getElementById('checkInSuggestTitle');
   const textEl = document.getElementById('wifiSuggestText');
   const btnApply = document.getElementById('btnWifiApply');
   const btnCheckIn = document.getElementById('btnWifiCheckIn');
@@ -331,10 +432,21 @@ function renderWifiSuggestion() {
   }
 
   const timeLabel = formatTime(parseISO(suggest.checkIn));
+  const source = suggest.source || 'android';
+  const sourceTitle = {
+    android: 'Wi-Fi 출근 추정',
+    network: '회사 네트워크 출근 추정',
+  };
+  const sourceMessage = {
+    android: `${timeLabel}에 회사 Wi-Fi 연결됨 · 출근 시각으로 적용할까요?`,
+    network: `${timeLabel}에 회사 네트워크 감지됨 · 출근 시각으로 적용할까요?`,
+  };
+
+  if (titleEl) titleEl.textContent = sourceTitle[source] || '출근 추정';
   box.classList.remove('hidden');
 
   if (!record?.checkIn) {
-    textEl.textContent = `${timeLabel}에 회사 Wi-Fi 연결됨 · 출근 시각으로 적용할까요?`;
+    textEl.textContent = sourceMessage[source] || `${timeLabel} · 출근 시각으로 적용할까요?`;
     btnApply?.classList.remove('hidden');
     btnCheckIn?.classList.remove('hidden');
   } else {
@@ -343,7 +455,7 @@ function renderWifiSuggestion() {
       box.classList.add('hidden');
       return;
     }
-    textEl.textContent = `Wi-Fi 추정 ${timeLabel} · 현재 출근 ${current}`;
+    textEl.textContent = `${sourceTitle[source] || '출근 추정'} ${timeLabel} · 현재 출근 ${current}`;
     btnApply?.classList.remove('hidden');
     btnCheckIn?.classList.add('hidden');
   }
@@ -355,15 +467,16 @@ async function handleWifiApply() {
 
   applyWifiSuggestionToInput(suggest.checkIn);
   const record = getTodayRecord();
+  const label = suggest.source === 'network' ? '네트워크 추정' : 'Wi-Fi 추정';
 
   if (record?.checkIn && !record.checkOut) {
     checkInTimeDirty = true;
     if (await applyCheckInTimeChange()) {
-      setSyncStatus('Wi-Fi 추정 출근 시각으로 수정됨', 'ok');
+      setSyncStatus(`${label} 출근 시각으로 수정됨`, 'ok');
       clearWifiSuggestion();
     }
   } else {
-    setSyncStatus('출근 시각에 Wi-Fi 추정값을 적용했습니다', 'ok');
+    setSyncStatus(`출근 시각에 ${label}값을 적용했습니다`, 'ok');
   }
 
   render();
@@ -379,6 +492,11 @@ async function handleWifiCheckIn() {
 }
 
 function handleWifiDismiss() {
+  const suggest = loadWifiSuggestion();
+  if (suggest?.source === 'network') {
+    const state = loadNetworkMorningState();
+    saveNetworkMorningState({ ...state, dismissed: true });
+  }
   clearWifiSuggestion();
   renderWifiSuggestion();
 }
@@ -935,6 +1053,7 @@ async function handleCheckIn() {
     checkIn: checkInISOFromTimeInput(input.value),
     userName: getUserName(),
   });
+  clearWifiSuggestion();
   checkInInputTouched = false;
   checkInTimeDirty = false;
 
@@ -1187,9 +1306,12 @@ function init() {
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-      refreshNetworkGuard();
-      render();
+      refreshNetworkGuard().then(() => render());
     }
+  });
+
+  window.addEventListener('online', () => {
+    refreshNetworkGuard().then(() => render());
   });
 }
 

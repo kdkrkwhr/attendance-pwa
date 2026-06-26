@@ -14,4 +14,11 @@ window.APP_CONFIG = {
     /** 회사 Wi-Fi에서 보이는 공인 IP (여러 개면 쉼표로 구분 가능) */
     allowedPublicIps: ['222.235.88.35'],
   },
+  /** 08~10시 회사 네트워크 최초 감지 시 출근 추정 (앱이 켜져 있을 때) */
+  morningCheckInDetect: {
+    enabled: true,
+    startHour: 8,
+    endHour: 10,
+    pollIntervalMs: 60_000,
+  },
 };

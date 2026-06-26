@@ -39,7 +39,7 @@
           </div>
 
           <div class="wifi-suggest hidden" id="wifiSuggestBox">
-            <p class="wifi-suggest-title">Wi-Fi 출근 추정</p>
+            <p class="wifi-suggest-title" id="checkInSuggestTitle">출근 추정</p>
             <p class="wifi-suggest-text" id="wifiSuggestText"></p>
             <div class="wifi-suggest-actions">
               <button type="button" class="btn btn-primary btn-sm" id="btnWifiApply">시각 적용</button>
@@ -113,6 +113,11 @@
             <label for="userName">이름</label>
             <input type="text" id="userName" class="text-input" placeholder="비우면 사원" maxlength="20">
           </div>
+        </section>
+
+        <section class="card">
+          <h2 class="card-title">아침 출근 추정 (PWA)</h2>
+          <p class="field-hint">08:00~10:00 사이 앱이 켜져 있을 때 회사 네트워크(IP)로 바뀌면 출근 시각을 제안합니다. 앱이 꺼져 있으면 감지되지 않습니다.</p>
         </section>
 
         <section class="card">
