@@ -81,7 +81,9 @@ function renderHermesChat() {
     })
     .join('');
 
-  listEl.scrollTop = listEl.scrollHeight;
+  requestAnimationFrame(() => {
+    listEl.scrollTop = listEl.scrollHeight;
+  });
 }
 
 function setChatStatus(text, kind) {
@@ -115,6 +117,24 @@ function setHermesTestStatus(text, kind) {
   el.className = cls ? `sync-status ${cls}` : 'sync-status';
 }
 
+function getHermesConnectionHint(baseUrl) {
+  const pageHttps = window.location.protocol === 'https:';
+  const apiHttp = /^http:\/\//i.test(baseUrl || '');
+  const apiLocal = /^(https?:\/\/)?(127\.0\.0\.1|localhost)(:\d+)?/i.test(baseUrl || '');
+  const onGithubPages = /\.github\.io$/i.test(window.location.hostname);
+
+  if (pageHttps && apiHttp) {
+    return 'HTTPS 페이지에서는 http:// API를 브라우저가 차단합니다(혼합 콘텐츠). API 주소를 https:// 터널 URL/v1 로 바꾸세요.';
+  }
+  if (onGithubPages && apiLocal) {
+    return 'GitHub Pages에서는 PC의 127.0.0.1에 연결할 수 없습니다. PC에서 터널을 켜고 https://xxxx/v1 주소를 넣으세요.';
+  }
+  if (apiLocal) {
+    return 'PC에서 hermes gateway가 실행 중인지 확인하세요. 주소: http://127.0.0.1:8642/v1';
+  }
+  return 'gateway·터널이 켜져 있는지, API 주소 끝에 /v1 이 있는지 확인하세요.';
+}
+
 async function testHermesConnection() {
   const { baseUrl, apiKey } = getHermesChatConfig();
   if (!baseUrl || !apiKey) {
@@ -142,7 +162,8 @@ async function testHermesConnection() {
     if (typeof renderHermesChat === 'function') renderHermesChat();
     return true;
   } catch (e) {
-    const msg = `연결 실패: ${e.message || e}. gateway·터널·CORS를 확인하세요.`;
+    const hint = getHermesConnectionHint(baseUrl);
+    const msg = `연결 실패: ${e.message || e}. ${hint}`;
     setChatStatus(msg, 'error');
     setHermesTestStatus(msg, 'error');
     return false;
@@ -210,6 +231,7 @@ function handleChatSubmit(e) {
   if (!input || input.disabled) return;
   const text = input.value;
   input.value = '';
+  input.style.height = 'auto';
   sendHermesChatMessage(text);
 }
 
@@ -293,6 +315,11 @@ function initHermesChat() {
 
   const input = document.getElementById('chatInput');
   if (input) {
+    const autosize = () => {
+      input.style.height = 'auto';
+      input.style.height = `${Math.min(input.scrollHeight, 112)}px`;
+    };
+    input.addEventListener('input', autosize);
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();

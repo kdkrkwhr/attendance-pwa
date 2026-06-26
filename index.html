@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=32">
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=32">
+  <link rel="stylesheet" href="css/style.css?v=34">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=34">
   <script>
     (function () {
       try {
@@ -285,32 +285,35 @@
       </div>
 
       <!-- AI 채팅 -->
-      <div class="tab-panel" id="tabChat" data-tab-panel="chat">
-        <section class="chat-hero">
-          <p class="chat-hero-emoji">💬</p>
-          <h2 class="chat-hero-title">AI 채팅</h2>
-          <p class="chat-hero-desc">PC의 Hermes gateway에 연결해 대화합니다</p>
-        </section>
-
-        <section class="card chat-setup" id="chatSetup">
-          <p class="chat-setup-title">연결 설정이 필요해요</p>
-          <p class="field-hint">설정 탭에서 Hermes API 주소(HTTPS 터널 URL)와 API 키를 입력한 뒤, PC에서 <code>hermes gateway</code>를 실행해 주세요.</p>
-          <button type="button" class="btn btn-primary btn-sm" id="btnChatGoSettings">설정으로 이동</button>
-        </section>
-
-        <section class="card chat-panel">
-          <div class="chat-panel-toolbar">
-            <span class="chat-panel-label">대화</span>
+      <div class="tab-panel chat-tab-panel" id="tabChat" data-tab-panel="chat">
+        <div class="chat-stage">
+          <header class="chat-topbar">
+            <div class="chat-topbar-title">
+              <span class="chat-topbar-emoji" aria-hidden="true">💬</span>
+              <span class="chat-topbar-text">AI 채팅</span>
+            </div>
             <button type="button" class="btn btn-ghost btn-sm" id="btnChatClear">기록 지우기</button>
+          </header>
+
+          <section class="card chat-setup hidden" id="chatSetup">
+            <p class="chat-setup-title">연결 설정이 필요해요</p>
+            <p class="field-hint">설정에서 Hermes API 주소(HTTPS 터널 URL)와 API 키를 입력한 뒤, PC에서 <code>hermes gateway</code>를 실행해 주세요.</p>
+            <button type="button" class="btn btn-primary btn-sm" id="btnChatGoSettings">설정으로 이동</button>
+          </section>
+
+          <div class="chat-messages-wrap">
+            <p class="chat-empty hidden" id="chatEmpty">메시지를 입력해 대화를 시작해 보세요.</p>
+            <div id="chatMessages" class="chat-messages" role="log" aria-live="polite"></div>
           </div>
-          <p class="chat-empty hidden" id="chatEmpty">아래에 메시지를 입력해 보세요.</p>
-          <div id="chatMessages" class="chat-messages" role="log" aria-live="polite"></div>
-          <p class="chat-status hidden" id="chatStatus"></p>
-          <form id="chatForm" class="chat-form">
-            <textarea id="chatInput" class="chat-input" rows="2" maxlength="4000" placeholder="메시지 입력…" aria-label="채팅 메시지"></textarea>
-            <button type="submit" class="btn btn-primary" id="btnChatSend">전송</button>
-          </form>
-        </section>
+
+          <div class="chat-footer">
+            <p class="chat-status hidden" id="chatStatus"></p>
+            <form id="chatForm" class="chat-form">
+              <textarea id="chatInput" class="chat-input" rows="1" maxlength="4000" placeholder="메시지 입력…" aria-label="채팅 메시지"></textarea>
+              <button type="submit" class="btn btn-primary chat-send-btn" id="btnChatSend" aria-label="전송">전송</button>
+            </form>
+          </div>
+        </div>
       </div>
 
       <!-- 설정 -->
@@ -463,13 +466,13 @@
     </nav>
   </div>
 
-  <script src="config.js?v=32"></script>
-  <script src="vendor/leaflet/leaflet.js?v=32"></script>
-  <script src="js/fortune.js?v=32"></script>
-  <script src="js/saju.js?v=32"></script>
-  <script src="js/lunch-map.js?v=32"></script>
-  <script src="js/hermes-chat.js?v=32"></script>
-  <script src="js/commute-time.js?v=32"></script>
-  <script src="js/app.js?v=32"></script>
+  <script src="config.js?v=34"></script>
+  <script src="vendor/leaflet/leaflet.js?v=34"></script>
+  <script src="js/fortune.js?v=34"></script>
+  <script src="js/saju.js?v=34"></script>
+  <script src="js/lunch-map.js?v=34"></script>
+  <script src="js/hermes-chat.js?v=34"></script>
+  <script src="js/commute-time.js?v=34"></script>
+  <script src="js/app.js?v=34"></script>
 </body>
 </html>
