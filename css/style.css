@@ -1605,6 +1605,10 @@ body {
   color: #8b5cf6;
 }
 
+.tab-btn[data-tab="lunch"].active {
+  color: #047857;
+}
+
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     .fortune-card {
@@ -1742,6 +1746,41 @@ body {
 }
 
 /* ── 점심 맛집 지도 ── */
+
+.lunch-hero {
+  text-align: center;
+  padding: 0.5rem 0 1rem;
+}
+
+.lunch-hero-emoji {
+  font-size: 2.5rem;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.lunch-hero-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #10b981, #059669);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.02em;
+}
+
+.lunch-hero-desc {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.lunch-map-tab {
+  height: min(42vh, 300px);
+}
+
+.lunch-list-tab {
+  max-height: none;
+}
 
 .lunch-map-card {
   border-top: 4px solid #10b981;
