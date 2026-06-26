@@ -176,11 +176,23 @@ function loadNetworkMorningState() {
   try {
     const state = JSON.parse(localStorage.getItem(NETWORK_MORNING_STATE_KEY) || '{}');
     if (state.dayKey !== todayKey()) {
-      return { dayKey: todayKey(), wasOnCompany: null, suggested: false, dismissed: false };
+      return {
+        dayKey: todayKey(),
+        wasOnCompany: null,
+        suggested: false,
+        dismissed: false,
+        notified: false,
+      };
     }
     return state;
   } catch {
-    return { dayKey: todayKey(), wasOnCompany: null, suggested: false, dismissed: false };
+    return {
+      dayKey: todayKey(),
+      wasOnCompany: null,
+      suggested: false,
+      dismissed: false,
+      notified: false,
+    };
   }
 }
 
@@ -220,12 +232,14 @@ function evaluateMorningNetworkCheckIn(wasOnCompany, isOnCompany) {
   const firstDetectInWindow = !state.suggested && isOnCompany === true;
 
   if (transitioned || firstDetectInWindow) {
-    saveWifiSuggestion(new Date().toISOString(), 'network');
+    const now = new Date();
+    saveWifiSuggestion(now.toISOString(), 'network');
     saveNetworkMorningState({
       ...state,
       suggested: true,
       wasOnCompany: true,
     });
+    maybeSendMorningCheckInNotification(now, state);
   } else {
     saveNetworkMorningState({ ...state, wasOnCompany: isOnCompany });
   }
@@ -856,14 +870,35 @@ async function requestNotificationPermission() {
   return false;
 }
 
-function sendNotification(title, body) {
+function sendNotification(title, body, tag = 'leave-reminder') {
   if (Notification.permission !== 'granted') return;
 
   if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-    navigator.serviceWorker.controller.postMessage({ type: 'NOTIFY', title, body });
+    navigator.serviceWorker.controller.postMessage({
+      type: 'NOTIFY',
+      title,
+      body,
+      tag,
+    });
   } else {
-    new Notification(title, { body, icon: 'icon-192.png' });
+    new Notification(title, { body, icon: 'icon-192.png', tag });
   }
+}
+
+function maybeSendMorningCheckInNotification(detectedAt, state) {
+  if (state.notified) return;
+
+  const timeLabel = formatTime(detectedAt);
+  sendNotification(
+    '출근 체크',
+    `${timeLabel} 회사 네트워크 감지 · 출근 등록해 주세요`,
+    'checkin-reminder',
+  );
+
+  saveNetworkMorningState({
+    ...loadNetworkMorningState(),
+    notified: true,
+  });
 }
 
 function checkAndNotify() {

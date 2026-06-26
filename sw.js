@@ -1,4 +1,4 @@
-const CACHE_NAME = 'attendance-pwa-v14';
+const CACHE_NAME = 'attendance-pwa-v15';
 const ASSETS = [
   './',
   './index.html',
@@ -38,8 +38,27 @@ self.addEventListener('message', (event) => {
       body: event.data.body,
       icon: './icon-192.png',
       badge: './icon-192.png',
-      tag: 'leave-reminder',
+      tag: event.data.tag || 'leave-reminder',
       renotify: true,
+      data: { url: './' },
     });
   }
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const targetUrl = event.notification.data?.url || './';
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      for (const client of clients) {
+        if ('focus' in client) {
+          return client.focus();
+        }
+      }
+      if (self.clients.openWindow) {
+        return self.clients.openWindow(targetUrl);
+      }
+      return undefined;
+    })
+  );
 });
