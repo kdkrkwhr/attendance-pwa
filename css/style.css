@@ -179,6 +179,89 @@ body {
   color: var(--success);
 }
 
+.time-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  margin-bottom: 1rem;
+}
+
+.time-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  min-width: 0;
+}
+
+.time-row-leave {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.time-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  min-width: 4.5rem;
+}
+
+.leave-value {
+  font-size: 1.375rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--primary);
+  text-align: right;
+  flex: 1;
+  min-width: 0;
+}
+
+.time-input {
+  flex: 1;
+  min-width: 0;
+  max-width: 10rem;
+  margin-left: auto;
+  font-size: 1.125rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.5rem 0.625rem;
+  background: white;
+  color: var(--text);
+  font-family: inherit;
+  min-height: 2.75rem;
+}
+
+.time-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.12);
+}
+
+.time-input:disabled {
+  opacity: 0.7;
+  background: #f1f5f9;
+}
+
+.edit-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.arrow {
+  display: none;
+}
+
 .time-display {
   display: flex;
   align-items: center;
@@ -209,50 +292,6 @@ body {
 
 .time-block.highlight .value {
   color: var(--primary);
-}
-
-.time-block-editable {
-  cursor: default;
-}
-
-.time-input {
-  display: block;
-  width: 100%;
-  max-width: 9rem;
-  margin: 0 auto;
-  font-size: 1.75rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-  text-align: center;
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  padding: 0.375rem 0.5rem;
-  background: #f8fafc;
-  color: var(--text);
-  font-family: inherit;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.time-input:focus {
-  outline: none;
-  border-color: var(--primary);
-  background: white;
-  box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.15);
-}
-
-.edit-hint {
-  display: block;
-  font-size: 0.6875rem;
-  color: var(--text-muted);
-  margin-top: 0.375rem;
-}
-
-.arrow {
-  color: var(--text-muted);
-  font-size: 1.25rem;
-  flex-shrink: 0;
 }
 
 .countdown {
@@ -350,6 +389,20 @@ body {
   border-radius: 8px;
   background: white;
   font-family: inherit;
+  max-width: 58%;
+  min-width: 0;
+}
+
+.setting-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-bottom: 0.75rem;
+}
+
+.setting-field label {
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .setting-row-col {
@@ -507,6 +560,30 @@ body {
     color: var(--text);
   }
 
+  .time-row {
+    background: #334155;
+    border-color: #475569;
+  }
+
+  .time-row-leave {
+    background: #1e3a5f;
+    border-color: #1d4ed8;
+  }
+
+  .time-input {
+    background: #1e293b;
+    color: var(--text);
+    border-color: #475569;
+  }
+
+  .time-input:focus {
+    background: #0f172a;
+  }
+
+  .time-input:disabled {
+    background: #334155;
+  }
+
   .setting-row select {
     background: #334155;
     color: var(--text);
@@ -517,16 +594,6 @@ body {
     background: #334155;
     color: var(--text);
     border-color: #475569;
-  }
-
-  .time-input {
-    background: #334155;
-    color: var(--text);
-    border-color: #475569;
-  }
-
-  .time-input:focus {
-    background: #1e293b;
   }
 
   .week-item.today {

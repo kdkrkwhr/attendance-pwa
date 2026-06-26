@@ -44,17 +44,16 @@
           <span class="badge" id="statusBadge">미출근</span>
         </div>
 
-        <div class="time-display" id="timeDisplay">
-          <div class="time-block time-block-editable">
-            <span class="label">출근</span>
+        <div class="time-panel" id="timeDisplay">
+          <div class="time-row">
+            <span class="time-label">출근</span>
             <input type="time" id="checkInInput" class="time-input" aria-label="출근 시각">
-            <span class="edit-hint" id="checkInHint">시각을 바꿀 수 있어요</span>
           </div>
-          <div class="arrow">→</div>
-          <div class="time-block highlight">
-            <span class="label">퇴근 가능</span>
-            <span class="value" id="leaveTime">—</span>
+          <div class="time-row time-row-leave">
+            <span class="time-label">퇴근 가능</span>
+            <span class="leave-value" id="leaveTime">—</span>
           </div>
+          <p class="edit-hint" id="checkInHint">출근 시각 선택 후 등록</p>
         </div>
 
         <div class="countdown" id="countdown"></div>
@@ -68,7 +67,7 @@
       <!-- 내 정보 -->
       <section class="card">
         <h2 class="card-title">내 정보</h2>
-        <div class="setting-row">
+        <div class="setting-field">
           <label for="userName">이름</label>
           <input type="text" id="userName" class="text-input" placeholder="홍길동" maxlength="20">
         </div>
