@@ -10,6 +10,9 @@ let lunchMapMarkers = [];
 let lunchMapData = null;
 let lunchMapReady = false;
 let lunchMapLoading = false;
+let lunchRouletteSpinning = false;
+let lunchRouletteWinnerId = null;
+let lunchOfficeCircle = null;
 
 function getLunchMapConfig() {
   return window.APP_CONFIG?.lunchMap || {};
@@ -36,6 +39,30 @@ function createEmojiIcon(emoji, className) {
     iconSize: [32, 32],
     iconAnchor: [16, 28],
     popupAnchor: [0, -24],
+  });
+}
+
+function getOfficeShortName(name) {
+  const n = String(name || 'DMC첨단타워');
+  const idx = n.indexOf('(');
+  return idx > 0 ? n.slice(0, idx).trim() : n;
+}
+
+function createOfficePinIcon(label) {
+  const safeLabel = label.replace(/</g, '&lt;');
+  return L.divIcon({
+    className: 'lunch-map-pin-office-wrap',
+    html: `
+      <div class="office-pin" role="img" aria-label="${safeLabel}">
+        <span class="office-pin-ring" aria-hidden="true"></span>
+        <span class="office-pin-ring office-pin-ring-delay" aria-hidden="true"></span>
+        <span class="office-pin-core"><span class="office-pin-icon-inner">🏢</span></span>
+        <span class="office-pin-label">${safeLabel}</span>
+      </div>
+    `,
+    iconSize: [128, 76],
+    iconAnchor: [64, 58],
+    popupAnchor: [0, -52],
   });
 }
 
@@ -168,6 +195,95 @@ function getMapCenter(data) {
 function clearLunchMapMarkers() {
   lunchMapMarkers.forEach((marker) => marker.remove());
   lunchMapMarkers = [];
+  if (lunchOfficeCircle) {
+    lunchOfficeCircle.remove();
+    lunchOfficeCircle = null;
+  }
+}
+
+function highlightLunchListItem(placeId) {
+  document.querySelectorAll('.lunch-list-item').forEach((el) => {
+    el.classList.toggle('lunch-list-item-picked', el.dataset.placeId === placeId);
+  });
+}
+
+function getFilteredLunchPlaces() {
+  if (!lunchMapData) return [];
+  const filterEl = document.getElementById('lunchCategoryFilter');
+  const selected = filterEl?.value || 'all';
+  return selected === 'all'
+    ? lunchMapData.places
+    : lunchMapData.places.filter((p) => p.category === selected);
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function setRouletteDisplay(text, spinning = false) {
+  const displayEl = document.getElementById('lunchRouletteDisplay');
+  const wheelEl = document.getElementById('lunchRouletteWheel');
+  if (displayEl) displayEl.textContent = text;
+  wheelEl?.classList.toggle('lunch-roulette-wheel-spinning', spinning);
+}
+
+function showRouletteResult(place) {
+  const resultEl = document.getElementById('lunchRouletteResult');
+  const nameEl = document.getElementById('lunchRouletteResultName');
+  const metaEl = document.getElementById('lunchRouletteResultMeta');
+  if (!resultEl || !place) return;
+
+  lunchRouletteWinnerId = place.id;
+  if (nameEl) nameEl.textContent = place.name;
+  if (metaEl) {
+    const parts = [place.category];
+    if (place.signatureMenu) parts.push(place.signatureMenu);
+    if (place.price) parts.push(place.price);
+    metaEl.textContent = parts.join(' · ');
+  }
+  resultEl.classList.remove('hidden');
+}
+
+function hideRouletteResult() {
+  document.getElementById('lunchRouletteResult')?.classList.add('hidden');
+  lunchRouletteWinnerId = null;
+}
+
+async function spinLunchRoulette() {
+  if (lunchRouletteSpinning) return;
+  if (!lunchMapData) {
+    await initLunchMap();
+    if (!lunchMapData) return;
+  }
+
+  const pool = getFilteredLunchPlaces();
+  if (!pool.length) {
+    setRouletteDisplay('선택된 카테고리에 맛집이 없어요');
+    return;
+  }
+
+  const btn = document.getElementById('btnLunchRoulette');
+  lunchRouletteSpinning = true;
+  if (btn) btn.disabled = true;
+  hideRouletteResult();
+  setRouletteDisplay('돌아가는 중…', true);
+
+  const winner = pool[Math.floor(Math.random() * pool.length)];
+  const totalSteps = 22 + Math.floor(Math.random() * 12);
+
+  for (let i = 0; i < totalSteps; i += 1) {
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    setRouletteDisplay(pick.name, true);
+    await sleep(70 + i * 6);
+  }
+
+  setRouletteDisplay(winner.name, false);
+  showRouletteResult(winner);
+  highlightLunchListItem(winner.id);
+  focusLunchPlace(winner.id);
+
+  lunchRouletteSpinning = false;
+  if (btn) btn.disabled = false;
 }
 
 function focusLunchPlace(placeId) {
@@ -177,6 +293,7 @@ function focusLunchPlace(placeId) {
   lunchMapInstance.setView([place.lat, place.lng], Math.max(lunchMapInstance.getZoom(), 17), { animate: true });
   const marker = lunchMapMarkers.find((m) => m.placeId === placeId);
   marker?.openPopup();
+  highlightLunchListItem(placeId);
   document.querySelector(`.lunch-list-item[data-place-id="${placeId}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
@@ -216,7 +333,7 @@ function renderLunchList(data) {
     if (rating) metaParts.push(rating);
     const memo = place.signatureMenu || place.memo;
     return `
-    <button type="button" class="lunch-list-item" data-place-id="${place.id}">
+    <button type="button" class="lunch-list-item${place.id === lunchRouletteWinnerId ? ' lunch-list-item-picked' : ''}" data-place-id="${place.id}">
       <span class="lunch-list-name">${place.name}</span>
       <span class="lunch-list-meta">${metaParts.join(' · ')}</span>
       ${memo ? `<span class="lunch-list-memo">${memo}</span>` : ''}
@@ -234,11 +351,27 @@ function renderLunchMapMarkers(data) {
   clearLunchMapMarkers();
 
   if (data.office) {
-    const officeMarker = L.marker([data.office.lat, data.office.lng], {
-      icon: createEmojiIcon('🏢', 'lunch-map-pin-office'),
-      zIndexOffset: 1000,
+    const officeLabel = getOfficeShortName(data.office.name);
+    lunchOfficeCircle = L.circle([data.office.lat, data.office.lng], {
+      color: '#2563eb',
+      fillColor: '#3b82f6',
+      fillOpacity: 0.18,
+      radius: 90,
+      weight: 3,
+      dashArray: '6 4',
     }).addTo(lunchMapInstance);
-    officeMarker.bindPopup(`<strong>${data.office.name || '회사'}</strong>`);
+
+    const officeMarker = L.marker([data.office.lat, data.office.lng], {
+      icon: createOfficePinIcon(officeLabel),
+      zIndexOffset: 2500,
+    }).addTo(lunchMapInstance);
+    officeMarker.bindPopup(`
+      <div class="lunch-map-popup lunch-map-popup-office">
+        <strong>${officeLabel}</strong>
+        <p class="lunch-map-popup-memo">📍 우리 회사 (기준점)</p>
+        ${data.meta?.anchor?.includes('(') ? `<p class="lunch-map-popup-address">${data.meta.anchor.match(/\(([^)]+)\)/)?.[1] || ''}</p>` : ''}
+      </div>
+    `);
     lunchMapMarkers.push(officeMarker);
   }
 
@@ -343,11 +476,17 @@ async function initLunchMap(force = false) {
 
 function handleLunchCategoryFilter() {
   if (!lunchMapData) return;
+  hideRouletteResult();
+  setRouletteDisplay('버튼을 눌러 오늘 점심을 정해요');
   renderLunchList(lunchMapData);
 }
 
 function bindLunchMapControls() {
   document.getElementById('lunchCategoryFilter')?.addEventListener('change', handleLunchCategoryFilter);
+  document.getElementById('btnLunchRoulette')?.addEventListener('click', spinLunchRoulette);
+  document.getElementById('btnLunchRouletteMap')?.addEventListener('click', () => {
+    if (lunchRouletteWinnerId) focusLunchPlace(lunchRouletteWinnerId);
+  });
   document.getElementById('btnLunchMapRetry')?.addEventListener('click', () => {
     lunchMapReady = false;
     initLunchMap(true);

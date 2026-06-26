@@ -1782,6 +1782,122 @@ body {
   max-height: none;
 }
 
+/* ── 점심 룰렛 ── */
+
+.lunch-roulette-block {
+  margin-bottom: 0.875rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px dashed #a7f3d0;
+}
+
+.lunch-roulette-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.lunch-roulette-badge {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #b45309;
+}
+
+.lunch-roulette-hint {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  background: #fef3c7;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+}
+
+.lunch-roulette-wheel {
+  border-radius: 16px;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 2px dashed #fbbf24;
+  padding: 1.25rem 1rem;
+  margin-bottom: 0.75rem;
+  min-height: 4.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.lunch-roulette-wheel-spinning {
+  animation: lunch-roulette-pulse 0.35s ease-in-out infinite alternate;
+}
+
+@keyframes lunch-roulette-pulse {
+  from { transform: scale(1); box-shadow: 0 0 0 rgba(245, 158, 11, 0); }
+  to { transform: scale(1.02); box-shadow: 0 0 20px rgba(245, 158, 11, 0.35); }
+}
+
+.lunch-roulette-display {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  line-height: 1.45;
+  color: #92400e;
+}
+
+.btn-lunch-roulette {
+  display: block;
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: none;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: white;
+  background: linear-gradient(135deg, #f59e0b, #ea580c);
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btn-lunch-roulette:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.lunch-roulette-result {
+  margin-top: 0.875rem;
+  padding: 0.875rem;
+  border-radius: 14px;
+  background: #ecfdf5;
+  border: 1px solid #6ee7b7;
+  text-align: center;
+}
+
+.lunch-roulette-result-label {
+  margin: 0 0 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #047857;
+}
+
+.lunch-roulette-result-name {
+  margin: 0 0 0.35rem;
+  font-size: 1.125rem;
+  font-weight: 900;
+  color: #065f46;
+}
+
+.lunch-roulette-result-meta {
+  margin: 0 0 0.625rem;
+  font-size: 0.8125rem;
+  color: #047857;
+  line-height: 1.5;
+}
+
+.lunch-list-item-picked {
+  border-color: #f59e0b !important;
+  background: #fffbeb !important;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
+}
+
 .lunch-map-card {
   border-top: 4px solid #10b981;
   overflow: hidden;
@@ -1917,6 +2033,84 @@ body {
   height: 32px;
   font-size: 1.35rem;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+}
+
+.lunch-map-pin-office-wrap {
+  background: transparent;
+  border: none;
+}
+
+.office-pin {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 128px;
+  pointer-events: none;
+}
+
+.office-pin-ring {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  width: 52px;
+  height: 52px;
+  margin-left: -26px;
+  border-radius: 50%;
+  border: 3px solid #2563eb;
+  animation: office-pin-ring 2s ease-out infinite;
+}
+
+.office-pin-ring-delay {
+  animation-delay: 1s;
+}
+
+@keyframes office-pin-ring {
+  0% { transform: scale(0.55); opacity: 0.9; }
+  100% { transform: scale(1.45); opacity: 0; }
+}
+
+.office-pin-core {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(145deg, #3b82f6, #1d4ed8);
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.55);
+  border: 3px solid white;
+}
+
+.office-pin-icon-inner {
+  display: block;
+  transform: rotate(45deg);
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.office-pin-label {
+  position: relative;
+  z-index: 2;
+  margin-top: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  color: white;
+  background: #1d4ed8;
+  border-radius: 999px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.45);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lunch-map-popup-office strong {
+  color: #1d4ed8;
 }
 
 .lunch-map-popup {

@@ -206,7 +206,6 @@
         <section class="card fun-coming">
           <h3 class="fun-coming-title">곧 올 기능 👀</h3>
           <ul class="fun-coming-list">
-            <li>점심 메뉴 룰렛</li>
             <li>팀 밈 보드</li>
           </ul>
         </section>
@@ -222,12 +221,30 @@
 
         <section class="card lunch-map-card" id="lunchMapCard">
           <div class="lunch-map-header">
-            <span class="lunch-map-badge">🗺️ 주변 맛집</span>
+            <span class="lunch-map-badge">🗺️ DMC 점심</span>
             <select id="lunchCategoryFilter" class="lunch-map-filter" aria-label="카테고리 필터">
               <option value="all">전체</option>
             </select>
           </div>
           <p class="lunch-map-desc" id="lunchMapDesc">DMC 상암 맛집 지도</p>
+
+          <div class="lunch-roulette-block" id="lunchRouletteCard">
+            <div class="lunch-roulette-header">
+              <span class="lunch-roulette-badge">🎰 점심 메뉴 룰렛</span>
+              <span class="lunch-roulette-hint">카테고리 필터 반영</span>
+            </div>
+            <div class="lunch-roulette-wheel" id="lunchRouletteWheel">
+              <p class="lunch-roulette-display" id="lunchRouletteDisplay">버튼을 눌러 오늘 점심을 정해요</p>
+            </div>
+            <button type="button" class="btn btn-lunch-roulette" id="btnLunchRoulette">룰렛 돌리기 🎲</button>
+            <div id="lunchRouletteResult" class="lunch-roulette-result hidden">
+              <p class="lunch-roulette-result-label">오늘의 점심 🎉</p>
+              <p class="lunch-roulette-result-name" id="lunchRouletteResultName"></p>
+              <p class="lunch-roulette-result-meta" id="lunchRouletteResultMeta"></p>
+              <button type="button" class="btn btn-ghost btn-sm" id="btnLunchRouletteMap">지도에서 보기</button>
+            </div>
+          </div>
+
           <p class="lunch-map-status hidden" id="lunchMapStatus"></p>
           <button type="button" class="btn btn-ghost btn-sm hidden" id="btnLunchMapRetry">다시 불러오기</button>
           <div id="lunchMap" class="lunch-map lunch-map-tab" role="application" aria-label="맛집 지도"></div>
