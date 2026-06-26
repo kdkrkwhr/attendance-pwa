@@ -871,7 +871,7 @@ function handleExport() {
   URL.revokeObjectURL(a.href);
 }
 
-function handleExport() {
+function handleSettingsChange() {
   const settings = {
     ...loadSettings(),
     notifyBefore: document.getElementById('notifyBefore').value,
