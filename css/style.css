@@ -1740,3 +1740,195 @@ body {
     border-color: #6b21a8;
   }
 }
+
+/* ── 점심 맛집 지도 ── */
+
+.lunch-map-card {
+  border-top: 4px solid #10b981;
+  overflow: hidden;
+}
+
+.lunch-map-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.lunch-map-badge {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #047857;
+}
+
+.lunch-map-filter {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  max-width: 7rem;
+}
+
+.lunch-map-desc {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  margin: 0 0 0.5rem;
+}
+
+.lunch-map-desc code {
+  font-size: 0.625rem;
+  background: #ecfdf5;
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+}
+
+.lunch-map-status {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.lunch-map-status-error {
+  color: #b91c1c;
+}
+
+.lunch-map {
+  width: 100%;
+  height: 240px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #e2e8f0;
+  z-index: 0;
+}
+
+.lunch-map .leaflet-control-zoom a {
+  color: #334155;
+}
+
+.lunch-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.lunch-list-item {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--border);
+  background: var(--card);
+  border-radius: 12px;
+  padding: 0.625rem 0.75rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.lunch-list-item:hover,
+.lunch-list-item:focus-visible {
+  border-color: #6ee7b7;
+  background: #ecfdf5;
+  outline: none;
+}
+
+.lunch-list-name {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.lunch-list-meta {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.125rem;
+}
+
+.lunch-list-memo {
+  display: block;
+  font-size: 0.75rem;
+  color: #047857;
+  margin-top: 0.25rem;
+}
+
+.lunch-map-attribution {
+  margin: 0.5rem 0 0;
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.lunch-map-pin {
+  background: transparent;
+  border: none;
+}
+
+.lunch-map-pin-emoji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  font-size: 1.35rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+}
+
+.lunch-map-popup {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  min-width: 140px;
+}
+
+.lunch-map-popup-cat {
+  display: inline-block;
+  margin-left: 0.35rem;
+  font-size: 0.6875rem;
+  color: #64748b;
+}
+
+.lunch-map-popup-price {
+  margin: 0.25rem 0 0;
+  color: #047857;
+  font-weight: 600;
+}
+
+.lunch-map-popup-memo {
+  margin: 0.25rem 0 0;
+}
+
+.lunch-map-popup-tags {
+  margin: 0.35rem 0 0;
+  font-size: 0.6875rem;
+  color: #6b7280;
+}
+
+[data-theme="dark"] .lunch-map-desc code {
+  background: #064e3b;
+  color: #a7f3d0;
+}
+
+[data-theme="dark"] .lunch-list-item:hover,
+[data-theme="dark"] .lunch-list-item:focus-visible {
+  background: #064e3b;
+  border-color: #10b981;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .lunch-map-desc code {
+    background: #064e3b;
+    color: #a7f3d0;
+  }
+
+  :root:not([data-theme="light"]) .lunch-list-item:hover,
+  :root:not([data-theme="light"]) .lunch-list-item:focus-visible {
+    background: #064e3b;
+    border-color: #10b981;
+  }
+}

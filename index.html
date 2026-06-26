@@ -13,6 +13,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
   <script>
     (function () {
       try {
@@ -202,6 +203,21 @@
           </div>
         </section>
 
+        <section class="card lunch-map-card" id="lunchMapCard">
+          <div class="lunch-map-header">
+            <span class="lunch-map-badge">🗺️ 점심 맛집 지도</span>
+            <select id="lunchCategoryFilter" class="lunch-map-filter" aria-label="카테고리 필터">
+              <option value="all">전체</option>
+            </select>
+          </div>
+          <p class="lunch-map-desc">OpenStreetMap · API 키 없음 · <code>data/restaurants.json</code></p>
+          <p class="lunch-map-status hidden" id="lunchMapStatus"></p>
+          <button type="button" class="btn btn-ghost btn-sm hidden" id="btnLunchMapRetry">다시 불러오기</button>
+          <div id="lunchMap" class="lunch-map" role="application" aria-label="맛집 지도"></div>
+          <div class="lunch-list" id="lunchList"></div>
+          <p class="lunch-map-attribution">© OpenStreetMap contributors</p>
+        </section>
+
         <section class="card fun-coming">
           <h3 class="fun-coming-title">곧 올 기능 👀</h3>
           <ul class="fun-coming-list">
@@ -316,8 +332,10 @@
   </div>
 
   <script src="config.js"></script>
+  <script src="vendor/leaflet/leaflet.js"></script>
   <script src="js/fortune.js"></script>
   <script src="js/saju.js"></script>
+  <script src="js/lunch-map.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

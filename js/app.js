@@ -428,6 +428,7 @@ function switchTab(tabName) {
   if (tabName === 'fun') {
     if (typeof renderFortune === 'function') renderFortune();
     if (typeof renderSaju === 'function') renderSaju();
+    if (typeof initLunchMap === 'function') initLunchMap();
   }
 }
 
