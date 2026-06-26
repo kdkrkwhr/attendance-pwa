@@ -23,7 +23,8 @@ window.APP_CONFIG = {
   },
   /** 점심 지도 기본 위치 (restaurants.json 의 office 가 있으면 office 우선) */
   lunchMap: {
-    defaultCenter: [37.5012, 127.0396],
+    dataUrl: './data/dmc_restaurants.json',
+    defaultCenter: [37.579, 126.889],
     defaultZoom: 16,
   },
 };

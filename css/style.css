@@ -1899,6 +1899,20 @@ body {
   font-weight: 600;
 }
 
+.lunch-map-popup-rating {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #b45309;
+}
+
+.lunch-map-popup-address {
+  margin: 0.35rem 0 0;
+  font-size: 0.6875rem;
+  color: #64748b;
+  line-height: 1.45;
+}
+
 .lunch-map-popup-memo {
   margin: 0.25rem 0 0;
 }

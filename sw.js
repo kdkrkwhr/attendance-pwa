@@ -1,4 +1,4 @@
-const CACHE_NAME = 'attendance-pwa-v21';
+const CACHE_NAME = 'attendance-pwa-v22';
 const ASSETS = [
   './',
   './index.html',
@@ -8,7 +8,7 @@ const ASSETS = [
   './js/fortune.js',
   './js/saju.js',
   './js/lunch-map.js',
-  './data/restaurants.json',
+  './data/dmc_restaurants.json',
   './vendor/leaflet/leaflet.css',
   './vendor/leaflet/leaflet.js',
   './vendor/leaflet/images/marker-icon.png',
