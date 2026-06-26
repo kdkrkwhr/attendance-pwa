@@ -2,9 +2,12 @@ const STORAGE_KEY = 'attendance-records';
 const SETTINGS_KEY = 'attendance-settings';
 const NOTIFIED_KEY = 'attendance-notified';
 
+/** 8시간 근무 + 점심 1시간 (고정) */
+const WORK_HOURS = 8;
+const LUNCH_MINUTES = 60;
+const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
+
 const DEFAULT_SETTINGS = {
-  workHours: 8,
-  lunchMinutes: 60,
   notifyBefore: '30,10,0',
   userName: '',
   sheetUrl: '',
@@ -12,6 +15,7 @@ const DEFAULT_SETTINGS = {
 
 let tickInterval = null;
 let deferredInstallPrompt = null;
+let checkInInputFocused = false;
 
 // ── PWA 설치 ──────────────────────────────────────────
 
@@ -115,6 +119,30 @@ function getWeekDates(baseDate = new Date()) {
 
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
 
+function toTimeInputValue(date) {
+  const h = String(date.getHours()).padStart(2, '0');
+  const m = String(date.getMinutes()).padStart(2, '0');
+  return `${h}:${m}`;
+}
+
+function checkInISOFromTimeInput(hhmm, dateKey = todayKey()) {
+  const [hours, minutes] = hhmm.split(':').map(Number);
+  const [y, mo, d] = dateKey.split('-').map(Number);
+  return new Date(y, mo - 1, d, hours, minutes, 0, 0).toISOString();
+}
+
+function clearTodayNotifications() {
+  const notified = loadNotified();
+  Object.keys(notified).forEach((k) => {
+    if (k.startsWith(todayKey())) delete notified[k];
+  });
+  localStorage.setItem(NOTIFIED_KEY, JSON.stringify(notified));
+}
+
+function calcNetWorkMinutes(checkInISO, checkOutISO) {
+  return Math.max(0, calcWorkedMinutes(checkInISO, checkOutISO) - LUNCH_MINUTES);
+}
+
 function getUserName() {
   return (loadSettings().userName || '').trim();
 }
@@ -134,15 +162,11 @@ function getWeekRecords() {
   return week;
 }
 
-function recordToSyncRow(dateKey, record, settings) {
-  const leave = calcLeaveTime(record.checkIn, {
-    workHours: record.workHours || settings.workHours,
-    lunchMinutes: record.lunchMinutes ?? settings.lunchMinutes,
-  });
+function recordToSyncRow(dateKey, record) {
+  const leave = calcLeaveTime(record.checkIn);
   let netHours = '';
   if (record.checkOut) {
-    const worked = calcWorkedMinutes(record.checkIn, record.checkOut);
-    netHours = ((Math.max(0, worked - (record.lunchMinutes ?? settings.lunchMinutes)) / 60)).toFixed(1);
+    netHours = (calcNetWorkMinutes(record.checkIn, record.checkOut) / 60).toFixed(1);
   }
   return {
     name: getUserName(),
@@ -164,7 +188,7 @@ async function syncRecordToSheet(dateKey, record) {
     method: 'POST',
     mode: 'cors',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(recordToSyncRow(dateKey, record, settings)),
+    body: JSON.stringify(recordToSyncRow(dateKey, record)),
   });
   return res.json();
 }
@@ -294,10 +318,8 @@ function saveTodayRecord(record) {
 
 // ── 계산 ──────────────────────────────────────────
 
-function calcLeaveTime(checkInISO, settings) {
-  const checkIn = parseISO(checkInISO);
-  const totalMinutes = settings.workHours * 60 + settings.lunchMinutes;
-  return addMinutes(checkIn, totalMinutes);
+function calcLeaveTime(checkInISO) {
+  return addMinutes(parseISO(checkInISO), DAY_SPAN_MINUTES);
 }
 
 function calcWorkedMinutes(checkInISO, checkOutISO) {
@@ -360,8 +382,8 @@ function checkAndNotify() {
   const record = getTodayRecord();
   if (!record || !record.checkIn || record.checkOut) return;
 
+  const leaveTime = calcLeaveTime(record.checkIn);
   const settings = loadSettings();
-  const leaveTime = calcLeaveTime(record.checkIn, settings);
   const now = new Date();
   const offsets = settings.notifyBefore.split(',').map(Number);
 
@@ -381,42 +403,56 @@ function checkAndNotify() {
 
 function renderToday() {
   const record = getTodayRecord();
-  const settings = loadSettings();
   const now = new Date();
+  const hasCheckIn = !!(record?.checkIn);
 
   document.getElementById('todayDate').textContent =
     `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 (${DAY_NAMES[now.getDay()]})`;
 
   const badge = document.getElementById('statusBadge');
-  const checkInEl = document.getElementById('checkInTime');
+  const checkInInput = document.getElementById('checkInInput');
+  const checkInHint = document.getElementById('checkInHint');
   const leaveEl = document.getElementById('leaveTime');
   const countdown = document.getElementById('countdown');
   const btnIn = document.getElementById('btnCheckIn');
   const btnOut = document.getElementById('btnCheckOut');
 
-  if (!record || !record.checkIn) {
+  if (checkInInput && !checkInInputFocused) {
+    checkInInput.value = hasCheckIn
+      ? toTimeInputValue(parseISO(record.checkIn))
+      : toTimeInputValue(now);
+    checkInInput.disabled = !!record?.checkOut;
+  }
+
+  if (!hasCheckIn) {
     badge.textContent = '미출근';
     badge.className = 'badge';
-    checkInEl.textContent = '—';
     leaveEl.textContent = '—';
-    countdown.textContent = '지문 찍을 때 출근 버튼도 눌러주세요';
+    if (checkInHint) checkInHint.textContent = '출근 시각 선택 후 등록';
+    countdown.textContent = '지문 찍을 때 출근 시각도 맞춰주세요';
     countdown.className = 'countdown';
     btnIn.classList.remove('hidden');
     btnOut.classList.add('hidden');
+
+    if (checkInInput?.value) {
+      const preview = calcLeaveTime(checkInISOFromTimeInput(checkInInput.value));
+      leaveEl.textContent = formatTime(preview);
+    }
     return;
   }
 
   const checkIn = parseISO(record.checkIn);
-  const leaveTime = calcLeaveTime(record.checkIn, settings);
-
-  checkInEl.textContent = formatTime(checkIn);
+  const leaveTime = calcLeaveTime(record.checkIn);
   leaveEl.textContent = formatTime(leaveTime);
+  if (checkInHint) {
+    checkInHint.textContent = record.checkOut ? '퇴근 완료' : '탭해서 출근 시각 수정';
+  }
 
   if (record.checkOut) {
     badge.textContent = '퇴근 완료';
     badge.className = 'badge done';
     const worked = calcWorkedMinutes(record.checkIn, record.checkOut);
-    countdown.textContent = `실제 근무: ${formatDuration(worked - settings.lunchMinutes)} (체류 ${formatDuration(worked)})`;
+    countdown.textContent = `실제 근무: ${formatDuration(calcNetWorkMinutes(record.checkIn, record.checkOut))} (체류 ${formatDuration(worked)})`;
     countdown.className = 'countdown';
     btnIn.classList.add('hidden');
     btnOut.classList.add('hidden');
@@ -432,7 +468,7 @@ function renderToday() {
   if (diffMs > 0) {
     const h = Math.floor(diffMs / 3600000);
     const m = Math.floor((diffMs % 3600000) / 60000);
-    countdown.textContent = `퇴근까지 ${h > 0 ? `${h}시간 ` : ''}${m}분`;
+    countdown.textContent = `퇴근까지 ${h > 0 ? `${h}시간 ` : ''}${m}분 · ${formatTime(checkIn)} 출근`;
     countdown.className = h === 0 && m <= 30 ? 'countdown urgent' : 'countdown';
   } else {
     const over = Math.abs(diffMs);
@@ -444,7 +480,6 @@ function renderToday() {
 
 function renderWeek() {
   const records = loadRecords();
-  const settings = loadSettings();
   const weekDates = getWeekDates();
   const list = document.getElementById('weekList');
   const summary = document.getElementById('weekSummary');
@@ -479,14 +514,13 @@ function renderWeek() {
 
     if (record.checkOut) {
       const checkOut = formatTimeShort(parseISO(record.checkOut));
-      const worked = calcWorkedMinutes(record.checkIn, record.checkOut);
-      const netWork = Math.max(0, worked - settings.lunchMinutes);
+      const netWork = calcNetWorkMinutes(record.checkIn, record.checkOut);
       totalWorkMinutes += netWork;
       workDays++;
       timesText = `${checkIn} ~ ${checkOut}`;
       hoursText = `${(netWork / 60).toFixed(1)}h`;
     } else if (isToday) {
-      const leave = formatTimeShort(calcLeaveTime(record.checkIn, settings));
+      const leave = formatTimeShort(calcLeaveTime(record.checkIn));
       timesText = `${checkIn} ~ ${leave}`;
       hoursText = '진행';
     }
@@ -504,8 +538,6 @@ function renderWeek() {
 
 function renderSettings() {
   const settings = loadSettings();
-  document.getElementById('workHours').value = String(settings.workHours);
-  document.getElementById('lunchMinutes').value = String(settings.lunchMinutes);
   document.getElementById('notifyBefore').value = settings.notifyBefore;
   const nameEl = document.getElementById('userName');
   const sheetEl = document.getElementById('sheetUrl');
@@ -533,13 +565,15 @@ function handleCheckIn() {
     return;
   }
 
-  const now = new Date();
-  const settings = loadSettings();
+  const input = document.getElementById('checkInInput');
+  if (!input?.value) {
+    alert('출근 시각을 선택해주세요.');
+    return;
+  }
 
+  const settings = loadSettings();
   saveTodayRecord({
-    checkIn: now.toISOString(),
-    workHours: settings.workHours,
-    lunchMinutes: settings.lunchMinutes,
+    checkIn: checkInISOFromTimeInput(input.value),
     userName: getUserName(),
   });
 
@@ -553,6 +587,41 @@ function handleCheckIn() {
       if (r.ok) setSyncStatus('팀 시트에 출근 저장됨', 'ok');
     }).catch(() => {});
   }
+}
+
+function handleCheckInTimeChange() {
+  const record = getTodayRecord();
+  if (!record?.checkIn || record.checkOut) return;
+
+  const input = document.getElementById('checkInInput');
+  if (!input?.value) return;
+
+  const newCheckIn = checkInISOFromTimeInput(input.value);
+  if (newCheckIn === record.checkIn) return;
+
+  saveTodayRecord({
+    ...record,
+    checkIn: newCheckIn,
+  });
+  clearTodayNotifications();
+
+  render();
+  const settings = loadSettings();
+  if (settings.sheetUrl) {
+    syncRecordToSheet(todayKey(), getTodayRecord()).catch(() => {});
+  }
+}
+
+function handleCheckInTimePreview() {
+  const record = getTodayRecord();
+  if (record?.checkIn) return;
+
+  const input = document.getElementById('checkInInput');
+  const leaveEl = document.getElementById('leaveTime');
+  if (!input?.value || !leaveEl) return;
+
+  const preview = calcLeaveTime(checkInISOFromTimeInput(input.value));
+  leaveEl.textContent = formatTime(preview);
 }
 
 function handleCheckOut() {
@@ -591,20 +660,14 @@ function handleResetToday() {
 
 function handleExport() {
   const records = loadRecords();
-  const settings = loadSettings();
   const name = getUserName();
-  const rows = [['이름', '날짜', '출근', '퇴근', '퇴근예정', '순근무(분)', '점심(분)']];
+  const rows = [['이름', '날짜', '출근', '퇴근', '퇴근예정', '순근무(분)']];
 
   Object.keys(records).sort().forEach((key) => {
     const r = records[key];
     if (!r.checkIn) return;
-    const leave = calcLeaveTime(r.checkIn, {
-      workHours: r.workHours || settings.workHours,
-      lunchMinutes: r.lunchMinutes ?? settings.lunchMinutes,
-    });
-    const netWork = r.checkOut
-      ? calcWorkedMinutes(r.checkIn, r.checkOut) - (r.lunchMinutes ?? settings.lunchMinutes)
-      : '';
+    const leave = calcLeaveTime(r.checkIn);
+    const netWork = r.checkOut ? calcNetWorkMinutes(r.checkIn, r.checkOut) : '';
     rows.push([
       r.userName || name,
       key,
@@ -612,7 +675,6 @@ function handleExport() {
       r.checkOut ? formatTimeShort(parseISO(r.checkOut)) : '',
       formatTimeShort(leave),
       netWork,
-      r.lunchMinutes ?? settings.lunchMinutes,
     ]);
   });
 
@@ -681,8 +743,6 @@ function handleRestoreFile(e) {
 function handleSettingsChange() {
   const settings = {
     ...loadSettings(),
-    workHours: Number(document.getElementById('workHours').value),
-    lunchMinutes: Number(document.getElementById('lunchMinutes').value),
     notifyBefore: document.getElementById('notifyBefore').value,
     userName: (document.getElementById('userName')?.value || '').trim(),
     sheetUrl: (document.getElementById('sheetUrl')?.value || '').trim(),
@@ -693,8 +753,6 @@ function handleSettingsChange() {
   if (record?.checkIn && !record.checkOut) {
     saveTodayRecord({
       ...record,
-      workHours: settings.workHours,
-      lunchMinutes: settings.lunchMinutes,
       userName: settings.userName,
     });
   }
@@ -732,6 +790,23 @@ function init() {
   document.getElementById('btnInstall')?.addEventListener('click', handleInstall);
   document.getElementById('btnCheckIn').addEventListener('click', handleCheckIn);
   document.getElementById('btnCheckOut').addEventListener('click', handleCheckOut);
+
+  const checkInInput = document.getElementById('checkInInput');
+  if (checkInInput) {
+    checkInInput.addEventListener('focus', () => { checkInInputFocused = true; });
+    checkInInput.addEventListener('blur', () => {
+      checkInInputFocused = false;
+      handleCheckInTimeChange();
+      render();
+    });
+    checkInInput.addEventListener('input', handleCheckInTimePreview);
+    checkInInput.addEventListener('change', () => {
+      handleCheckInTimeChange();
+      handleCheckInTimePreview();
+      render();
+    });
+  }
+
   document.getElementById('btnResetToday').addEventListener('click', handleResetToday);
   document.getElementById('btnExport').addEventListener('click', handleExport);
   document.getElementById('btnBackupWeek').addEventListener('click', handleBackupWeek);
@@ -742,7 +817,7 @@ function init() {
   document.getElementById('btnSyncSheet').addEventListener('click', syncWeekToSheet);
   document.getElementById('btnNotifyPermission').addEventListener('click', requestNotificationPermission);
 
-  ['workHours', 'lunchMinutes', 'notifyBefore', 'userName', 'sheetUrl'].forEach((id) => {
+  ['notifyBefore', 'userName', 'sheetUrl'].forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
     el.addEventListener('change', handleSettingsChange);

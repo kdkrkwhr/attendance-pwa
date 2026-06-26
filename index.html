@@ -45,9 +45,10 @@
         </div>
 
         <div class="time-display" id="timeDisplay">
-          <div class="time-block">
+          <div class="time-block time-block-editable">
             <span class="label">출근</span>
-            <span class="value" id="checkInTime">—</span>
+            <input type="time" id="checkInInput" class="time-input" aria-label="출근 시각">
+            <span class="edit-hint" id="checkInHint">시각을 바꿀 수 있어요</span>
           </div>
           <div class="arrow">→</div>
           <div class="time-block highlight">
@@ -59,7 +60,7 @@
         <div class="countdown" id="countdown"></div>
 
         <div class="actions" id="mainActions">
-          <button type="button" class="btn btn-primary" id="btnCheckIn">출근 체크</button>
+          <button type="button" class="btn btn-primary" id="btnCheckIn">출근 등록</button>
           <button type="button" class="btn btn-secondary hidden" id="btnCheckOut">퇴근 체크</button>
         </div>
       </section>
@@ -74,25 +75,9 @@
         <p class="field-hint">이름과 출퇴근 기록은 이 폰에 저장됩니다.</p>
       </section>
 
-      <!-- 설정 -->
+      <!-- 알림 설정 -->
       <section class="card">
-        <h2 class="card-title">오늘 근무 설정</h2>
-        <div class="setting-row">
-          <label for="workHours">목표 근무시간</label>
-          <select id="workHours">
-            <option value="8" selected>8시간 (기본)</option>
-            <option value="9">9시간</option>
-            <option value="10">10시간</option>
-          </select>
-        </div>
-        <div class="setting-row">
-          <label for="lunchMinutes">점심시간</label>
-          <select id="lunchMinutes">
-            <option value="60" selected>1시간</option>
-            <option value="30">30분</option>
-            <option value="0">없음</option>
-          </select>
-        </div>
+        <h2 class="card-title">알림 설정</h2>
         <div class="setting-row">
           <label for="notifyBefore">퇴근 알림</label>
           <select id="notifyBefore">
