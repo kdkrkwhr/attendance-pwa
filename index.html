@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko" translate="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="google" content="notranslate">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1a56db">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>출퇴근 체크</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="notranslate">
+  <div class="app" translate="no">
+    <header class="header">
+      <h1>출퇴근 체크</h1>
+      <p class="subtitle">자율출퇴근 · 8시간 + 점심 1시간</p>
+    </header>
+
+    <main>
+      <!-- 앱 설치 안내 -->
+      <section class="card card-install" id="installCard">
+        <h2 class="card-title">📲 휴대폰에 설치</h2>
+        <p class="install-desc" id="installDesc">홈 화면에 추가하면 앱처럼 쓸 수 있어요.</p>
+        <button type="button" class="btn btn-primary hidden" id="btnInstall">앱 설치하기</button>
+        <details class="install-guide" id="installGuide">
+          <summary>설치 메뉴가 안 보일 때</summary>
+          <ol class="install-steps">
+            <li><strong>Chrome 앱</strong>으로 열었는지 확인 (카톡·슬랙 안에서는 설치 불가)</li>
+            <li>화면 <strong>맨 위 주소창</strong>을 한번 탭해서 메뉴가 나오게 하기</li>
+            <li><strong>공유</strong> 버튼(↗ 모양) → <strong>홈 화면에 추가</strong></li>
+            <li>없으면 Chrome <strong>⋮</strong> (오른쪽 위 또는 아래) → <strong>홈 화면에 추가</strong></li>
+          </ol>
+          <p class="install-note">※ <code>http://</code> 주소(IP)로 접속하면 「앱 설치」가 안 뜰 수 있어요. <strong>공유 → 홈 화면에 추가</strong>는 됩니다.</p>
+        </details>
+      </section>
+
+      <!-- 오늘 상태 -->
+      <section class="card card-today" id="todayCard">
+        <div class="date-row">
+          <span class="date" id="todayDate"></span>
+          <span class="badge" id="statusBadge">미출근</span>
+        </div>
+
+        <div class="time-display" id="timeDisplay">
+          <div class="time-block">
+            <span class="label">출근</span>
+            <span class="value" id="checkInTime">—</span>
+          </div>
+          <div class="arrow">→</div>
+          <div class="time-block highlight">
+            <span class="label">퇴근 가능</span>
+            <span class="value" id="leaveTime">—</span>
+          </div>
+        </div>
+
+        <div class="countdown" id="countdown"></div>
+
+        <div class="actions" id="mainActions">
+          <button type="button" class="btn btn-primary" id="btnCheckIn">출근 체크</button>
+          <button type="button" class="btn btn-secondary hidden" id="btnCheckOut">퇴근 체크</button>
+        </div>
+      </section>
+
+      <!-- 설정 -->
+      <section class="card">
+        <h2 class="card-title">오늘 근무 설정</h2>
+        <div class="setting-row">
+          <label for="workHours">목표 근무시간</label>
+          <select id="workHours">
+            <option value="8" selected>8시간 (기본)</option>
+            <option value="9">9시간</option>
+            <option value="10">10시간</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label for="lunchMinutes">점심시간</label>
+          <select id="lunchMinutes">
+            <option value="60" selected>1시간</option>
+            <option value="30">30분</option>
+            <option value="0">없음</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label for="notifyBefore">퇴근 알림</label>
+          <select id="notifyBefore">
+            <option value="30,10,0">30분 · 10분 · 정각</option>
+            <option value="30,0">30분 · 정각</option>
+            <option value="10,0">10분 · 정각</option>
+            <option value="0">정각만</option>
+          </select>
+        </div>
+        <button type="button" class="btn btn-ghost" id="btnNotifyPermission">알림 권한 허용</button>
+      </section>
+
+      <!-- 주간 모니터링 -->
+      <section class="card">
+        <div class="card-header-row">
+          <h2 class="card-title">이번 주</h2>
+          <span class="week-summary" id="weekSummary"></span>
+        </div>
+        <ul class="week-list" id="weekList"></ul>
+      </section>
+
+      <!-- 기록 관리 -->
+      <section class="card card-compact">
+        <button type="button" class="btn btn-ghost btn-danger" id="btnResetToday">오늘 기록 초기화</button>
+        <button type="button" class="btn btn-ghost" id="btnExport">기록보내기 (CSV)</button>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>데이터는 이 기기에만 저장됩니다 · 서버 없음</p>
+    </footer>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

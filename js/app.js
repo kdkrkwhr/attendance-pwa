@@ -1,0 +1,516 @@
+const STORAGE_KEY = 'attendance-records';
+const SETTINGS_KEY = 'attendance-settings';
+const NOTIFIED_KEY = 'attendance-notified';
+
+const DEFAULT_SETTINGS = {
+  workHours: 8,
+  lunchMinutes: 60,
+  notifyBefore: '30,10,0',
+};
+
+let tickInterval = null;
+let deferredInstallPrompt = null;
+
+// ── PWA 설치 ──────────────────────────────────────────
+
+function isStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+}
+
+function isInAppBrowser() {
+  const ua = navigator.userAgent || '';
+  return /KAKAOTALK|Instagram|FBAN|FBAV|Line\//i.test(ua);
+}
+
+function updateInstallUI() {
+  const card = document.getElementById('installCard');
+  const btn = document.getElementById('btnInstall');
+  const desc = document.getElementById('installDesc');
+
+  if (!card) return;
+
+  if (isStandalone()) {
+    card.classList.add('hidden');
+    return;
+  }
+
+  card.classList.remove('hidden');
+
+  if (isInAppBrowser()) {
+    desc.textContent = '카톡·인스타 등 앱 안 브라우저에서는 설치가 안 됩니다. 주소를 복사해 Chrome 앱에서 여세요.';
+    btn.classList.add('hidden');
+    return;
+  }
+
+  if (deferredInstallPrompt) {
+    desc.textContent = '아래 버튼을 누르면 바로 설치할 수 있어요.';
+    btn.classList.remove('hidden');
+  } else {
+    desc.textContent = 'Chrome에서 「공유 → 홈 화면에 추가」로 설치하세요. (아래 안내 참고)';
+    btn.classList.add('hidden');
+  }
+}
+
+async function handleInstall() {
+  if (!deferredInstallPrompt) {
+    document.getElementById('installGuide')?.setAttribute('open', 'open');
+    return;
+  }
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  updateInstallUI();
+}
+
+// ── 유틸 ──────────────────────────────────────────
+
+function todayKey() {
+  return formatDateKey(new Date());
+}
+
+function formatDateKey(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function formatTime(date) {
+  const h = date.getHours();
+  const m = String(date.getMinutes()).padStart(2, '0');
+  const ampm = h < 12 ? '오전' : '오후';
+  const h12 = h % 12 || 12;
+  return `${ampm} ${h12}:${m}`;
+}
+
+function formatTimeShort(date) {
+  const h = String(date.getHours()).padStart(2, '0');
+  const m = String(date.getMinutes()).padStart(2, '0');
+  return `${h}:${m}`;
+}
+
+function parseISO(iso) {
+  return new Date(iso);
+}
+
+function addMinutes(date, minutes) {
+  return new Date(date.getTime() + minutes * 60 * 1000);
+}
+
+function getWeekDates(baseDate = new Date()) {
+  const day = baseDate.getDay();
+  const monday = new Date(baseDate);
+  monday.setDate(baseDate.getDate() - (day === 0 ? 6 : day - 1));
+  monday.setHours(0, 0, 0, 0);
+
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d;
+  });
+}
+
+const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
+
+// ── 저장소 ──────────────────────────────────────────
+
+function loadRecords() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+  } catch {
+    return {};
+  }
+}
+
+function saveRecords(records) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+}
+
+function loadSettings() {
+  try {
+    return { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem(SETTINGS_KEY)) };
+  } catch {
+    return { ...DEFAULT_SETTINGS };
+  }
+}
+
+function saveSettings(settings) {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
+
+function getTodayRecord() {
+  return loadRecords()[todayKey()] || null;
+}
+
+function saveTodayRecord(record) {
+  const records = loadRecords();
+  records[todayKey()] = record;
+  saveRecords(records);
+}
+
+// ── 계산 ──────────────────────────────────────────
+
+function calcLeaveTime(checkInISO, settings) {
+  const checkIn = parseISO(checkInISO);
+  const totalMinutes = settings.workHours * 60 + settings.lunchMinutes;
+  return addMinutes(checkIn, totalMinutes);
+}
+
+function calcWorkedMinutes(checkInISO, checkOutISO) {
+  const start = parseISO(checkInISO);
+  const end = parseISO(checkOutISO);
+  return Math.max(0, Math.round((end - start) / 60000));
+}
+
+function formatDuration(minutes) {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (m === 0) return `${h}시간`;
+  return `${h}시간 ${m}분`;
+}
+
+// ── 알림 ──────────────────────────────────────────
+
+function loadNotified() {
+  try {
+    return JSON.parse(localStorage.getItem(NOTIFIED_KEY)) || {};
+  } catch {
+    return {};
+  }
+}
+
+function markNotified(key) {
+  const notified = loadNotified();
+  notified[key] = true;
+  localStorage.setItem(NOTIFIED_KEY, JSON.stringify(notified));
+}
+
+function wasNotified(key) {
+  return !!loadNotified()[key];
+}
+
+async function requestNotificationPermission() {
+  if (!('Notification' in window)) {
+    alert('이 브라우저는 알림을 지원하지 않습니다.');
+    return false;
+  }
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted') {
+    new Notification('출퇴근 체크', { body: '퇴근 알림이 설정되었습니다.' });
+    return true;
+  }
+  return false;
+}
+
+function sendNotification(title, body) {
+  if (Notification.permission !== 'granted') return;
+
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({ type: 'NOTIFY', title, body });
+  } else {
+    new Notification(title, { body, icon: 'icon-192.png' });
+  }
+}
+
+function checkAndNotify() {
+  const record = getTodayRecord();
+  if (!record || !record.checkIn || record.checkOut) return;
+
+  const settings = loadSettings();
+  const leaveTime = calcLeaveTime(record.checkIn, settings);
+  const now = new Date();
+  const offsets = settings.notifyBefore.split(',').map(Number);
+
+  for (const min of offsets) {
+    const notifyAt = addMinutes(leaveTime, -min);
+    const key = `${todayKey()}-${min}`;
+
+    if (now >= notifyAt && now < addMinutes(notifyAt, 2) && !wasNotified(key)) {
+      const label = min === 0 ? '지금 퇴근하세요!' : `퇴근 ${min}분 전입니다`;
+      sendNotification('퇴근 알림', `${formatTime(leaveTime)} 퇴근 · ${label}`);
+      markNotified(key);
+    }
+  }
+}
+
+// ── UI 렌더 ──────────────────────────────────────────
+
+function renderToday() {
+  const record = getTodayRecord();
+  const settings = loadSettings();
+  const now = new Date();
+
+  document.getElementById('todayDate').textContent =
+    `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 (${DAY_NAMES[now.getDay()]})`;
+
+  const badge = document.getElementById('statusBadge');
+  const checkInEl = document.getElementById('checkInTime');
+  const leaveEl = document.getElementById('leaveTime');
+  const countdown = document.getElementById('countdown');
+  const btnIn = document.getElementById('btnCheckIn');
+  const btnOut = document.getElementById('btnCheckOut');
+
+  if (!record || !record.checkIn) {
+    badge.textContent = '미출근';
+    badge.className = 'badge';
+    checkInEl.textContent = '—';
+    leaveEl.textContent = '—';
+    countdown.textContent = '지문 찍을 때 출근 버튼도 눌러주세요';
+    countdown.className = 'countdown';
+    btnIn.classList.remove('hidden');
+    btnOut.classList.add('hidden');
+    return;
+  }
+
+  const checkIn = parseISO(record.checkIn);
+  const leaveTime = calcLeaveTime(record.checkIn, settings);
+
+  checkInEl.textContent = formatTime(checkIn);
+  leaveEl.textContent = formatTime(leaveTime);
+
+  if (record.checkOut) {
+    badge.textContent = '퇴근 완료';
+    badge.className = 'badge done';
+    const worked = calcWorkedMinutes(record.checkIn, record.checkOut);
+    countdown.textContent = `실제 근무: ${formatDuration(worked - settings.lunchMinutes)} (체류 ${formatDuration(worked)})`;
+    countdown.className = 'countdown';
+    btnIn.classList.add('hidden');
+    btnOut.classList.add('hidden');
+    return;
+  }
+
+  badge.textContent = '근무 중';
+  badge.className = 'badge working';
+  btnIn.classList.add('hidden');
+  btnOut.classList.remove('hidden');
+
+  const diffMs = leaveTime - now;
+  if (diffMs > 0) {
+    const h = Math.floor(diffMs / 3600000);
+    const m = Math.floor((diffMs % 3600000) / 60000);
+    countdown.textContent = `퇴근까지 ${h > 0 ? `${h}시간 ` : ''}${m}분`;
+    countdown.className = h === 0 && m <= 30 ? 'countdown urgent' : 'countdown';
+  } else {
+    const over = Math.abs(diffMs);
+    const m = Math.floor(over / 60000);
+    countdown.textContent = m < 5 ? '퇴근 가능합니다!' : `퇴근 가능 (${m}분 경과)`;
+    countdown.className = 'countdown ready';
+  }
+}
+
+function renderWeek() {
+  const records = loadRecords();
+  const settings = loadSettings();
+  const weekDates = getWeekDates();
+  const list = document.getElementById('weekList');
+  const summary = document.getElementById('weekSummary');
+
+  let totalWorkMinutes = 0;
+  let workDays = 0;
+
+  list.innerHTML = weekDates.map((date) => {
+    const key = formatDateKey(date);
+    const record = records[key];
+    const isToday = key === todayKey();
+    const dayLabel = `${DAY_NAMES[date.getDay()]} ${date.getMonth() + 1}/${date.getDate()}`;
+
+    if (!record || !record.checkIn) {
+      const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+      return `<li class="week-item ${isToday ? 'today' : ''} ${isWeekend ? 'off' : ''}">
+        <span class="day">${dayLabel}</span>
+        <span class="times">—</span>
+        <span class="hours">—</span>
+      </li>`;
+    }
+
+    const checkIn = formatTimeShort(parseISO(record.checkIn));
+    let timesText = `${checkIn} ~`;
+    let hoursText = '—';
+
+    if (record.checkOut) {
+      const checkOut = formatTimeShort(parseISO(record.checkOut));
+      const worked = calcWorkedMinutes(record.checkIn, record.checkOut);
+      const netWork = Math.max(0, worked - settings.lunchMinutes);
+      totalWorkMinutes += netWork;
+      workDays++;
+      timesText = `${checkIn} ~ ${checkOut}`;
+      hoursText = `${(netWork / 60).toFixed(1)}h`;
+    } else if (isToday) {
+      const leave = formatTimeShort(calcLeaveTime(record.checkIn, settings));
+      timesText = `${checkIn} ~ ${leave}`;
+      hoursText = '진행';
+    }
+
+    return `<li class="week-item ${isToday ? 'today' : ''}">
+      <span class="day">${dayLabel}</span>
+      <span class="times">${timesText}</span>
+      <span class="hours">${hoursText}</span>
+    </li>`;
+  }).join('');
+
+  const totalH = (totalWorkMinutes / 60).toFixed(1);
+  summary.textContent = workDays > 0 ? `누적 ${totalH}시간 (${workDays}일)` : '';
+}
+
+function renderSettings() {
+  const settings = loadSettings();
+  document.getElementById('workHours').value = String(settings.workHours);
+  document.getElementById('lunchMinutes').value = String(settings.lunchMinutes);
+  document.getElementById('notifyBefore').value = settings.notifyBefore;
+}
+
+function render() {
+  renderToday();
+  renderWeek();
+  renderSettings();
+  checkAndNotify();
+}
+
+// ── 액션 ──────────────────────────────────────────
+
+function handleCheckIn() {
+  const existing = getTodayRecord();
+  if (existing?.checkIn) return;
+
+  const now = new Date();
+  const settings = loadSettings();
+
+  saveTodayRecord({
+    checkIn: now.toISOString(),
+    workHours: settings.workHours,
+    lunchMinutes: settings.lunchMinutes,
+  });
+
+  if (Notification.permission === 'default') {
+    requestNotificationPermission();
+  }
+
+  render();
+}
+
+function handleCheckOut() {
+  const record = getTodayRecord();
+  if (!record?.checkIn || record.checkOut) return;
+
+  saveTodayRecord({
+    ...record,
+    checkOut: new Date().toISOString(),
+  });
+
+  render();
+}
+
+function handleResetToday() {
+  if (!confirm('오늘 기록을 삭제할까요?')) return;
+  const records = loadRecords();
+  delete records[todayKey()];
+  saveRecords(records);
+
+  const notified = loadNotified();
+  Object.keys(notified).forEach((k) => {
+    if (k.startsWith(todayKey())) delete notified[k];
+  });
+  localStorage.setItem(NOTIFIED_KEY, JSON.stringify(notified));
+
+  render();
+}
+
+function handleExport() {
+  const records = loadRecords();
+  const settings = loadSettings();
+  const rows = [['날짜', '출근', '퇴근', '퇴근예정', '순근무(분)', '점심(분)']];
+
+  Object.keys(records).sort().forEach((key) => {
+    const r = records[key];
+    if (!r.checkIn) return;
+    const leave = calcLeaveTime(r.checkIn, {
+      workHours: r.workHours || settings.workHours,
+      lunchMinutes: r.lunchMinutes ?? settings.lunchMinutes,
+    });
+    const netWork = r.checkOut
+      ? calcWorkedMinutes(r.checkIn, r.checkOut) - (r.lunchMinutes ?? settings.lunchMinutes)
+      : '';
+    rows.push([
+      key,
+      formatTimeShort(parseISO(r.checkIn)),
+      r.checkOut ? formatTimeShort(parseISO(r.checkOut)) : '',
+      formatTimeShort(leave),
+      netWork,
+      r.lunchMinutes ?? settings.lunchMinutes,
+    ]);
+  });
+
+  const csv = rows.map((r) => r.join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `출퇴근기록_${todayKey()}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function handleSettingsChange() {
+  const settings = {
+    workHours: Number(document.getElementById('workHours').value),
+    lunchMinutes: Number(document.getElementById('lunchMinutes').value),
+    notifyBefore: document.getElementById('notifyBefore').value,
+  };
+  saveSettings(settings);
+
+  const record = getTodayRecord();
+  if (record?.checkIn && !record.checkOut) {
+    saveTodayRecord({ ...record, workHours: settings.workHours, lunchMinutes: settings.lunchMinutes });
+  }
+
+  render();
+}
+
+// ── Service Worker ──────────────────────────────────────────
+
+async function registerSW() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    await navigator.serviceWorker.register('./sw.js');
+  } catch (e) {
+    console.warn('SW 등록 실패:', e);
+  }
+}
+
+// ── 초기화 ──────────────────────────────────────────
+
+function init() {
+  registerSW();
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    updateInstallUI();
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    updateInstallUI();
+  });
+
+  document.getElementById('btnInstall')?.addEventListener('click', handleInstall);
+  document.getElementById('btnCheckIn').addEventListener('click', handleCheckIn);
+  document.getElementById('btnCheckOut').addEventListener('click', handleCheckOut);
+  document.getElementById('btnResetToday').addEventListener('click', handleResetToday);
+  document.getElementById('btnExport').addEventListener('click', handleExport);
+  document.getElementById('btnNotifyPermission').addEventListener('click', requestNotificationPermission);
+
+  ['workHours', 'lunchMinutes', 'notifyBefore'].forEach((id) => {
+    document.getElementById(id).addEventListener('change', handleSettingsChange);
+  });
+
+  render();
+  updateInstallUI();
+  tickInterval = setInterval(render, 30_000);
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') render();
+  });
+}
+
+init();
