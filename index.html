@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=31">
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=31">
+  <link rel="stylesheet" href="css/style.css?v=32">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=32">
   <script>
     (function () {
       try {
@@ -98,6 +98,26 @@
               <span class="time-label">퇴근 가능</span>
               <span class="leave-value" id="leaveTime">—</span>
             </div>
+          </div>
+
+          <section class="commute-card hidden" id="commuteCard" aria-label="집까지 예상 소요">
+            <div class="commute-card-header">
+              <span class="commute-card-badge">🏠 퇴근길</span>
+              <button type="button" class="btn btn-ghost btn-sm" id="btnCommuteRefresh">새로고침</button>
+            </div>
+            <p class="commute-route" id="commuteRoute">회사 → 집</p>
+            <div class="commute-times">
+              <p class="commute-line" id="commuteTransit">🚌 —</p>
+              <p class="commute-line" id="commuteCar">🚗 —</p>
+            </div>
+            <p class="commute-arrival" id="commuteArrival"></p>
+            <p class="commute-meta" id="commuteMeta"></p>
+            <a class="commute-map-link hidden" id="commuteMapLink" href="#" target="_blank" rel="noopener noreferrer">카카오맵에서 보기</a>
+          </section>
+
+          <div class="commute-setup hidden" id="commuteSetup">
+            <p class="commute-setup-text">집 주소를 설정하면 퇴근길 소요시간을 보여드려요.</p>
+            <button type="button" class="btn btn-ghost btn-sm" id="btnCommuteGoSettings">집 주소 입력</button>
           </div>
 
           <div class="actions" id="mainActions">
@@ -362,6 +382,19 @@
             <label for="lunchRouletteNotify">점심 룰렛 알림 (11:20)</label>
             <input type="checkbox" id="lunchRouletteNotify" checked>
           </div>
+          <div class="setting-row">
+            <label for="commuteNotify">퇴근길 소요 알림 (퇴근 30분 전 + 퇴근 알림에 포함)</label>
+            <input type="checkbox" id="commuteNotify" checked>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2 class="card-title">집 · 퇴근길</h2>
+          <p class="field-hint">회사(DMC첨단산업센터)에서 집까지 소요시간을 commute-time 스킬로 조회합니다. 자차는 즉시, 대중교통은 Hermes(ODsay)로 가져옵니다.</p>
+          <div class="setting-field">
+            <label for="homeAddress">집 주소</label>
+            <input type="text" id="homeAddress" class="text-input" placeholder="예: 서울 마포구 ○○동 ○○아파트" maxlength="120" autocomplete="street-address">
+          </div>
         </section>
 
         <section class="card">
@@ -430,12 +463,13 @@
     </nav>
   </div>
 
-  <script src="config.js?v=31"></script>
-  <script src="vendor/leaflet/leaflet.js?v=31"></script>
-  <script src="js/fortune.js?v=31"></script>
-  <script src="js/saju.js?v=31"></script>
-  <script src="js/lunch-map.js?v=31"></script>
-  <script src="js/hermes-chat.js?v=31"></script>
-  <script src="js/app.js?v=31"></script>
+  <script src="config.js?v=32"></script>
+  <script src="vendor/leaflet/leaflet.js?v=32"></script>
+  <script src="js/fortune.js?v=32"></script>
+  <script src="js/saju.js?v=32"></script>
+  <script src="js/lunch-map.js?v=32"></script>
+  <script src="js/hermes-chat.js?v=32"></script>
+  <script src="js/commute-time.js?v=32"></script>
+  <script src="js/app.js?v=32"></script>
 </body>
 </html>

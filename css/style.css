@@ -2540,3 +2540,84 @@ body {
     background: #1e293b;
   }
 }
+
+/* ── 퇴근길 (commute-time) ── */
+.commute-card {
+  margin: 1rem 0 1.25rem;
+  padding: 1rem;
+  border-radius: var(--radius, 12px);
+  background: linear-gradient(135deg, rgba(26, 86, 219, 0.06), rgba(16, 185, 129, 0.08));
+  border: 1px solid var(--border);
+}
+
+.commute-card.hidden,
+.commute-setup.hidden {
+  display: none;
+}
+
+.commute-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.commute-card-badge {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.commute-route {
+  margin: 0 0 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.commute-times {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.commute-line {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+
+.commute-arrival {
+  margin: 0 0 0.35rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.commute-meta {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.commute-map-link {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--primary);
+}
+
+.commute-setup {
+  margin: 0 0 1rem;
+  padding: 0.75rem;
+  border-radius: var(--radius, 12px);
+  background: var(--surface-muted, #f8fafc);
+  text-align: center;
+}
+
+.commute-setup-text {
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}

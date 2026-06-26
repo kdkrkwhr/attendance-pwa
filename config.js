@@ -38,4 +38,15 @@ window.APP_CONFIG = {
       baseUrl: 'http://127.0.0.1:8642/v1',
     },
   },
+  /** commute-time 스킬: 회사 → 집 소요시간 */
+  commute: {
+    office: {
+      lat: 37.5845,
+      lng: 126.8856,
+      label: 'DMC첨단산업센터',
+    },
+    proxyBase: 'https://k-skill-proxy.nomadamas.org',
+    cacheMinutes: 20,
+    prefetchMinutesBeforeLeave: 45,
+  },
 };

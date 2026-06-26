@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '31';
+const APP_BUILD = '32';
 const APP_VERSION_KEY = 'attendance-app-version';
 
 const DEFAULT_SETTINGS = {
@@ -25,6 +25,8 @@ const DEFAULT_SETTINGS = {
   hermesBaseUrl: '',
   hermesApiKey: '',
   hermesModel: 'hermes-agent',
+  homeAddress: '',
+  commuteNotify: true,
 };
 
 let tickInterval = null;
@@ -1070,10 +1072,17 @@ function checkAndNotify() {
 
     if (now >= notifyAt && now < addMinutes(notifyAt, 2) && !wasNotified(key)) {
       const label = min === 0 ? '지금 퇴근하세요!' : `퇴근 ${min}분 전입니다`;
-      sendNotification('퇴근 알림', `${formatTime(leaveTime)} 퇴근 · ${label}`);
+      let body = `${formatTime(leaveTime)} 퇴근 · ${label}`;
+      if (settings.commuteNotify !== false && typeof getCommuteSummaryLine === 'function') {
+        const commute = getCommuteSummaryLine(leaveTime);
+        if (commute) body += `\n${commute}`;
+      }
+      sendNotification('퇴근 알림', body);
       markNotified(key);
     }
   }
+
+  if (typeof checkCommuteLeaveNotify === 'function') checkCommuteLeaveNotify();
 }
 
 // ── UI 렌더 ──────────────────────────────────────────
@@ -1140,6 +1149,7 @@ function renderToday() {
     btnSave?.classList.add('hidden');
     btnOut.classList.add('hidden');
     renderProgress(null, previewISO);
+    if (typeof renderCommuteCard === 'function') renderCommuteCard();
     return;
   }
 
@@ -1153,6 +1163,7 @@ function renderToday() {
     btnSave?.classList.toggle('hidden', !checkInTimeDirty);
     btnOut.classList.add('hidden');
     renderProgress(record);
+    if (typeof renderCommuteCard === 'function') renderCommuteCard();
     return;
   }
 
@@ -1162,6 +1173,7 @@ function renderToday() {
   btnSave?.classList.toggle('hidden', !checkInTimeDirty);
   btnOut.classList.remove('hidden');
   renderProgress(record);
+  if (typeof renderCommuteCard === 'function') renderCommuteCard();
 }
 
 function renderWeek() {
@@ -1243,6 +1255,10 @@ function renderSettings() {
   if (hermesApiKeyEl) hermesApiKeyEl.value = settings.hermesApiKey || '';
   const hermesModelEl = document.getElementById('hermesModel');
   if (hermesModelEl) hermesModelEl.value = settings.hermesModel || 'hermes-agent';
+  const homeAddressEl = document.getElementById('homeAddress');
+  if (homeAddressEl) homeAddressEl.value = settings.homeAddress || '';
+  const commuteNotifyEl = document.getElementById('commuteNotify');
+  if (commuteNotifyEl) commuteNotifyEl.checked = settings.commuteNotify !== false;
   applyTheme(settings.theme || 'system');
 }
 
@@ -1257,6 +1273,7 @@ function render() {
   checkAndNotify();
   if (typeof checkFortuneNotify === 'function') checkFortuneNotify();
   if (typeof checkLunchRouletteNotify === 'function') checkLunchRouletteNotify();
+  if (typeof maybePrefetchCommute === 'function') maybePrefetchCommute();
   loadTeamWeek();
   updateNetworkStatusUI();
   const canAttend = onCompanyNetwork || !isNetworkGuardActive() || isFieldWorkToday();
@@ -1432,8 +1449,9 @@ function handleExport() {
 
 function handleSettingsChange() {
   const theme = document.getElementById('themeMode')?.value || 'system';
+  const prev = loadSettings();
   const settings = {
-    ...loadSettings(),
+    ...prev,
     notifyBefore: document.getElementById('notifyBefore').value,
     userName: (document.getElementById('userName')?.value || '').trim(),
     sheetUrl: (document.getElementById('sheetUrl')?.value || '').trim(),
@@ -1444,11 +1462,20 @@ function handleSettingsChange() {
     hermesBaseUrl: (document.getElementById('hermesBaseUrl')?.value || '').trim().replace(/\/$/, ''),
     hermesApiKey: (document.getElementById('hermesApiKey')?.value || '').trim(),
     hermesModel: (document.getElementById('hermesModel')?.value || 'hermes-agent').trim() || 'hermes-agent',
+    homeAddress: (document.getElementById('homeAddress')?.value || '').trim(),
+    commuteNotify: document.getElementById('commuteNotify')?.checked !== false,
   };
+  if (prev.homeAddress !== settings.homeAddress) {
+    localStorage.removeItem('attendance-commute-cache');
+    if (settings.homeAddress && typeof fetchCommuteTime === 'function') {
+      fetchCommuteTime({ force: true });
+    }
+  }
   saveSettings(settings);
   applyTheme(theme);
 
   if (typeof renderHermesChat === 'function') renderHermesChat();
+  if (typeof renderCommuteCard === 'function') renderCommuteCard();
 
   const record = getTodayRecord();
   if (record?.checkIn && !record.checkOut) {
@@ -1550,6 +1577,7 @@ function init() {
   if (typeof consumeLunchDeepLink === 'function') consumeLunchDeepLink();
   if (typeof consumeChatDeepLink === 'function') consumeChatDeepLink();
   if (typeof initHermesChat === 'function') initHermesChat();
+  if (typeof initCommuteTime === 'function') initCommuteTime();
   syncAppVersion().then(() => registerSW());
 
   window.addEventListener('beforeinstallprompt', (e) => {
@@ -1604,7 +1632,7 @@ function init() {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
 
-  ['notifyBefore', 'userName', 'birthDate', 'sheetUrl', 'themeMode', 'fortuneNotify', 'lunchRouletteNotify', 'hermesBaseUrl', 'hermesApiKey', 'hermesModel'].forEach((id) => {
+  ['notifyBefore', 'userName', 'birthDate', 'sheetUrl', 'themeMode', 'fortuneNotify', 'lunchRouletteNotify', 'hermesBaseUrl', 'hermesApiKey', 'hermesModel', 'homeAddress', 'commuteNotify'].forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
     el.addEventListener('change', handleSettingsChange);
