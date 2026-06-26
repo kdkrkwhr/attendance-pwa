@@ -1332,6 +1332,70 @@ body {
   color: var(--fortune-accent, #8b5cf6);
 }
 
+.fortune-score-block {
+  margin: 0 auto 1rem;
+  padding: 0.875rem 1rem;
+  max-width: 16rem;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #faf5ff, #fdf2f8);
+  border: 1px solid #e9d5ff;
+}
+
+.fortune-score-label {
+  margin: 0 0 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #7c3aed;
+  letter-spacing: 0.04em;
+}
+
+.fortune-score-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.125rem;
+  margin-bottom: 0.5rem;
+}
+
+.fortune-score-num {
+  font-size: 2.25rem;
+  font-weight: 900;
+  line-height: 1;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.fortune-score-max {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.fortune-score-track {
+  height: 8px;
+  border-radius: 999px;
+  background: #ede9fe;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.fortune-score-fill {
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #a78bfa, #f472b6);
+  transition: width 0.6s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+.fortune-score-msg {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #6d28d9;
+}
+
 .fortune-text {
   font-size: 1rem;
   font-weight: 600;
@@ -1429,6 +1493,19 @@ body {
       color: #ddd6fe;
     }
 
+    .fortune-score-block {
+      background: linear-gradient(135deg, #2e1065, #500724);
+      border-color: #6b21a8;
+    }
+
+    .fortune-score-track {
+      background: #4c1d95;
+    }
+
+    .fortune-score-msg {
+      color: #ddd6fe;
+    }
+
     .fortune-chip-lucky {
       background: #064e3b;
       color: #6ee7b7;
@@ -1464,6 +1541,19 @@ body {
 
   .fortune-card-hint {
     background: #4c1d95;
+    color: #ddd6fe;
+  }
+
+  .fortune-score-block {
+    background: linear-gradient(135deg, #2e1065, #500724);
+    border-color: #6b21a8;
+  }
+
+  .fortune-score-track {
+    background: #4c1d95;
+  }
+
+  .fortune-score-msg {
     color: #ddd6fe;
   }
 

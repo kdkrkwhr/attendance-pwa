@@ -11,6 +11,14 @@ const FORTUNE_GRADES = {
   chill: { label: '평온', emoji: '☁️', color: '#60a5fa' },
 };
 
+/** 등급별 행운 점수 구간 (전체 평균 ~90점대) */
+const GRADE_SCORE_RANGE = {
+  great: { min: 93, max: 100 },
+  good: { min: 87, max: 95 },
+  normal: { min: 83, max: 90 },
+  chill: { min: 80, max: 87 },
+};
+
 const DAILY_QUOTES = [
   { text: '완벽한 하루보다, 끝낸 하루가 더 기분 좋다.', tag: '마무리' },
   { text: '일은 쌓이는 게 아니라, 하나씩 줄어드는 거예요.', tag: '집중' },
@@ -133,12 +141,14 @@ function loadTodayFortune() {
 function saveTodayFortune(fortuneIndex) {
   const fortune = FORTUNES[fortuneIndex];
   const quote = getTodayQuote();
+  const luckScore = pickLuckScore(fortune.grade, fortuneIndex);
   const record = {
     dayKey: todayKey(),
     index: fortuneIndex,
     drawnAt: new Date().toISOString(),
     quoteText: quote.text,
     quoteTag: quote.tag,
+    luckScore,
     ...fortune,
   };
   localStorage.setItem(FORTUNE_STORAGE_KEY, JSON.stringify(record));
@@ -149,6 +159,27 @@ function pickFortuneIndex() {
   const name = getFortuneUserName();
   const seed = hashFortuneSeed(`${todayKey()}:${name || '사원'}`);
   return seed % FORTUNES.length;
+}
+
+function pickLuckScore(grade, fortuneIndex) {
+  const name = getFortuneUserName();
+  const seed = hashFortuneSeed(`${todayKey()}:${name || '사원'}:score:${fortuneIndex}`);
+  const range = GRADE_SCORE_RANGE[grade] || GRADE_SCORE_RANGE.normal;
+  const span = range.max - range.min + 1;
+  return range.min + (seed % span);
+}
+
+function getLuckScore(record) {
+  if (typeof record.luckScore === 'number') return record.luckScore;
+  return pickLuckScore(record.grade, record.index ?? 0);
+}
+
+function getLuckScoreMessage(score) {
+  if (score >= 97) return '오늘은 최고의 날! ✨';
+  if (score >= 92) return '운이 아주 좋은 날이에요';
+  if (score >= 87) return '기분 좋은 하루 예감이에요';
+  if (score >= 83) return '무난히 좋은 하루가 될 거예요';
+  return '차분히 가도 충분한 하루예요';
 }
 
 function drawTodayFortune() {
@@ -216,8 +247,18 @@ function renderFortune() {
   if (luckyEl) luckyEl.textContent = getFortuneTip(record, 'lucky');
   if (cautionEl) cautionEl.textContent = getFortuneTip(record, 'caution');
   if (stampEl) stampEl.textContent = '오늘 확인 완료';
+
+  const score = getLuckScore(record);
+  const scoreEl = document.getElementById('fortuneScore');
+  const scoreFillEl = document.getElementById('fortuneScoreFill');
+  const scoreMsgEl = document.getElementById('fortuneScoreMsg');
+  if (scoreEl) scoreEl.textContent = String(score);
+  if (scoreFillEl) scoreFillEl.style.width = `${score}%`;
+  if (scoreMsgEl) scoreMsgEl.textContent = getLuckScoreMessage(score);
+
   if (resultEl) {
     resultEl.style.setProperty('--fortune-accent', meta.color);
+    resultEl.style.setProperty('--fortune-score', String(score));
   }
 }
 
