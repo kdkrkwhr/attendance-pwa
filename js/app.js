@@ -16,6 +16,7 @@ const DEFAULT_SETTINGS = {
   sheetUrl: '',
   theme: 'system',
   fortuneNotify: true,
+  lunchRouletteNotify: true,
   birthDate: '',
 };
 
