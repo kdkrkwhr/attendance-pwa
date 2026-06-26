@@ -18,6 +18,139 @@ let deferredInstallPrompt = null;
 let checkInInputFocused = false;
 let checkInInputTouched = false;
 let checkInTimeDirty = false;
+let onCompanyNetwork = null;
+let networkCheckAt = 0;
+const NETWORK_CACHE_MS = 60_000;
+
+// ── 회사 네트워크 ──────────────────────────────────────────
+
+function getNetworkConfig() {
+  return window.APP_CONFIG?.networkGuard || { enabled: false, allowedPublicIps: [] };
+}
+
+function isNetworkGuardActive() {
+  const cfg = getNetworkConfig();
+  const ips = normalizeAllowedIps(cfg.allowedPublicIps);
+  return cfg.enabled && ips.length > 0;
+}
+
+function normalizeAllowedIps(value) {
+  if (Array.isArray(value)) {
+    return value.map((ip) => String(ip).trim()).filter(Boolean);
+  }
+  if (typeof value === 'string') {
+    return value.split(',').map((ip) => ip.trim()).filter(Boolean);
+  }
+  return [];
+}
+
+async function fetchCurrentPublicIp() {
+  const sources = [
+    async () => {
+      const res = await fetch('https://api.ipify.org?format=json', { cache: 'no-store' });
+      const data = await res.json();
+      return data.ip;
+    },
+    async () => {
+      const res = await fetch('https://www.cloudflare.com/cdn-cgi/trace', { cache: 'no-store' });
+      const text = await res.text();
+      const line = text.split('\n').find((row) => row.startsWith('ip='));
+      return line?.split('=')[1]?.trim();
+    },
+  ];
+
+  let lastError;
+  for (const source of sources) {
+    try {
+      const ip = await source();
+      if (ip) return ip;
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw lastError || new Error('IP 확인 실패');
+}
+
+async function checkCompanyNetwork(force = false) {
+  if (!isNetworkGuardActive()) {
+    onCompanyNetwork = true;
+    return true;
+  }
+
+  const now = Date.now();
+  if (!force && onCompanyNetwork !== null && now - networkCheckAt < NETWORK_CACHE_MS) {
+    return onCompanyNetwork;
+  }
+
+  const allowed = normalizeAllowedIps(getNetworkConfig().allowedPublicIps);
+  try {
+    const currentIp = await fetchCurrentPublicIp();
+    onCompanyNetwork = allowed.includes(currentIp);
+    networkCheckAt = now;
+    window.__lastPublicIp = currentIp;
+    return onCompanyNetwork;
+  } catch {
+    onCompanyNetwork = false;
+    networkCheckAt = now;
+    return false;
+  }
+}
+
+function updateNetworkStatusUI() {
+  const el = document.getElementById('networkStatus');
+  if (!el) return;
+
+  if (!isNetworkGuardActive()) {
+    el.textContent = '회사 Wi-Fi 제한: 미설정 (config.js)';
+    el.className = 'network-banner warn';
+    return;
+  }
+
+  if (onCompanyNetwork === null) {
+    el.textContent = '네트워크 확인 중…';
+    el.className = 'network-banner';
+    return;
+  }
+
+  if (onCompanyNetwork) {
+    el.textContent = `회사 네트워크 연결됨 (${window.__lastPublicIp || '확인됨'})`;
+    el.className = 'network-banner ok';
+    return;
+  }
+
+  el.textContent = '회사 Wi-Fi에서만 출퇴근 가능';
+  el.className = 'network-banner blocked';
+}
+
+function setAttendanceButtonsEnabled(enabled) {
+  ['btnCheckIn', 'btnSaveCheckIn', 'btnCheckOut'].forEach((id) => {
+    const btn = document.getElementById(id);
+    if (btn && !btn.classList.contains('hidden')) {
+      btn.disabled = !enabled;
+    }
+  });
+}
+
+async function requireCompanyNetwork() {
+  const ok = await checkCompanyNetwork(true);
+  updateNetworkStatusUI();
+  setAttendanceButtonsEnabled(ok || !isNetworkGuardActive());
+
+  if (!isNetworkGuardActive()) return true;
+
+  if (!ok) {
+    alert('회사 Wi-Fi에 연결된 후 출퇴근할 수 있습니다.');
+    return false;
+  }
+  return true;
+}
+
+async function refreshNetworkGuard() {
+  await checkCompanyNetwork(true);
+  updateNetworkStatusUI();
+  const canAttend = onCompanyNetwork || !isNetworkGuardActive();
+  setAttendanceButtonsEnabled(canAttend);
+}
 
 // ── PWA 설치 ──────────────────────────────────────────
 
@@ -566,11 +699,17 @@ function render() {
   renderSettings();
   checkAndNotify();
   loadTeamWeek();
+  updateNetworkStatusUI();
+  if (isNetworkGuardActive() && onCompanyNetwork === false) {
+    setAttendanceButtonsEnabled(false);
+  }
 }
 
 // ── 액션 ──────────────────────────────────────────
 
-function handleCheckIn() {
+async function handleCheckIn() {
+  if (!(await requireCompanyNetwork())) return;
+
   const existing = getTodayRecord();
   if (existing?.checkIn) return;
 
@@ -600,7 +739,9 @@ function handleCheckIn() {
   }
 }
 
-function applyCheckInTimeChange() {
+async function applyCheckInTimeChange() {
+  if (!(await requireCompanyNetwork())) return false;
+
   const record = getTodayRecord();
   if (!record?.checkIn) return false;
 
@@ -634,12 +775,6 @@ function applyCheckInTimeChange() {
   return true;
 }
 
-function handleCheckInTimeChange() {
-  const record = getTodayRecord();
-  if (!record?.checkIn) return;
-  applyCheckInTimeChange();
-}
-
 function markCheckInTimeDirty() {
   const record = getTodayRecord();
   if (!record?.checkIn) return;
@@ -669,7 +804,9 @@ function handleCheckInTimePreview() {
   }
 }
 
-function handleCheckOut() {
+async function handleCheckOut() {
+  if (!(await requireCompanyNetwork())) return;
+
   const record = getTodayRecord();
   if (!record?.checkIn || record.checkOut) return;
 
@@ -734,56 +871,7 @@ function handleExport() {
   URL.revokeObjectURL(a.href);
 }
 
-function handleBackupWeek() {
-  const name = getUserName();
-  const payload = {
-    version: 1,
-    name,
-    exportedAt: new Date().toISOString(),
-    weekStart: getWeekStartKey(),
-    records: getWeekRecords(),
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `출퇴근_이번주_${name}_${getWeekStartKey()}.json`;
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
-
-function handleRestoreFile(e) {
-  const file = e.target.files?.[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      const data = JSON.parse(reader.result);
-      if (!data.records || typeof data.records !== 'object') {
-        throw new Error('형식이 올바르지 않습니다');
-      }
-
-      const records = loadRecords();
-      Object.assign(records, data.records);
-      saveRecords(records);
-
-      if (data.name) {
-        const settings = loadSettings();
-        settings.userName = data.name;
-        saveSettings(settings);
-      }
-
-      alert(`복원 완료: ${Object.keys(data.records).length}일 기록`);
-      render();
-    } catch (err) {
-      alert(`복원 실패: ${err.message}`);
-    }
-    e.target.value = '';
-  };
-  reader.readAsText(file);
-}
-
-function handleSettingsChange() {
+function handleExport() {
   const settings = {
     ...loadSettings(),
     notifyBefore: document.getElementById('notifyBefore').value,
@@ -832,8 +920,8 @@ function init() {
 
   document.getElementById('btnInstall')?.addEventListener('click', handleInstall);
   document.getElementById('btnCheckIn').addEventListener('click', handleCheckIn);
-  document.getElementById('btnSaveCheckIn')?.addEventListener('click', () => {
-    if (applyCheckInTimeChange()) {
+  document.getElementById('btnSaveCheckIn')?.addEventListener('click', async () => {
+    if (await applyCheckInTimeChange()) {
       setSyncStatus('출근 시각이 저장되었습니다.', 'ok');
     }
   });
@@ -844,22 +932,17 @@ function init() {
     checkInInput.addEventListener('focus', () => { checkInInputFocused = true; });
     checkInInput.addEventListener('blur', () => { checkInInputFocused = false; });
     checkInInput.addEventListener('input', handleCheckInTimePreview);
-    checkInInput.addEventListener('change', () => {
+    checkInInput.addEventListener('change', async () => {
       handleCheckInTimePreview();
       const record = getTodayRecord();
       if (record?.checkIn && !record.checkOut) {
-        applyCheckInTimeChange();
+        await applyCheckInTimeChange();
       }
     });
   }
 
   document.getElementById('btnResetToday').addEventListener('click', handleResetToday);
   document.getElementById('btnExport').addEventListener('click', handleExport);
-  document.getElementById('btnBackupWeek').addEventListener('click', handleBackupWeek);
-  document.getElementById('btnRestore').addEventListener('click', () => {
-    document.getElementById('restoreFile').click();
-  });
-  document.getElementById('restoreFile').addEventListener('change', handleRestoreFile);
   document.getElementById('btnSyncSheet').addEventListener('click', syncWeekToSheet);
   document.getElementById('btnNotifyPermission').addEventListener('click', requestNotificationPermission);
 
@@ -872,10 +955,14 @@ function init() {
 
   render();
   updateInstallUI();
+  refreshNetworkGuard();
   tickInterval = setInterval(render, 30_000);
 
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') render();
+    if (document.visibilityState === 'visible') {
+      refreshNetworkGuard();
+      render();
+    }
   });
 }
 

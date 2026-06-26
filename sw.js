@@ -1,7 +1,8 @@
-const CACHE_NAME = 'attendance-pwa-v8';
+const CACHE_NAME = 'attendance-pwa-v9';
 const ASSETS = [
   './',
   './index.html',
+  './config.js',
   './css/style.css',
   './js/app.js',
   './manifest.json',

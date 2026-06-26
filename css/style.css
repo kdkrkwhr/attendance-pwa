@@ -53,6 +53,37 @@ body {
   margin-top: 0.25rem;
 }
 
+.network-banner {
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 999px;
+  display: inline-block;
+  background: #f1f5f9;
+  color: var(--text-muted);
+}
+
+.network-banner.ok {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.network-banner.warn {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.network-banner.blocked {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .card {
   background: var(--card);
   border-radius: var(--radius);
@@ -602,5 +633,25 @@ body {
 
   .week-item.today {
     background: #334155;
+  }
+
+  .network-banner {
+    background: #334155;
+    color: var(--text-muted);
+  }
+
+  .network-banner.ok {
+    background: #064e3b;
+    color: #6ee7b7;
+  }
+
+  .network-banner.warn {
+    background: #78350f;
+    color: #fcd34d;
+  }
+
+  .network-banner.blocked {
+    background: #7f1d1d;
+    color: #fca5a5;
   }
 }

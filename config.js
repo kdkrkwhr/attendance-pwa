@@ -1,0 +1,17 @@
+/**
+ * 회사 네트워크 설정 (배포 시 관리자가 수정)
+ *
+ * 1. 회사 Wi-Fi에 연결
+ * 2. 휴대폰 브라우저에서 https://api.ipify.org 접속 → 나온 IP 복사
+ * 3. 아래 allowedPublicIps 에 붙여넣기
+ *
+ * 브라우저는 Wi-Fi 이름(SSID)을 읽을 수 없어서,
+ * 회사 Wi-Fi의 공인 IP로 확인합니다.
+ */
+window.APP_CONFIG = {
+  networkGuard: {
+    enabled: true,
+    /** 회사 Wi-Fi에서 보이는 공인 IP (여러 개면 쉼표로 구분 가능) */
+    allowedPublicIps: [],
+  },
+};

@@ -17,6 +17,7 @@
     <header class="header">
       <h1>출퇴근 체크</h1>
       <p class="subtitle">자율출퇴근 · 8시간 + 점심 1시간</p>
+      <p class="network-banner" id="networkStatus">네트워크 확인 중…</p>
     </header>
 
     <main>
@@ -126,11 +127,6 @@
 
       <!-- 기록 관리 -->
       <section class="card card-compact">
-        <button type="button" class="btn btn-ghost" id="btnBackupWeek">이번 주 백업 (JSON)</button>
-        <button type="button" class="btn btn-ghost" id="btnRestore">
-          백업 불러오기
-          <input type="file" id="restoreFile" accept=".json,application/json" hidden>
-        </button>
         <button type="button" class="btn btn-ghost btn-danger" id="btnResetToday">오늘 기록 초기화</button>
         <button type="button" class="btn btn-ghost" id="btnExport">전체 기록보내기 (CSV)</button>
       </section>
@@ -141,6 +137,7 @@
     </footer>
   </div>
 
+  <script src="config.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
