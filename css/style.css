@@ -63,7 +63,7 @@ body {
   background: var(--card);
   border-top: 1px solid var(--border);
   padding-bottom: env(safe-area-inset-bottom);
-  z-index: 100;
+  z-index: 1000;
   box-shadow: 0 -4px 24px rgba(15, 23, 42, 0.06);
 }
 
@@ -1745,49 +1745,204 @@ body {
   }
 }
 
-/* ── 점심 맛집 지도 ── */
+/* ── 맛집 탭: 전체화면 지도 + 플로팅 패널 ── */
 
-.lunch-hero {
-  text-align: center;
-  padding: 0.5rem 0 1rem;
+.app.is-lunch-tab {
+  padding: 0;
+  padding-bottom: calc(3.75rem + env(safe-area-inset-bottom));
+  max-width: none;
 }
 
-.lunch-hero-emoji {
-  font-size: 2.5rem;
-  line-height: 1;
-  margin-bottom: 0.25rem;
+.app.is-lunch-tab .header {
+  display: none;
 }
 
-.lunch-hero-title {
-  font-size: 1.5rem;
+.app.is-lunch-tab .main-content {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.lunch-tab-panel.active {
+  display: block;
+  position: absolute;
+  inset: 0;
+}
+
+.lunch-map-stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.lunch-map-full {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  background: #e2e8f0;
+}
+
+.lunch-map-stage .leaflet-container {
+  width: 100%;
+  height: 100%;
+  font-family: inherit;
+}
+
+.lunch-map-stage .leaflet-top.leaflet-right {
+  top: calc(5.5rem + env(safe-area-inset-top));
+  right: 0.5rem;
+  z-index: 450;
+}
+
+.lunch-map-stage .leaflet-control-zoom a {
+  color: #334155;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.lunch-float-top {
+  position: absolute;
+  top: max(0.5rem, env(safe-area-inset-top));
+  left: 0.625rem;
+  right: 0.625rem;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  pointer-events: none;
+}
+
+.lunch-float-top > * {
+  pointer-events: auto;
+}
+
+.lunch-float-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.lunch-float-title {
+  font-size: 0.9375rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #10b981, #059669);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  letter-spacing: -0.02em;
+  color: #065f46;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
-.lunch-hero-desc {
-  font-size: 0.8125rem;
+.lunch-btn-office {
+  border: none;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: white;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  padding: 0.45rem 0.7rem;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.45);
+  cursor: pointer;
+}
+
+.lunch-float-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+.lunch-float-desc {
+  flex: 1;
+  margin: 0;
+  font-size: 0.6875rem;
   color: var(--text-muted);
-  margin-top: 0.25rem;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.lunch-map-tab {
-  height: min(42vh, 300px);
+.lunch-float-top .lunch-map-status {
+  margin: 0;
+  padding: 0.4rem 0.625rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.92);
 }
 
-.lunch-list-tab {
-  max-height: none;
+.lunch-btn-retry {
+  align-self: flex-start;
+}
+
+.lunch-float-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 500;
+  max-height: min(52vh, 420px);
+  display: flex;
+  flex-direction: column;
+  padding: 0.35rem 0.75rem 0.5rem;
+  border-radius: 20px 20px 0 0;
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 -8px 32px rgba(15, 23, 42, 0.18);
+  overflow: hidden;
+}
+
+.lunch-sheet-handle {
+  width: 2.5rem;
+  height: 4px;
+  margin: 0.15rem auto 0.5rem;
+  border-radius: 999px;
+  background: #cbd5e1;
+  flex-shrink: 0;
+}
+
+.lunch-float-bottom .lunch-roulette-block {
+  flex-shrink: 0;
+  margin-bottom: 0.625rem;
+  padding-bottom: 0.625rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.lunch-list-section {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.lunch-list-heading {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.lunch-float-bottom .lunch-map-attribution {
+  flex-shrink: 0;
+  margin: 0.35rem 0 0;
+  text-align: center;
 }
 
 /* ── 점심 룰렛 ── */
 
 .lunch-roulette-block {
-  margin-bottom: 0.875rem;
-  padding-bottom: 0.25rem;
-  border-bottom: 1px dashed #a7f3d0;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
 }
 
 .lunch-roulette-header {
@@ -1795,30 +1950,30 @@ body {
   justify-content: space-between;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .lunch-roulette-badge {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   color: #b45309;
 }
 
 .lunch-roulette-hint {
-  font-size: 0.6875rem;
+  font-size: 0.625rem;
   color: var(--text-muted);
   background: #fef3c7;
-  padding: 0.2rem 0.5rem;
+  padding: 0.15rem 0.45rem;
   border-radius: 999px;
 }
 
 .lunch-roulette-wheel {
-  border-radius: 16px;
+  border-radius: 12px;
   background: linear-gradient(135deg, #fef3c7, #fde68a);
   border: 2px dashed #fbbf24;
-  padding: 1.25rem 1rem;
-  margin-bottom: 0.75rem;
-  min-height: 4.5rem;
+  padding: 0.75rem 0.625rem;
+  margin-bottom: 0.5rem;
+  min-height: 3.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1836,23 +1991,23 @@ body {
 
 .lunch-roulette-display {
   margin: 0;
-  font-size: 1.0625rem;
+  font-size: 0.9375rem;
   font-weight: 800;
-  line-height: 1.45;
+  line-height: 1.4;
   color: #92400e;
 }
 
 .btn-lunch-roulette {
   display: block;
   width: 100%;
-  padding: 0.875rem 1rem;
+  padding: 0.625rem 1rem;
   border: none;
   border-radius: 999px;
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 800;
   color: white;
   background: linear-gradient(135deg, #f59e0b, #ea580c);
-  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.35);
   cursor: pointer;
   font-family: inherit;
 }
@@ -1863,33 +2018,33 @@ body {
 }
 
 .lunch-roulette-result {
-  margin-top: 0.875rem;
-  padding: 0.875rem;
-  border-radius: 14px;
+  margin-top: 0.5rem;
+  padding: 0.625rem;
+  border-radius: 12px;
   background: #ecfdf5;
   border: 1px solid #6ee7b7;
   text-align: center;
 }
 
 .lunch-roulette-result-label {
-  margin: 0 0 0.25rem;
-  font-size: 0.75rem;
+  margin: 0 0 0.2rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   color: #047857;
 }
 
 .lunch-roulette-result-name {
-  margin: 0 0 0.35rem;
-  font-size: 1.125rem;
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
   font-weight: 900;
   color: #065f46;
 }
 
 .lunch-roulette-result-meta {
-  margin: 0 0 0.625rem;
-  font-size: 0.8125rem;
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
   color: #047857;
-  line-height: 1.5;
+  line-height: 1.45;
 }
 
 .lunch-list-item-picked {
@@ -1898,79 +2053,34 @@ body {
   box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
 }
 
-.lunch-map-card {
-  border-top: 4px solid #10b981;
-  overflow: hidden;
-}
-
-.lunch-map-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.35rem;
-}
-
-.lunch-map-badge {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: #047857;
-}
-
 .lunch-map-filter {
   font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
+  padding: 0.3rem 0.45rem;
   border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--card);
   color: var(--text);
-  max-width: 7rem;
-}
-
-.lunch-map-desc {
-  font-size: 0.6875rem;
-  color: var(--text-muted);
-  margin: 0 0 0.5rem;
-}
-
-.lunch-map-desc code {
-  font-size: 0.625rem;
-  background: #ecfdf5;
-  padding: 0.1rem 0.3rem;
-  border-radius: 4px;
+  max-width: 6.5rem;
+  flex-shrink: 0;
 }
 
 .lunch-map-status {
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
-  margin-bottom: 0.5rem;
 }
 
 .lunch-map-status-error {
   color: #b91c1c;
 }
 
-.lunch-map {
-  width: 100%;
-  height: 240px;
-  border-radius: 14px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  background: #e2e8f0;
-  z-index: 0;
-}
-
-.lunch-map .leaflet-control-zoom a {
-  color: #334155;
-}
-
 .lunch-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
-  max-height: 220px;
+  gap: 0.4rem;
   overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
 }
 
 .lunch-list-item {
@@ -1979,10 +2089,11 @@ body {
   border: 1px solid var(--border);
   background: var(--card);
   border-radius: 12px;
-  padding: 0.625rem 0.75rem;
+  padding: 0.5rem 0.625rem;
   cursor: pointer;
   font-family: inherit;
   transition: border-color 0.15s, background 0.15s;
+  flex-shrink: 0;
 }
 
 .lunch-list-item:hover,
@@ -1994,30 +2105,53 @@ body {
 
 .lunch-list-name {
   display: block;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   color: var(--text);
 }
 
 .lunch-list-meta {
   display: block;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   color: var(--text-muted);
-  margin-top: 0.125rem;
+  margin-top: 0.1rem;
 }
 
 .lunch-list-memo {
   display: block;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   color: #047857;
-  margin-top: 0.25rem;
+  margin-top: 0.15rem;
 }
 
 .lunch-map-attribution {
-  margin: 0.5rem 0 0;
-  font-size: 0.625rem;
+  font-size: 0.5625rem;
   color: var(--text-muted);
-  text-align: right;
+}
+
+[data-theme="dark"] .lunch-float-title,
+[data-theme="dark"] .lunch-float-bar,
+[data-theme="dark"] .lunch-float-bottom,
+[data-theme="dark"] .lunch-float-top .lunch-map-status {
+  background: rgba(15, 23, 42, 0.92);
+  color: var(--text);
+}
+
+[data-theme="dark"] .lunch-float-title {
+  color: #6ee7b7;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .lunch-float-title,
+  :root:not([data-theme="light"]) .lunch-float-bar,
+  :root:not([data-theme="light"]) .lunch-float-bottom,
+  :root:not([data-theme="light"]) .lunch-float-top .lunch-map-status {
+    background: rgba(15, 23, 42, 0.92);
+  }
+
+  :root:not([data-theme="light"]) .lunch-float-title {
+    color: #6ee7b7;
+  }
 }
 
 .lunch-map-pin {

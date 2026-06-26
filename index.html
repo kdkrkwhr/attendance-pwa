@@ -211,46 +211,53 @@
         </section>
       </div>
 
-      <!-- 맛집 -->
-      <div class="tab-panel" id="tabLunch" data-tab-panel="lunch">
-        <section class="lunch-hero">
-          <p class="lunch-hero-emoji">🍽️</p>
-          <h2 class="lunch-hero-title">맛집</h2>
-          <p class="lunch-hero-desc">DMC 상암 점심 지도</p>
-        </section>
+      <!-- 맛집 (전체화면 지도 + 플로팅 패널) -->
+      <div class="tab-panel lunch-tab-panel" id="tabLunch" data-tab-panel="lunch">
+        <div class="lunch-map-stage" id="lunchMapStage">
+          <div id="lunchMap" class="lunch-map-full" role="application" aria-label="맛집 지도"></div>
 
-        <section class="card lunch-map-card" id="lunchMapCard">
-          <div class="lunch-map-header">
-            <span class="lunch-map-badge">🗺️ DMC 점심</span>
-            <select id="lunchCategoryFilter" class="lunch-map-filter" aria-label="카테고리 필터">
-              <option value="all">전체</option>
-            </select>
-          </div>
-          <p class="lunch-map-desc" id="lunchMapDesc">DMC 상암 맛집 지도</p>
-
-          <div class="lunch-roulette-block" id="lunchRouletteCard">
-            <div class="lunch-roulette-header">
-              <span class="lunch-roulette-badge">🎰 점심 메뉴 룰렛</span>
-              <span class="lunch-roulette-hint">카테고리 필터 반영</span>
+          <div class="lunch-float-top">
+            <div class="lunch-float-title-row">
+              <span class="lunch-float-title">🍽️ DMC 맛집</span>
+              <button type="button" class="lunch-btn-office" id="btnLunchFocusOffice" title="DMC첨단타워">🏢 회사</button>
             </div>
-            <div class="lunch-roulette-wheel" id="lunchRouletteWheel">
-              <p class="lunch-roulette-display" id="lunchRouletteDisplay">버튼을 눌러 오늘 점심을 정해요</p>
+            <div class="lunch-float-bar">
+              <p class="lunch-float-desc" id="lunchMapDesc">불러오는 중…</p>
+              <select id="lunchCategoryFilter" class="lunch-map-filter" aria-label="카테고리 필터">
+                <option value="all">전체</option>
+              </select>
             </div>
-            <button type="button" class="btn btn-lunch-roulette" id="btnLunchRoulette">룰렛 돌리기 🎲</button>
-            <div id="lunchRouletteResult" class="lunch-roulette-result hidden">
-              <p class="lunch-roulette-result-label">오늘의 점심 🎉</p>
-              <p class="lunch-roulette-result-name" id="lunchRouletteResultName"></p>
-              <p class="lunch-roulette-result-meta" id="lunchRouletteResultMeta"></p>
-              <button type="button" class="btn btn-ghost btn-sm" id="btnLunchRouletteMap">지도에서 보기</button>
-            </div>
+            <p class="lunch-map-status hidden" id="lunchMapStatus"></p>
+            <button type="button" class="btn btn-ghost btn-sm lunch-btn-retry hidden" id="btnLunchMapRetry">다시 불러오기</button>
           </div>
 
-          <p class="lunch-map-status hidden" id="lunchMapStatus"></p>
-          <button type="button" class="btn btn-ghost btn-sm hidden" id="btnLunchMapRetry">다시 불러오기</button>
-          <div id="lunchMap" class="lunch-map lunch-map-tab" role="application" aria-label="맛집 지도"></div>
-          <div class="lunch-list lunch-list-tab" id="lunchList"></div>
-          <p class="lunch-map-attribution">© OpenStreetMap contributors</p>
-        </section>
+          <div class="lunch-float-bottom" id="lunchFloatBottom">
+            <div class="lunch-sheet-handle" aria-hidden="true"></div>
+
+            <div class="lunch-roulette-block" id="lunchRouletteCard">
+              <div class="lunch-roulette-header">
+                <span class="lunch-roulette-badge">🎰 점심 룰렛</span>
+                <span class="lunch-roulette-hint">필터 반영</span>
+              </div>
+              <div class="lunch-roulette-wheel" id="lunchRouletteWheel">
+                <p class="lunch-roulette-display" id="lunchRouletteDisplay">버튼을 눌러 오늘 점심을 정해요</p>
+              </div>
+              <button type="button" class="btn btn-lunch-roulette" id="btnLunchRoulette">룰렛 돌리기 🎲</button>
+              <div id="lunchRouletteResult" class="lunch-roulette-result hidden">
+                <p class="lunch-roulette-result-label">오늘의 점심 🎉</p>
+                <p class="lunch-roulette-result-name" id="lunchRouletteResultName"></p>
+                <p class="lunch-roulette-result-meta" id="lunchRouletteResultMeta"></p>
+                <button type="button" class="btn btn-ghost btn-sm" id="btnLunchRouletteMap">지도에서 보기</button>
+              </div>
+            </div>
+
+            <div class="lunch-list-section">
+              <h3 class="lunch-list-heading">주변 맛집</h3>
+              <div class="lunch-list lunch-list-tab" id="lunchList"></div>
+            </div>
+            <p class="lunch-map-attribution">© OpenStreetMap</p>
+          </div>
+        </div>
       </div>
 
       <!-- 설정 -->

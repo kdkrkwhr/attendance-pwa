@@ -372,6 +372,7 @@ function renderLunchMapMarkers(data) {
         ${data.meta?.anchor?.includes('(') ? `<p class="lunch-map-popup-address">${data.meta.anchor.match(/\(([^)]+)\)/)?.[1] || ''}</p>` : ''}
       </div>
     `);
+    officeMarker.isOffice = true;
     lunchMapMarkers.push(officeMarker);
   }
 
@@ -417,7 +418,7 @@ async function initLunchMap(force = false) {
   }
 
   if (lunchMapReady && !force) {
-    lunchMapInstance?.invalidateSize();
+    requestAnimationFrame(() => lunchMapInstance?.invalidateSize());
     return;
   }
   if (lunchMapLoading) return;
@@ -481,12 +482,21 @@ function handleLunchCategoryFilter() {
   renderLunchList(lunchMapData);
 }
 
+function focusLunchOffice() {
+  if (!lunchMapInstance || !lunchMapData?.office) return;
+  const { lat, lng, name } = lunchMapData.office;
+  lunchMapInstance.setView([lat, lng], 17, { animate: true });
+  const officeMarker = lunchMapMarkers.find((m) => m.isOffice);
+  officeMarker?.openPopup();
+}
+
 function bindLunchMapControls() {
   document.getElementById('lunchCategoryFilter')?.addEventListener('change', handleLunchCategoryFilter);
   document.getElementById('btnLunchRoulette')?.addEventListener('click', spinLunchRoulette);
   document.getElementById('btnLunchRouletteMap')?.addEventListener('click', () => {
     if (lunchRouletteWinnerId) focusLunchPlace(lunchRouletteWinnerId);
   });
+  document.getElementById('btnLunchFocusOffice')?.addEventListener('click', focusLunchOffice);
   document.getElementById('btnLunchMapRetry')?.addEventListener('click', () => {
     lunchMapReady = false;
     initLunchMap(true);

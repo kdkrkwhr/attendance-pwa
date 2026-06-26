@@ -425,12 +425,18 @@ function switchTab(tabName) {
     btn.classList.toggle('active', active);
     btn.setAttribute('aria-current', active ? 'page' : 'false');
   });
+  document.querySelector('.app')?.classList.toggle('is-lunch-tab', tabName === 'lunch');
   if (tabName === 'fun') {
     if (typeof renderFortune === 'function') renderFortune();
     if (typeof renderSaju === 'function') renderSaju();
   }
   if (tabName === 'lunch' && typeof initLunchMap === 'function') {
     initLunchMap();
+    setTimeout(() => {
+      if (typeof lunchMapInstance !== 'undefined' && lunchMapInstance) {
+        lunchMapInstance.invalidateSize();
+      }
+    }, 200);
   }
 }
 
