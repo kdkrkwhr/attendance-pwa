@@ -11,6 +11,7 @@ const DEFAULT_SETTINGS = {
   notifyBefore: '30,10,0',
   userName: '',
   sheetUrl: '',
+  theme: 'system',
 };
 
 let tickInterval = null;
@@ -150,6 +151,90 @@ async function refreshNetworkGuard() {
   updateNetworkStatusUI();
   const canAttend = onCompanyNetwork || !isNetworkGuardActive();
   setAttendanceButtonsEnabled(canAttend);
+}
+
+function calcNetWorkSoFar(checkInISO, endISO = new Date().toISOString()) {
+  const elapsed = calcWorkedMinutes(checkInISO, endISO);
+  return Math.min(WORK_HOURS * 60, Math.max(0, elapsed - LUNCH_MINUTES));
+}
+
+function applyTheme(theme) {
+  const root = document.documentElement;
+  if (theme === 'light' || theme === 'dark') {
+    root.setAttribute('data-theme', theme);
+  } else {
+    root.removeAttribute('data-theme');
+  }
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) {
+    let isDark = theme === 'dark';
+    if (theme === 'system' || !theme) {
+      isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    meta.content = isDark ? '#0f172a' : '#1a56db';
+  }
+}
+
+function switchTab(tabName) {
+  document.querySelectorAll('.tab-panel').forEach((panel) => {
+    panel.classList.toggle('active', panel.dataset.tabPanel === tabName);
+  });
+  document.querySelectorAll('.tab-btn').forEach((btn) => {
+    const active = btn.dataset.tab === tabName;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-current', active ? 'page' : 'false');
+  });
+}
+
+function renderProgress(record, previewCheckInISO = null) {
+  const fill = document.getElementById('progressFill');
+  const labelEl = document.getElementById('progressLabel');
+  const valueEl = document.getElementById('progressValue');
+  const metaEl = document.getElementById('progressMeta');
+  if (!fill || !labelEl || !valueEl || !metaEl) return;
+
+  const checkInISO = record?.checkIn || previewCheckInISO;
+  if (!checkInISO) {
+    labelEl.textContent = '남은 시간';
+    valueEl.textContent = '—';
+    fill.style.width = '0%';
+    fill.className = 'progress-fill';
+    metaEl.textContent = '출근 등록 후 표시됩니다';
+    return;
+  }
+
+  const now = new Date();
+  const checkIn = parseISO(checkInISO);
+  const leaveTime = calcLeaveTime(checkInISO);
+  const totalMs = Math.max(1, leaveTime - checkIn);
+
+  if (record?.checkOut) {
+    const net = calcNetWorkMinutes(record.checkIn, record.checkOut);
+    labelEl.textContent = '오늘 근무';
+    valueEl.textContent = `${(net / 60).toFixed(1)}h`;
+    fill.style.width = '100%';
+    fill.className = 'progress-fill done';
+    metaEl.textContent = `순근무 ${formatDuration(net)} · 퇴근 완료`;
+    return;
+  }
+
+  const elapsedMs = Math.max(0, now - checkIn);
+  const remainingMs = Math.max(0, leaveTime - now);
+  const pct = Math.min(100, Math.round((elapsedMs / totalMs) * 100));
+  const netSoFar = calcNetWorkSoFar(checkInISO, now.toISOString());
+
+  if (remainingMs > 0) {
+    labelEl.textContent = '남은 시간';
+    valueEl.textContent = formatDuration(Math.ceil(remainingMs / 60000));
+    fill.className = `progress-fill${remainingMs <= 30 * 60000 ? ' urgent' : ''}`;
+  } else {
+    labelEl.textContent = '퇴근 가능';
+    valueEl.textContent = '지금';
+    fill.className = 'progress-fill ready';
+  }
+
+  fill.style.width = `${pct}%`;
+  metaEl.textContent = `순근무 ${(netSoFar / 60).toFixed(1)}/${WORK_HOURS}h · 경과 ${(elapsedMs / 3600000).toFixed(1)}h`;
 }
 
 // ── PWA 설치 ──────────────────────────────────────────
@@ -550,13 +635,12 @@ function renderToday() {
 
   const badge = document.getElementById('statusBadge');
   const checkInInput = document.getElementById('checkInInput');
-  const checkInHint = document.getElementById('checkInHint');
   const leaveEl = document.getElementById('leaveTime');
-  const countdown = document.getElementById('countdown');
   const btnIn = document.getElementById('btnCheckIn');
   const btnSave = document.getElementById('btnSaveCheckIn');
   const btnOut = document.getElementById('btnCheckOut');
 
+  let previewISO = null;
   if (checkInInput && !checkInInputFocused) {
     if (hasCheckIn) {
       checkInInput.value = toTimeInputValue(parseISO(record.checkIn));
@@ -567,42 +651,31 @@ function renderToday() {
     }
   }
 
+  if (checkInInput?.value) {
+    previewISO = hasCheckIn ? record.checkIn : checkInISOFromTimeInput(checkInInput.value);
+  }
+
   if (!hasCheckIn) {
     badge.textContent = '미출근';
     badge.className = 'badge';
-    leaveEl.textContent = '—';
-    if (checkInHint) checkInHint.textContent = '① 출근 시각 선택 → ② 출근 등록 (이름 없으면 사원)';
-    countdown.textContent = '출근 시각은 등록 후에도 바꿀 수 있어요';
-    countdown.className = 'countdown';
+    leaveEl.textContent = previewISO ? formatTime(calcLeaveTime(previewISO)) : '—';
     btnIn.classList.remove('hidden');
     btnSave?.classList.add('hidden');
     btnOut.classList.add('hidden');
-
-    if (checkInInput?.value) {
-      const preview = calcLeaveTime(checkInISOFromTimeInput(checkInInput.value));
-      leaveEl.textContent = formatTime(preview);
-    }
+    renderProgress(null, previewISO);
     return;
   }
 
-  const checkIn = parseISO(record.checkIn);
   const leaveTime = calcLeaveTime(record.checkIn);
   leaveEl.textContent = formatTime(leaveTime);
-  if (checkInHint) {
-    checkInHint.textContent = record.checkOut
-      ? '퇴근 완료 · 출근 시각을 바꾸려면 아래 저장 버튼'
-      : '출근 시각 바꾼 뒤 「출근 시각 저장」을 눌러주세요';
-  }
 
   if (record.checkOut) {
     badge.textContent = '퇴근 완료';
     badge.className = 'badge done';
-    const worked = calcWorkedMinutes(record.checkIn, record.checkOut);
-    countdown.textContent = `실제 근무: ${formatDuration(calcNetWorkMinutes(record.checkIn, record.checkOut))} (체류 ${formatDuration(worked)})`;
-    countdown.className = 'countdown';
     btnIn.classList.add('hidden');
     btnSave?.classList.toggle('hidden', !checkInTimeDirty);
     btnOut.classList.add('hidden');
+    renderProgress(record);
     return;
   }
 
@@ -611,19 +684,7 @@ function renderToday() {
   btnIn.classList.add('hidden');
   btnSave?.classList.toggle('hidden', !checkInTimeDirty);
   btnOut.classList.remove('hidden');
-
-  const diffMs = leaveTime - now;
-  if (diffMs > 0) {
-    const h = Math.floor(diffMs / 3600000);
-    const m = Math.floor((diffMs % 3600000) / 60000);
-    countdown.textContent = `퇴근까지 ${h > 0 ? `${h}시간 ` : ''}${m}분 · ${formatTime(checkIn)} 출근`;
-    countdown.className = h === 0 && m <= 30 ? 'countdown urgent' : 'countdown';
-  } else {
-    const over = Math.abs(diffMs);
-    const m = Math.floor(over / 60000);
-    countdown.textContent = m < 5 ? '퇴근 가능합니다!' : `퇴근 가능 (${m}분 경과)`;
-    countdown.className = 'countdown ready';
-  }
+  renderProgress(record);
 }
 
 function renderWeek() {
@@ -689,8 +750,11 @@ function renderSettings() {
   document.getElementById('notifyBefore').value = settings.notifyBefore;
   const nameEl = document.getElementById('userName');
   const sheetEl = document.getElementById('sheetUrl');
+  const themeEl = document.getElementById('themeMode');
   if (nameEl) nameEl.value = settings.userName || '';
   if (sheetEl) sheetEl.value = settings.sheetUrl || '';
+  if (themeEl) themeEl.value = settings.theme || 'system';
+  applyTheme(settings.theme || 'system');
 }
 
 function render() {
@@ -795,12 +859,15 @@ function handleCheckInTimePreview() {
   if (!input?.value || !leaveEl) return;
 
   checkInInputTouched = true;
-  const preview = calcLeaveTime(checkInISOFromTimeInput(input.value));
-  leaveEl.textContent = formatTime(preview);
+  const previewISO = checkInISOFromTimeInput(input.value);
+  leaveEl.textContent = formatTime(calcLeaveTime(previewISO));
 
   const record = getTodayRecord();
   if (record?.checkIn) {
     markCheckInTimeDirty();
+    renderProgress(record);
+  } else {
+    renderProgress(null, previewISO);
   }
 }
 
@@ -872,13 +939,16 @@ function handleExport() {
 }
 
 function handleSettingsChange() {
+  const theme = document.getElementById('themeMode')?.value || 'system';
   const settings = {
     ...loadSettings(),
     notifyBefore: document.getElementById('notifyBefore').value,
     userName: (document.getElementById('userName')?.value || '').trim(),
     sheetUrl: (document.getElementById('sheetUrl')?.value || '').trim(),
+    theme,
   };
   saveSettings(settings);
+  applyTheme(theme);
 
   const record = getTodayRecord();
   if (record?.checkIn && !record.checkOut) {
@@ -946,12 +1016,18 @@ function init() {
   document.getElementById('btnSyncSheet').addEventListener('click', syncWeekToSheet);
   document.getElementById('btnNotifyPermission').addEventListener('click', requestNotificationPermission);
 
-  ['notifyBefore', 'userName', 'sheetUrl'].forEach((id) => {
+  document.querySelectorAll('.tab-btn').forEach((btn) => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+
+  ['notifyBefore', 'userName', 'sheetUrl', 'themeMode'].forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
     el.addEventListener('change', handleSettingsChange);
     if (el.tagName === 'INPUT') el.addEventListener('blur', handleSettingsChange);
   });
+
+  applyTheme(loadSettings().theme || 'system');
 
   render();
   updateInstallUI();

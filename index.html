@@ -13,130 +13,155 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="stylesheet" href="css/style.css">
+  <script>
+    (function () {
+      try {
+        var t = JSON.parse(localStorage.getItem('attendance-settings') || '{}').theme;
+        if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body class="notranslate">
   <div class="app" translate="no">
     <header class="header">
       <h1>출퇴근 체크</h1>
-      <p class="subtitle">자율출퇴근 · 8시간 + 점심 1시간</p>
       <p class="network-banner" id="networkStatus">네트워크 확인 중…</p>
     </header>
 
-    <main>
-      <!-- 내 정보 (출근 전에 먼저) -->
-      <section class="card card-profile">
-        <h2 class="card-title">내 정보</h2>
-        <div class="setting-field">
-          <label for="userName">이름</label>
-          <input type="text" id="userName" class="text-input" placeholder="비우면 사원" maxlength="20">
-        </div>
-        <p class="field-hint">이름을 비우면 「사원」으로 출근 등록됩니다.</p>
-      </section>
-
-      <!-- 앱 설치 안내 -->
-      <section class="card card-install" id="installCard">
-        <h2 class="card-title">📲 휴대폰에 설치</h2>
-        <p class="install-desc" id="installDesc">홈 화면에 추가하면 앱처럼 쓸 수 있어요.</p>
-        <button type="button" class="btn btn-primary hidden" id="btnInstall">앱 설치하기</button>
-        <details class="install-guide" id="installGuide">
-          <summary>설치 메뉴가 안 보일 때</summary>
-          <ol class="install-steps">
-            <li><strong>Chrome 앱</strong>으로 열었는지 확인 (카톡·슬랙 안에서는 설치 불가)</li>
-            <li>화면 <strong>맨 위 주소창</strong>을 한번 탭해서 메뉴가 나오게 하기</li>
-            <li><strong>공유</strong> 버튼(↗ 모양) → <strong>홈 화면에 추가</strong></li>
-            <li>없으면 Chrome <strong>⋮</strong> (오른쪽 위 또는 아래) → <strong>홈 화면에 추가</strong></li>
-          </ol>
-          <p class="install-note">※ <code>http://</code> 주소(IP)로 접속하면 「앱 설치」가 안 뜰 수 있어요. <strong>공유 → 홈 화면에 추가</strong>는 됩니다.</p>
-        </details>
-      </section>
-
-      <!-- 오늘 상태 -->
-      <section class="card card-today" id="todayCard">
-        <div class="date-row">
-          <span class="date" id="todayDate"></span>
-          <span class="badge" id="statusBadge">미출근</span>
-        </div>
-
-        <div class="time-panel" id="timeDisplay">
-          <div class="time-row">
-            <span class="time-label">출근</span>
-            <input type="time" id="checkInInput" class="time-input" aria-label="출근 시각">
+    <main class="main-content">
+      <!-- 오늘 -->
+      <div class="tab-panel active" id="tabToday" data-tab-panel="today">
+        <section class="card card-today" id="todayCard">
+          <div class="date-row">
+            <span class="date" id="todayDate"></span>
+            <span class="badge" id="statusBadge">미출근</span>
           </div>
-          <div class="time-row time-row-leave">
-            <span class="time-label">퇴근 가능</span>
-            <span class="leave-value" id="leaveTime">—</span>
+
+          <div class="progress-section" id="progressSection">
+            <div class="progress-header">
+              <span class="progress-label" id="progressLabel">남은 시간</span>
+              <span class="progress-value" id="progressValue">—</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p class="progress-meta" id="progressMeta"></p>
           </div>
-          <p class="edit-hint" id="checkInHint">출근 시각 선택 후 등록</p>
-        </div>
 
-        <div class="countdown" id="countdown"></div>
+          <div class="time-panel" id="timeDisplay">
+            <div class="time-row">
+              <span class="time-label">출근</span>
+              <input type="time" id="checkInInput" class="time-input" aria-label="출근 시각">
+            </div>
+            <div class="time-row time-row-leave">
+              <span class="time-label">퇴근 가능</span>
+              <span class="leave-value" id="leaveTime">—</span>
+            </div>
+          </div>
 
-        <div class="actions" id="mainActions">
-          <button type="button" class="btn btn-primary" id="btnCheckIn">출근 등록</button>
-          <button type="button" class="btn btn-ghost hidden" id="btnSaveCheckIn">출근 시각 저장</button>
-          <button type="button" class="btn btn-secondary hidden" id="btnCheckOut">퇴근 체크</button>
-        </div>
-      </section>
+          <div class="actions" id="mainActions">
+            <button type="button" class="btn btn-primary" id="btnCheckIn">출근 등록</button>
+            <button type="button" class="btn btn-ghost hidden" id="btnSaveCheckIn">출근 시각 저장</button>
+            <button type="button" class="btn btn-secondary hidden" id="btnCheckOut">퇴근 체크</button>
+          </div>
+        </section>
+      </div>
 
-      <!-- 알림 설정 -->
-      <section class="card">
-        <h2 class="card-title">알림 설정</h2>
-        <div class="setting-row">
-          <label for="notifyBefore">퇴근 알림</label>
-          <select id="notifyBefore">
-            <option value="30,10,0">30분 · 10분 · 정각</option>
-            <option value="30,0">30분 · 정각</option>
-            <option value="10,0">10분 · 정각</option>
-            <option value="0">정각만</option>
-          </select>
-        </div>
-        <button type="button" class="btn btn-ghost" id="btnNotifyPermission">알림 권한 허용</button>
-      </section>
-
-      <!-- 주간 모니터링 -->
-      <section class="card">
-        <div class="card-header-row">
-          <h2 class="card-title" id="weekTitle">이번 주</h2>
-          <span class="week-summary" id="weekSummary"></span>
-        </div>
-        <ul class="week-list" id="weekList"></ul>
-      </section>
-
-      <!-- 팀 기록 (선택) -->
-      <section class="card" id="teamCard">
-        <h2 class="card-title">팀 기록 공유 (선택)</h2>
-        <div class="setting-row setting-row-col">
-          <label for="sheetUrl">Google 시트 연동 URL</label>
-          <input type="url" id="sheetUrl" class="text-input" placeholder="Apps Script 웹앱 URL">
-        </div>
-        <p class="field-hint">팀원 출퇴근을 한 시트에 모읍니다.</p>
-        <details class="install-guide">
-          <summary>Google 시트 연동 설정</summary>
-          <ol class="install-steps">
-            <li>Google 시트 새로 만들기 (1행: 이름, 날짜, 출근, 퇴근, 퇴근예정, 순근무)</li>
-            <li>확장 프로그램 → Apps Script → <code>google-sheets/Code.gs</code> 코드 붙여넣기</li>
-            <li>배포 → 새 배포 → 웹 앱 → 액세스: <strong>모든 사용자</strong></li>
-            <li>생성된 URL을 위 칸에 붙여넣기</li>
-          </ol>
-        </details>
-        <button type="button" class="btn btn-ghost" id="btnSyncSheet">팀 시트에 저장</button>
-        <p class="sync-status" id="syncStatus"></p>
-        <div id="teamWeekBox" class="team-week hidden">
-          <h3 class="sub-title">팀 이번 주</h3>
+      <!-- 주간 -->
+      <div class="tab-panel" id="tabWeek" data-tab-panel="week">
+        <section class="card">
+          <div class="card-header-row">
+            <h2 class="card-title" id="weekTitle">이번 주</h2>
+            <span class="week-summary" id="weekSummary"></span>
+          </div>
+          <ul class="week-list" id="weekList"></ul>
+        </section>
+        <div id="teamWeekBox" class="card hidden">
+          <h2 class="card-title">팀 이번 주</h2>
           <ul class="team-list" id="teamWeekList"></ul>
         </div>
-      </section>
+      </div>
 
-      <!-- 기록 관리 -->
-      <section class="card card-compact">
-        <button type="button" class="btn btn-ghost btn-danger" id="btnResetToday">오늘 기록 초기화</button>
-        <button type="button" class="btn btn-ghost" id="btnExport">전체 기록보내기 (CSV)</button>
-      </section>
+      <!-- 설정 -->
+      <div class="tab-panel" id="tabSettings" data-tab-panel="settings">
+        <section class="card card-install" id="installCard">
+          <h2 class="card-title">앱 설치</h2>
+          <p class="install-desc" id="installDesc">홈 화면에 추가하면 앱처럼 쓸 수 있어요.</p>
+          <button type="button" class="btn btn-primary hidden" id="btnInstall">앱 설치하기</button>
+          <details class="install-guide" id="installGuide">
+            <summary>설치 방법</summary>
+            <ol class="install-steps">
+              <li>Chrome에서 <strong>공유 → 홈 화면에 추가</strong></li>
+            </ol>
+          </details>
+        </section>
+
+        <section class="card">
+          <h2 class="card-title">내 정보</h2>
+          <div class="setting-field">
+            <label for="userName">이름</label>
+            <input type="text" id="userName" class="text-input" placeholder="비우면 사원" maxlength="20">
+          </div>
+        </section>
+
+        <section class="card">
+          <h2 class="card-title">화면</h2>
+          <div class="setting-row">
+            <label for="themeMode">테마</label>
+            <select id="themeMode">
+              <option value="system">시스템</option>
+              <option value="light">라이트</option>
+              <option value="dark">다크</option>
+            </select>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2 class="card-title">알림</h2>
+          <div class="setting-row">
+            <label for="notifyBefore">퇴근 알림</label>
+            <select id="notifyBefore">
+              <option value="30,10,0">30분 · 10분 · 정각</option>
+              <option value="30,0">30분 · 정각</option>
+              <option value="10,0">10분 · 정각</option>
+              <option value="0">정각만</option>
+            </select>
+          </div>
+          <button type="button" class="btn btn-ghost" id="btnNotifyPermission">알림 권한 허용</button>
+        </section>
+
+        <section class="card" id="teamCard">
+          <h2 class="card-title">팀 기록 (선택)</h2>
+          <div class="setting-field">
+            <label for="sheetUrl">Google 시트 URL</label>
+            <input type="url" id="sheetUrl" class="text-input" placeholder="Apps Script 웹앱 URL">
+          </div>
+          <button type="button" class="btn btn-ghost" id="btnSyncSheet">팀 시트에 저장</button>
+          <p class="sync-status" id="syncStatus"></p>
+        </section>
+
+        <section class="card card-compact">
+          <button type="button" class="btn btn-ghost" id="btnExport">기록보내기 (CSV)</button>
+          <button type="button" class="btn btn-ghost btn-danger" id="btnResetToday">오늘 기록 초기화</button>
+        </section>
+      </div>
     </main>
 
-    <footer class="footer">
-      <p id="footerNote">이름·기록은 이 기기에 저장 · 팀 시트는 선택</p>
-    </footer>
+    <nav class="tab-bar" aria-label="메인 메뉴">
+      <button type="button" class="tab-btn active" data-tab="today" aria-current="page">
+        <span class="tab-icon">⏱</span>
+        <span class="tab-label">오늘</span>
+      </button>
+      <button type="button" class="tab-btn" data-tab="week">
+        <span class="tab-icon">📅</span>
+        <span class="tab-label">주간</span>
+      </button>
+      <button type="button" class="tab-btn" data-tab="settings">
+        <span class="tab-icon">⚙️</span>
+        <span class="tab-label">설정</span>
+      </button>
+    </nav>
   </div>
 
   <script src="config.js"></script>
