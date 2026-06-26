@@ -145,8 +145,12 @@ function calcNetWorkMinutes(checkInISO, checkOutISO) {
   return Math.max(0, calcWorkedMinutes(checkInISO, checkOutISO) - LUNCH_MINUTES);
 }
 
-function getUserName() {
+function getDisplayName() {
   return (loadSettings().userName || '').trim();
+}
+
+function getUserName() {
+  return getDisplayName() || '사원';
 }
 
 function getWeekStartKey(baseDate = new Date()) {
@@ -434,7 +438,7 @@ function renderToday() {
     badge.textContent = '미출근';
     badge.className = 'badge';
     leaveEl.textContent = '—';
-    if (checkInHint) checkInHint.textContent = '① 이름 입력 → ② 출근 시각 선택 → ③ 출근 등록';
+    if (checkInHint) checkInHint.textContent = '① 출근 시각 선택 → ② 출근 등록 (이름 없으면 사원)';
     countdown.textContent = '출근 시각은 등록 후에도 바꿀 수 있어요';
     countdown.className = 'countdown';
     btnIn.classList.remove('hidden');
@@ -569,12 +573,6 @@ function render() {
 function handleCheckIn() {
   const existing = getTodayRecord();
   if (existing?.checkIn) return;
-
-  if (!getUserName()) {
-    alert('먼저 이름을 입력해주세요.');
-    document.getElementById('userName')?.focus();
-    return;
-  }
 
   const input = document.getElementById('checkInInput');
   if (!input?.value) {
@@ -738,10 +736,6 @@ function handleExport() {
 
 function handleBackupWeek() {
   const name = getUserName();
-  if (!name) {
-    alert('이름을 먼저 입력해주세요.');
-    return;
-  }
   const payload = {
     version: 1,
     name,
