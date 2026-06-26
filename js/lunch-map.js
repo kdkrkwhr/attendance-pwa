@@ -43,7 +43,7 @@ function createEmojiIcon(emoji, className) {
 }
 
 function getOfficeShortName(name) {
-  const n = String(name || 'DMC첨단타워');
+  const n = String(name || 'DMC첨단산업센터');
   const idx = n.indexOf('(');
   return idx > 0 ? n.slice(0, idx).trim() : n;
 }
@@ -122,7 +122,7 @@ function normalizeRestaurantData(raw) {
     sourcePlaces = raw.restaurants;
     if (meta && Number.isFinite(Number(meta.anchor_lat)) && Number.isFinite(Number(meta.anchor_lng))) {
       office = {
-        name: meta.anchor || 'DMC첨단타워',
+        name: meta.anchor || 'DMC첨단산업센터',
         lat: Number(meta.anchor_lat),
         lng: Number(meta.anchor_lng),
       };
