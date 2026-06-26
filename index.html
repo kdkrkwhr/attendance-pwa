@@ -8,12 +8,15 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>출퇴근 체크</title>
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="css/style.css?v=27">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=27">
   <script>
     (function () {
       try {
@@ -344,6 +347,8 @@
         <section class="card card-compact">
           <button type="button" class="btn btn-ghost" id="btnExport">기록보내기 (CSV)</button>
           <button type="button" class="btn btn-ghost btn-danger" id="btnResetToday">오늘 기록 초기화</button>
+          <button type="button" class="btn btn-ghost" id="btnClearCache">캐시 지우고 새로고침</button>
+          <p class="field-hint app-version" id="appVersion"></p>
         </section>
       </div>
     </main>
@@ -372,11 +377,11 @@
     </nav>
   </div>
 
-  <script src="config.js"></script>
-  <script src="vendor/leaflet/leaflet.js"></script>
-  <script src="js/fortune.js"></script>
-  <script src="js/saju.js"></script>
-  <script src="js/lunch-map.js"></script>
-  <script src="js/app.js"></script>
+  <script src="config.js?v=27"></script>
+  <script src="vendor/leaflet/leaflet.js?v=27"></script>
+  <script src="js/fortune.js?v=27"></script>
+  <script src="js/saju.js?v=27"></script>
+  <script src="js/lunch-map.js?v=27"></script>
+  <script src="js/app.js?v=27"></script>
 </body>
 </html>

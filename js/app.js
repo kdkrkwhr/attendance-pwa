@@ -10,6 +10,10 @@ const WORK_HOURS = 8;
 const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
+/** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
+const APP_BUILD = '27';
+const APP_VERSION_KEY = 'attendance-app-version';
+
 const DEFAULT_SETTINGS = {
   notifyBefore: '30,10,0',
   userName: '',
@@ -1233,6 +1237,7 @@ function render() {
   renderToday();
   renderWeek();
   renderSettings();
+  renderAppVersion();
   renderWifiSuggestion();
   if (typeof renderFortune === 'function') renderFortune();
   if (typeof renderSaju === 'function') renderSaju();
@@ -1440,13 +1445,83 @@ function handleSettingsChange() {
 
 // ── Service Worker ──────────────────────────────────────────
 
+async function purgeAppCaches() {
+  if ('caches' in window) {
+    const keys = await caches.keys();
+    await Promise.all(keys.map((k) => caches.delete(k)));
+  }
+  if ('serviceWorker' in navigator) {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map((r) => r.unregister()));
+  }
+}
+
+async function hardRefreshApp() {
+  if (!confirm('앱 캐시를 모두 지우고 최신 버전을 다시 받습니다. 계속할까요?')) return;
+
+  try {
+    await purgeAppCaches();
+  } catch (e) {
+    console.warn('캐시 삭제 실패:', e);
+  }
+
+  localStorage.removeItem(APP_VERSION_KEY);
+  const url = new URL(window.location.href);
+  url.searchParams.set('nocache', String(Date.now()));
+  window.location.replace(url.toString());
+}
+
+let swRefreshing = false;
+
 async function registerSW() {
   if (!('serviceWorker' in navigator)) return;
+
   try {
-    await navigator.serviceWorker.register('./sw.js');
+    const reg = await navigator.serviceWorker.register(`./sw.js?build=${APP_BUILD}`, {
+      updateViaCache: 'none',
+      scope: './',
+    });
+
+    reg.addEventListener('updatefound', () => {
+      const worker = reg.installing;
+      if (!worker) return;
+      worker.addEventListener('statechange', () => {
+        if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+          worker.postMessage({ type: 'SKIP_WAITING' });
+        }
+      });
+    });
+
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (swRefreshing) return;
+      swRefreshing = true;
+      window.location.reload();
+    });
+
+    await reg.update();
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') reg.update();
+    });
   } catch (e) {
     console.warn('SW 등록 실패:', e);
   }
+}
+
+async function syncAppVersion() {
+  const stored = localStorage.getItem(APP_VERSION_KEY);
+  if (stored && stored !== APP_BUILD) {
+    await purgeAppCaches();
+    localStorage.setItem(APP_VERSION_KEY, APP_BUILD);
+    window.location.reload();
+    return;
+  }
+  localStorage.setItem(APP_VERSION_KEY, APP_BUILD);
+}
+
+function renderAppVersion() {
+  const el = document.getElementById('appVersion');
+  if (el) el.textContent = `앱 버전 ${APP_BUILD}`;
 }
 
 // ── 초기화 ──────────────────────────────────────────
@@ -1455,7 +1530,7 @@ function init() {
   consumeWifiDeepLink();
   if (typeof consumeFunDeepLink === 'function') consumeFunDeepLink();
   if (typeof consumeLunchDeepLink === 'function') consumeLunchDeepLink();
-  registerSW();
+  syncAppVersion().then(() => registerSW());
 
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
@@ -1498,6 +1573,7 @@ function init() {
   document.getElementById('btnExport').addEventListener('click', handleExport);
   document.getElementById('btnSyncSheet').addEventListener('click', syncWeekToSheet);
   document.getElementById('btnNotifyPermission').addEventListener('click', requestNotificationPermission);
+  document.getElementById('btnClearCache')?.addEventListener('click', hardRefreshApp);
   document.getElementById('btnWifiApply')?.addEventListener('click', handleWifiApply);
   document.getElementById('btnWifiCheckIn')?.addEventListener('click', handleWifiCheckIn);
   document.getElementById('btnWifiDismiss')?.addEventListener('click', handleWifiDismiss);

@@ -1,5 +1,6 @@
-const CACHE_NAME = 'attendance-pwa-v26';
-const ASSETS = [
+const CACHE_NAME = 'attendance-pwa-v27';
+
+const PRECACHE_ASSETS = [
   './',
   './index.html',
   './config.js',
@@ -19,9 +20,54 @@ const ASSETS = [
   './icon-512.png',
 ];
 
+function shouldNetworkFirst(request) {
+  if (request.method !== 'GET') return false;
+
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return false;
+
+  if (request.mode === 'navigate') return true;
+
+  const path = url.pathname;
+  if (/\.(js|css|html)$/.test(path)) return true;
+  if (path.endsWith('/attendance-pwa') || path.endsWith('/attendance-pwa/')) return true;
+
+  return false;
+}
+
+async function networkFirst(request) {
+  const cache = await caches.open(CACHE_NAME);
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    return new Response('오프라인 상태입니다.', {
+      status: 503,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    });
+  }
+}
+
+async function cacheFirst(request) {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+
+  const response = await fetch(request);
+  if (response.ok) {
+    const cache = await caches.open(CACHE_NAME);
+    cache.put(request, response.clone());
+  }
+  return response;
+}
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS).catch(() => undefined))
   );
   self.skipWaiting();
 });
@@ -36,12 +82,22 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
-  );
+  if (event.request.method !== 'GET') return;
+
+  if (shouldNetworkFirst(event.request)) {
+    event.respondWith(networkFirst(event.request));
+    return;
+  }
+
+  event.respondWith(cacheFirst(event.request));
 });
 
 self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+    return;
+  }
+
   if (event.data?.type === 'NOTIFY') {
     self.registration.showNotification(event.data.title, {
       body: event.data.body,

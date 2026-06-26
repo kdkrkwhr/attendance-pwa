@@ -751,6 +751,11 @@ body {
   line-height: 1.5;
 }
 
+.app-version {
+  margin-top: 0.75rem;
+  text-align: center;
+}
+
 .sync-status {
   font-size: 0.8125rem;
   color: var(--text-muted);
