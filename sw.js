@@ -1,4 +1,4 @@
-const CACHE_NAME = 'attendance-pwa-v19';
+const CACHE_NAME = 'attendance-pwa-v20';
 const ASSETS = [
   './',
   './index.html',
@@ -6,6 +6,7 @@ const ASSETS = [
   './css/style.css',
   './js/app.js',
   './js/fortune.js',
+  './js/saju.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',

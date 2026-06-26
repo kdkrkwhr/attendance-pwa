@@ -16,6 +16,7 @@ const DEFAULT_SETTINGS = {
   sheetUrl: '',
   theme: 'system',
   fortuneNotify: true,
+  birthDate: '',
 };
 
 let tickInterval = null;
@@ -424,8 +425,9 @@ function switchTab(tabName) {
     btn.classList.toggle('active', active);
     btn.setAttribute('aria-current', active ? 'page' : 'false');
   });
-  if (tabName === 'fun' && typeof renderFortune === 'function') {
-    renderFortune();
+  if (tabName === 'fun') {
+    if (typeof renderFortune === 'function') renderFortune();
+    if (typeof renderSaju === 'function') renderSaju();
   }
 }
 
@@ -1210,6 +1212,8 @@ function renderSettings() {
   if (themeEl) themeEl.value = settings.theme || 'system';
   const fortuneNotifyEl = document.getElementById('fortuneNotify');
   if (fortuneNotifyEl) fortuneNotifyEl.checked = settings.fortuneNotify !== false;
+  const birthDateEl = document.getElementById('birthDate');
+  if (birthDateEl) birthDateEl.value = settings.birthDate || '';
   applyTheme(settings.theme || 'system');
 }
 
@@ -1219,6 +1223,7 @@ function render() {
   renderSettings();
   renderWifiSuggestion();
   if (typeof renderFortune === 'function') renderFortune();
+  if (typeof renderSaju === 'function') renderSaju();
   checkAndNotify();
   if (typeof checkFortuneNotify === 'function') checkFortuneNotify();
   loadTeamWeek();
@@ -1403,6 +1408,7 @@ function handleSettingsChange() {
     sheetUrl: (document.getElementById('sheetUrl')?.value || '').trim(),
     theme,
     fortuneNotify: document.getElementById('fortuneNotify')?.checked !== false,
+    birthDate: (document.getElementById('birthDate')?.value || '').trim(),
   };
   saveSettings(settings);
   applyTheme(theme);
@@ -1481,12 +1487,13 @@ function init() {
   document.getElementById('btnWifiCheckIn')?.addEventListener('click', handleWifiCheckIn);
   document.getElementById('btnWifiDismiss')?.addEventListener('click', handleWifiDismiss);
   document.getElementById('btnDrawFortune')?.addEventListener('click', handleDrawFortune);
+  document.getElementById('btnSajuGoSettings')?.addEventListener('click', handleSajuGoSettings);
 
   document.querySelectorAll('.tab-btn').forEach((btn) => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
 
-  ['notifyBefore', 'userName', 'sheetUrl', 'themeMode', 'fortuneNotify'].forEach((id) => {
+  ['notifyBefore', 'userName', 'birthDate', 'sheetUrl', 'themeMode', 'fortuneNotify'].forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
     el.addEventListener('change', handleSettingsChange);

@@ -135,6 +135,34 @@
           <blockquote class="daily-quote" id="dailyQuoteText">오늘의 한마디를 불러오는 중…</blockquote>
         </section>
 
+        <section class="card saju-card" id="sajuCard">
+          <div class="saju-card-header">
+            <span class="saju-card-badge">🌙 오늘의 사주</span>
+            <span class="saju-card-hint">매일 자동</span>
+          </div>
+
+          <div id="sajuEmpty" class="saju-empty">
+            <p class="saju-empty-emoji">🎂</p>
+            <p class="saju-empty-text">생년월일을 입력하면<br>오늘의 일진과 띠 궁합을 보여드려요</p>
+            <button type="button" class="btn btn-saju-settings" id="btnSajuGoSettings">설정에서 생년월일 입력</button>
+          </div>
+
+          <div id="sajuContent" class="saju-content hidden">
+            <div class="saju-meta-row">
+              <span class="saju-meta-item">오늘 일진: <strong id="sajuDayPillar">—</strong></span>
+              <span class="saju-meta-divider">|</span>
+              <span class="saju-meta-item">내 띠: <strong id="sajuZodiac">—</strong></span>
+            </div>
+            <p class="saju-message" id="sajuMessage"></p>
+            <div class="saju-stats">
+              <span class="saju-stat">오행: <strong id="sajuStars">★★★★☆</strong></span>
+              <span class="saju-stat-divider">|</span>
+              <span class="saju-stat">일과 궁합: <strong id="sajuWorkCompat">좋음</strong></span>
+            </div>
+            <p class="saju-disclaimer">※ 재미로 보는 간단 사주예요. 음력 설날 기준 띠·년주를 사용합니다.</p>
+          </div>
+        </section>
+
         <section class="card fortune-card" id="fortuneCard">
           <div class="fortune-card-header">
             <span class="fortune-card-badge">오늘의 운세</span>
@@ -202,6 +230,11 @@
           <div class="setting-field">
             <label for="userName">이름</label>
             <input type="text" id="userName" class="text-input" placeholder="비우면 사원" maxlength="20">
+          </div>
+          <div class="setting-field">
+            <label for="birthDate">생년월일</label>
+            <input type="date" id="birthDate" class="text-input">
+            <p class="field-hint">Fun 탭 「오늘의 사주」에 사용해요. 이 기기에만 저장됩니다.</p>
           </div>
         </section>
 
@@ -284,6 +317,7 @@
 
   <script src="config.js"></script>
   <script src="js/fortune.js"></script>
+  <script src="js/saju.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
