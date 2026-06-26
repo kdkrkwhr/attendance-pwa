@@ -428,7 +428,9 @@ function switchTab(tabName) {
   if (tabName === 'fun') {
     if (typeof renderFortune === 'function') renderFortune();
     if (typeof renderSaju === 'function') renderSaju();
-    if (typeof initLunchMap === 'function') initLunchMap();
+  }
+  if (tabName === 'lunch' && typeof initLunchMap === 'function') {
+    initLunchMap();
   }
 }
 
@@ -1441,6 +1443,7 @@ async function registerSW() {
 function init() {
   consumeWifiDeepLink();
   if (typeof consumeFunDeepLink === 'function') consumeFunDeepLink();
+  if (typeof consumeLunchDeepLink === 'function') consumeLunchDeepLink();
   registerSW();
 
   window.addEventListener('beforeinstallprompt', (e) => {

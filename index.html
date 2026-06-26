@@ -203,9 +203,26 @@
           </div>
         </section>
 
+        <section class="card fun-coming">
+          <h3 class="fun-coming-title">곧 올 기능 👀</h3>
+          <ul class="fun-coming-list">
+            <li>점심 메뉴 룰렛</li>
+            <li>팀 밈 보드</li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- 맛집 -->
+      <div class="tab-panel" id="tabLunch" data-tab-panel="lunch">
+        <section class="lunch-hero">
+          <p class="lunch-hero-emoji">🍽️</p>
+          <h2 class="lunch-hero-title">맛집</h2>
+          <p class="lunch-hero-desc">DMC 상암 점심 지도</p>
+        </section>
+
         <section class="card lunch-map-card" id="lunchMapCard">
           <div class="lunch-map-header">
-            <span class="lunch-map-badge">🗺️ 점심 맛집 지도</span>
+            <span class="lunch-map-badge">🗺️ 주변 맛집</span>
             <select id="lunchCategoryFilter" class="lunch-map-filter" aria-label="카테고리 필터">
               <option value="all">전체</option>
             </select>
@@ -213,17 +230,9 @@
           <p class="lunch-map-desc" id="lunchMapDesc">DMC 상암 맛집 지도</p>
           <p class="lunch-map-status hidden" id="lunchMapStatus"></p>
           <button type="button" class="btn btn-ghost btn-sm hidden" id="btnLunchMapRetry">다시 불러오기</button>
-          <div id="lunchMap" class="lunch-map" role="application" aria-label="맛집 지도"></div>
-          <div class="lunch-list" id="lunchList"></div>
+          <div id="lunchMap" class="lunch-map lunch-map-tab" role="application" aria-label="맛집 지도"></div>
+          <div class="lunch-list lunch-list-tab" id="lunchList"></div>
           <p class="lunch-map-attribution">© OpenStreetMap contributors</p>
-        </section>
-
-        <section class="card fun-coming">
-          <h3 class="fun-coming-title">곧 올 기능 👀</h3>
-          <ul class="fun-coming-list">
-            <li>점심 메뉴 룰렛</li>
-            <li>팀 밈 보드</li>
-          </ul>
         </section>
       </div>
 
@@ -323,6 +332,10 @@
       <button type="button" class="tab-btn" data-tab="fun">
         <span class="tab-icon">🎲</span>
         <span class="tab-label">Fun</span>
+      </button>
+      <button type="button" class="tab-btn" data-tab="lunch">
+        <span class="tab-icon">🍽️</span>
+        <span class="tab-label">맛집</span>
       </button>
       <button type="button" class="tab-btn" data-tab="settings">
         <span class="tab-icon">⚙️</span>
