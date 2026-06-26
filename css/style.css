@@ -152,6 +152,42 @@ body {
   text-align: center;
 }
 
+.wifi-suggest {
+  margin-bottom: 1rem;
+  padding: 0.875rem 1rem;
+  border-radius: 12px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+}
+
+.wifi-suggest-title {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 0.25rem;
+}
+
+.wifi-suggest-text {
+  font-size: 0.875rem;
+  color: var(--text);
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+}
+
+.wifi-suggest-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.btn-sm {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  width: auto;
+  flex: 1;
+  min-width: 5.5rem;
+}
+
 .header {
   text-align: center;
   margin-bottom: 1.5rem;
@@ -802,6 +838,11 @@ body {
       background: #7f1d1d;
       color: #fca5a5;
     }
+
+    .wifi-suggest {
+      background: #1e3a5f;
+      border-color: #1d4ed8;
+    }
   }
 }
 
@@ -895,5 +936,10 @@ body {
   .network-banner.blocked {
     background: #7f1d1d;
     color: #fca5a5;
+  }
+
+  .wifi-suggest {
+    background: #1e3a5f;
+    border-color: #1d4ed8;
   }
 }

@@ -38,6 +38,16 @@
             <span class="badge" id="statusBadge">미출근</span>
           </div>
 
+          <div class="wifi-suggest hidden" id="wifiSuggestBox">
+            <p class="wifi-suggest-title">Wi-Fi 출근 추정</p>
+            <p class="wifi-suggest-text" id="wifiSuggestText"></p>
+            <div class="wifi-suggest-actions">
+              <button type="button" class="btn btn-primary btn-sm" id="btnWifiApply">시각 적용</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnWifiCheckIn">출근 등록</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="btnWifiDismiss">닫기</button>
+            </div>
+          </div>
+
           <div class="progress-section" id="progressSection">
             <div class="progress-header">
               <span class="progress-label" id="progressLabel">남은 시간</span>
@@ -103,6 +113,11 @@
             <label for="userName">이름</label>
             <input type="text" id="userName" class="text-input" placeholder="비우면 사원" maxlength="20">
           </div>
+        </section>
+
+        <section class="card">
+          <h2 class="card-title">Wi-Fi 자동 추정 (Android)</h2>
+          <p class="field-hint">「출퇴근 Wi-Fi」 앱이 회사 Wi-Fi 연결 시각을 PWA로 보내 출근 시각을 제안합니다. 별도 서버 없이 동작합니다.</p>
         </section>
 
         <section class="card">

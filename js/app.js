@@ -1,6 +1,7 @@
 const STORAGE_KEY = 'attendance-records';
 const SETTINGS_KEY = 'attendance-settings';
 const NOTIFIED_KEY = 'attendance-notified';
+const WIFI_SUGGEST_KEY = 'attendance-wifi-suggest';
 
 /** 8시간 근무 + 점심 1시간 (고정) */
 const WORK_HOURS = 8;
@@ -235,6 +236,151 @@ function renderProgress(record, previewCheckInISO = null) {
 
   fill.style.width = `${pct}%`;
   metaEl.textContent = `순근무 ${(netSoFar / 60).toFixed(1)}/${WORK_HOURS}h · 경과 ${(elapsedMs / 3600000).toFixed(1)}h`;
+}
+
+// ── Wi-Fi 출근 추정 (Android 앱 연동) ──────────────────────────────────────────
+
+function loadWifiSuggestion() {
+  try {
+    return JSON.parse(localStorage.getItem(WIFI_SUGGEST_KEY) || 'null');
+  } catch {
+    return null;
+  }
+}
+
+function saveWifiSuggestion(checkInISO, source = 'android') {
+  if (!checkInISO) return;
+  localStorage.setItem(WIFI_SUGGEST_KEY, JSON.stringify({
+    checkIn: checkInISO,
+    source,
+    savedAt: new Date().toISOString(),
+  }));
+}
+
+function clearWifiSuggestion() {
+  localStorage.removeItem(WIFI_SUGGEST_KEY);
+}
+
+function parseWifiCheckInParam(raw) {
+  if (!raw) return null;
+  let value = raw.trim();
+  try {
+    value = decodeURIComponent(value);
+  } catch {
+    /* keep original */
+  }
+
+  let date = null;
+  if (/^\d{4}-\d{2}-\d{2}T/.test(value)) {
+    date = new Date(value);
+  } else if (/^\d{2}:\d{2}$/.test(value)) {
+    const now = new Date();
+    const [h, m] = value.split(':').map(Number);
+    date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0, 0);
+  }
+
+  if (!date || Number.isNaN(date.getTime())) return null;
+  if (formatDateKey(date) !== todayKey()) return null;
+  return date.toISOString();
+}
+
+function consumeWifiDeepLink() {
+  const params = new URLSearchParams(window.location.search);
+  const wifiCheckIn = params.get('wifiCheckIn');
+  if (!wifiCheckIn) return;
+
+  const iso = parseWifiCheckInParam(wifiCheckIn);
+  if (iso) {
+    saveWifiSuggestion(iso, params.get('wifiSource') || 'android');
+  }
+
+  params.delete('wifiCheckIn');
+  params.delete('wifiSource');
+  const qs = params.toString();
+  const cleanUrl = `${window.location.pathname}${qs ? `?${qs}` : ''}${window.location.hash}`;
+  history.replaceState({}, '', cleanUrl);
+}
+
+function applyWifiSuggestionToInput(iso) {
+  const input = document.getElementById('checkInInput');
+  if (!input || !iso) return false;
+  input.value = toTimeInputValue(parseISO(iso));
+  checkInInputTouched = true;
+  handleCheckInTimePreview();
+  return true;
+}
+
+function renderWifiSuggestion() {
+  const box = document.getElementById('wifiSuggestBox');
+  const textEl = document.getElementById('wifiSuggestText');
+  const btnApply = document.getElementById('btnWifiApply');
+  const btnCheckIn = document.getElementById('btnWifiCheckIn');
+  if (!box || !textEl) return;
+
+  const suggest = loadWifiSuggestion();
+  const record = getTodayRecord();
+
+  if (!suggest?.checkIn || formatDateKey(parseISO(suggest.checkIn)) !== todayKey()) {
+    box.classList.add('hidden');
+    return;
+  }
+
+  if (record?.checkOut) {
+    box.classList.add('hidden');
+    return;
+  }
+
+  const timeLabel = formatTime(parseISO(suggest.checkIn));
+  box.classList.remove('hidden');
+
+  if (!record?.checkIn) {
+    textEl.textContent = `${timeLabel}에 회사 Wi-Fi 연결됨 · 출근 시각으로 적용할까요?`;
+    btnApply?.classList.remove('hidden');
+    btnCheckIn?.classList.remove('hidden');
+  } else {
+    const current = formatTime(parseISO(record.checkIn));
+    if (current === timeLabel) {
+      box.classList.add('hidden');
+      return;
+    }
+    textEl.textContent = `Wi-Fi 추정 ${timeLabel} · 현재 출근 ${current}`;
+    btnApply?.classList.remove('hidden');
+    btnCheckIn?.classList.add('hidden');
+  }
+}
+
+async function handleWifiApply() {
+  const suggest = loadWifiSuggestion();
+  if (!suggest?.checkIn) return;
+
+  applyWifiSuggestionToInput(suggest.checkIn);
+  const record = getTodayRecord();
+
+  if (record?.checkIn && !record.checkOut) {
+    checkInTimeDirty = true;
+    if (await applyCheckInTimeChange()) {
+      setSyncStatus('Wi-Fi 추정 출근 시각으로 수정됨', 'ok');
+      clearWifiSuggestion();
+    }
+  } else {
+    setSyncStatus('출근 시각에 Wi-Fi 추정값을 적용했습니다', 'ok');
+  }
+
+  render();
+}
+
+async function handleWifiCheckIn() {
+  const suggest = loadWifiSuggestion();
+  if (!suggest?.checkIn) return;
+
+  applyWifiSuggestionToInput(suggest.checkIn);
+  clearWifiSuggestion();
+  await handleCheckIn();
+}
+
+function handleWifiDismiss() {
+  clearWifiSuggestion();
+  renderWifiSuggestion();
 }
 
 // ── PWA 설치 ──────────────────────────────────────────
@@ -761,6 +907,7 @@ function render() {
   renderToday();
   renderWeek();
   renderSettings();
+  renderWifiSuggestion();
   checkAndNotify();
   loadTeamWeek();
   updateNetworkStatusUI();
@@ -975,6 +1122,7 @@ async function registerSW() {
 // ── 초기화 ──────────────────────────────────────────
 
 function init() {
+  consumeWifiDeepLink();
   registerSW();
 
   window.addEventListener('beforeinstallprompt', (e) => {
@@ -1015,6 +1163,9 @@ function init() {
   document.getElementById('btnExport').addEventListener('click', handleExport);
   document.getElementById('btnSyncSheet').addEventListener('click', syncWeekToSheet);
   document.getElementById('btnNotifyPermission').addEventListener('click', requestNotificationPermission);
+  document.getElementById('btnWifiApply')?.addEventListener('click', handleWifiApply);
+  document.getElementById('btnWifiCheckIn')?.addEventListener('click', handleWifiCheckIn);
+  document.getElementById('btnWifiDismiss')?.addEventListener('click', handleWifiDismiss);
 
   document.querySelectorAll('.tab-btn').forEach((btn) => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
