@@ -6,6 +6,8 @@ const DEFAULT_SETTINGS = {
   workHours: 8,
   lunchMinutes: 60,
   notifyBefore: '30,10,0',
+  userName: '',
+  sheetUrl: '',
 };
 
 let tickInterval = null;
@@ -112,6 +114,147 @@ function getWeekDates(baseDate = new Date()) {
 }
 
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
+
+function getUserName() {
+  return (loadSettings().userName || '').trim();
+}
+
+function getWeekStartKey(baseDate = new Date()) {
+  return formatDateKey(getWeekDates(baseDate)[0]);
+}
+
+function getWeekRecords() {
+  const records = loadRecords();
+  const weekDates = getWeekDates();
+  const week = {};
+  weekDates.forEach((date) => {
+    const key = formatDateKey(date);
+    if (records[key]?.checkIn) week[key] = records[key];
+  });
+  return week;
+}
+
+function recordToSyncRow(dateKey, record, settings) {
+  const leave = calcLeaveTime(record.checkIn, {
+    workHours: record.workHours || settings.workHours,
+    lunchMinutes: record.lunchMinutes ?? settings.lunchMinutes,
+  });
+  let netHours = '';
+  if (record.checkOut) {
+    const worked = calcWorkedMinutes(record.checkIn, record.checkOut);
+    netHours = ((Math.max(0, worked - (record.lunchMinutes ?? settings.lunchMinutes)) / 60)).toFixed(1);
+  }
+  return {
+    name: getUserName(),
+    date: dateKey,
+    checkIn: formatTimeShort(parseISO(record.checkIn)),
+    checkOut: record.checkOut ? formatTimeShort(parseISO(record.checkOut)) : '',
+    leavePlanned: formatTimeShort(leave),
+    netHours,
+  };
+}
+
+async function syncRecordToSheet(dateKey, record) {
+  const settings = loadSettings();
+  const url = (settings.sheetUrl || '').trim();
+  const name = getUserName();
+  if (!url || !name) return { ok: false, skipped: true };
+
+  const res = await fetch(url, {
+    method: 'POST',
+    mode: 'cors',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(recordToSyncRow(dateKey, record, settings)),
+  });
+  return res.json();
+}
+
+async function syncWeekToSheet() {
+  const settings = loadSettings();
+  const url = (settings.sheetUrl || '').trim();
+  const name = getUserName();
+
+  if (!name) {
+    setSyncStatus('이름을 먼저 입력해주세요.', 'err');
+    return;
+  }
+  if (!url) {
+    setSyncStatus('Google 시트 URL을 입력해주세요.', 'err');
+    return;
+  }
+
+  setSyncStatus('저장 중…', '');
+  const week = getWeekRecords();
+  const keys = Object.keys(week);
+  if (keys.length === 0) {
+    setSyncStatus('이번 주 저장할 기록이 없습니다.', 'err');
+    return;
+  }
+
+  try {
+    for (const key of keys) {
+      const result = await syncRecordToSheet(key, week[key]);
+      if (!result.ok) throw new Error(result.error || '저장 실패');
+    }
+    setSyncStatus(`${name}님 이번 주 ${keys.length}건 저장 완료`, 'ok');
+    await loadTeamWeek();
+  } catch (e) {
+    setSyncStatus(`저장 실패: ${e.message}`, 'err');
+  }
+}
+
+function setSyncStatus(msg, type) {
+  const el = document.getElementById('syncStatus');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'sync-status' + (type ? ` ${type}` : '');
+}
+
+async function loadTeamWeek() {
+  const settings = loadSettings();
+  const url = (settings.sheetUrl || '').trim();
+  const box = document.getElementById('teamWeekBox');
+  const list = document.getElementById('teamWeekList');
+  if (!url || !box || !list) return;
+
+  try {
+    const weekStart = getWeekStartKey();
+    const res = await fetch(`${url}?weekStart=${weekStart}`, { mode: 'cors' });
+    const data = await res.json();
+    if (!data.ok || !data.records?.length) {
+      box.classList.add('hidden');
+      return;
+    }
+
+    const byName = {};
+    data.records.forEach((r) => {
+      if (!byName[r.name]) byName[r.name] = { days: 0, hours: 0 };
+      byName[r.name].days += 1;
+      if (r.netHours != null && !Number.isNaN(r.netHours)) {
+        byName[r.name].hours += Number(r.netHours);
+      }
+    });
+
+    list.innerHTML = Object.entries(byName)
+      .sort(([a], [b]) => a.localeCompare(b, 'ko'))
+      .map(([name, info]) => `
+        <li class="team-item">
+          <span class="name">${escapeHtml(name)}</span>
+          <span class="detail">${info.days}일 · ${info.hours.toFixed(1)}h</span>
+        </li>`).join('');
+    box.classList.remove('hidden');
+  } catch {
+    box.classList.add('hidden');
+  }
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
 
 // ── 저장소 ──────────────────────────────────────────
 
@@ -305,6 +448,12 @@ function renderWeek() {
   const weekDates = getWeekDates();
   const list = document.getElementById('weekList');
   const summary = document.getElementById('weekSummary');
+  const weekTitle = document.getElementById('weekTitle');
+  const name = getUserName();
+
+  if (weekTitle) {
+    weekTitle.textContent = name ? `${name}님 이번 주` : '이번 주';
+  }
 
   let totalWorkMinutes = 0;
   let workDays = 0;
@@ -358,6 +507,10 @@ function renderSettings() {
   document.getElementById('workHours').value = String(settings.workHours);
   document.getElementById('lunchMinutes').value = String(settings.lunchMinutes);
   document.getElementById('notifyBefore').value = settings.notifyBefore;
+  const nameEl = document.getElementById('userName');
+  const sheetEl = document.getElementById('sheetUrl');
+  if (nameEl) nameEl.value = settings.userName || '';
+  if (sheetEl) sheetEl.value = settings.sheetUrl || '';
 }
 
 function render() {
@@ -365,6 +518,7 @@ function render() {
   renderWeek();
   renderSettings();
   checkAndNotify();
+  loadTeamWeek();
 }
 
 // ── 액션 ──────────────────────────────────────────
@@ -373,6 +527,12 @@ function handleCheckIn() {
   const existing = getTodayRecord();
   if (existing?.checkIn) return;
 
+  if (!getUserName()) {
+    alert('먼저 이름을 입력해주세요.');
+    document.getElementById('userName')?.focus();
+    return;
+  }
+
   const now = new Date();
   const settings = loadSettings();
 
@@ -380,6 +540,7 @@ function handleCheckIn() {
     checkIn: now.toISOString(),
     workHours: settings.workHours,
     lunchMinutes: settings.lunchMinutes,
+    userName: getUserName(),
   });
 
   if (Notification.permission === 'default') {
@@ -387,6 +548,11 @@ function handleCheckIn() {
   }
 
   render();
+  if (settings.sheetUrl) {
+    syncRecordToSheet(todayKey(), getTodayRecord()).then((r) => {
+      if (r.ok) setSyncStatus('팀 시트에 출근 저장됨', 'ok');
+    }).catch(() => {});
+  }
 }
 
 function handleCheckOut() {
@@ -399,6 +565,13 @@ function handleCheckOut() {
   });
 
   render();
+  const settings = loadSettings();
+  if (settings.sheetUrl) {
+    syncRecordToSheet(todayKey(), getTodayRecord()).then((r) => {
+      if (r.ok) setSyncStatus('팀 시트에 퇴근 저장됨', 'ok');
+      loadTeamWeek();
+    }).catch(() => {});
+  }
 }
 
 function handleResetToday() {
@@ -419,7 +592,8 @@ function handleResetToday() {
 function handleExport() {
   const records = loadRecords();
   const settings = loadSettings();
-  const rows = [['날짜', '출근', '퇴근', '퇴근예정', '순근무(분)', '점심(분)']];
+  const name = getUserName();
+  const rows = [['이름', '날짜', '출근', '퇴근', '퇴근예정', '순근무(분)', '점심(분)']];
 
   Object.keys(records).sort().forEach((key) => {
     const r = records[key];
@@ -432,6 +606,7 @@ function handleExport() {
       ? calcWorkedMinutes(r.checkIn, r.checkOut) - (r.lunchMinutes ?? settings.lunchMinutes)
       : '';
     rows.push([
+      r.userName || name,
       key,
       formatTimeShort(parseISO(r.checkIn)),
       r.checkOut ? formatTimeShort(parseISO(r.checkOut)) : '',
@@ -445,22 +620,83 @@ function handleExport() {
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `출퇴근기록_${todayKey()}.csv`;
+  a.download = `출퇴근기록_${name || 'unknown'}_${todayKey()}.csv`;
   a.click();
   URL.revokeObjectURL(a.href);
 }
 
+function handleBackupWeek() {
+  const name = getUserName();
+  if (!name) {
+    alert('이름을 먼저 입력해주세요.');
+    return;
+  }
+  const payload = {
+    version: 1,
+    name,
+    exportedAt: new Date().toISOString(),
+    weekStart: getWeekStartKey(),
+    records: getWeekRecords(),
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `출퇴근_이번주_${name}_${getWeekStartKey()}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function handleRestoreFile(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!data.records || typeof data.records !== 'object') {
+        throw new Error('형식이 올바르지 않습니다');
+      }
+
+      const records = loadRecords();
+      Object.assign(records, data.records);
+      saveRecords(records);
+
+      if (data.name) {
+        const settings = loadSettings();
+        settings.userName = data.name;
+        saveSettings(settings);
+      }
+
+      alert(`복원 완료: ${Object.keys(data.records).length}일 기록`);
+      render();
+    } catch (err) {
+      alert(`복원 실패: ${err.message}`);
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
 function handleSettingsChange() {
   const settings = {
+    ...loadSettings(),
     workHours: Number(document.getElementById('workHours').value),
     lunchMinutes: Number(document.getElementById('lunchMinutes').value),
     notifyBefore: document.getElementById('notifyBefore').value,
+    userName: (document.getElementById('userName')?.value || '').trim(),
+    sheetUrl: (document.getElementById('sheetUrl')?.value || '').trim(),
   };
   saveSettings(settings);
 
   const record = getTodayRecord();
   if (record?.checkIn && !record.checkOut) {
-    saveTodayRecord({ ...record, workHours: settings.workHours, lunchMinutes: settings.lunchMinutes });
+    saveTodayRecord({
+      ...record,
+      workHours: settings.workHours,
+      lunchMinutes: settings.lunchMinutes,
+      userName: settings.userName,
+    });
   }
 
   render();
@@ -498,10 +734,19 @@ function init() {
   document.getElementById('btnCheckOut').addEventListener('click', handleCheckOut);
   document.getElementById('btnResetToday').addEventListener('click', handleResetToday);
   document.getElementById('btnExport').addEventListener('click', handleExport);
+  document.getElementById('btnBackupWeek').addEventListener('click', handleBackupWeek);
+  document.getElementById('btnRestore').addEventListener('click', () => {
+    document.getElementById('restoreFile').click();
+  });
+  document.getElementById('restoreFile').addEventListener('change', handleRestoreFile);
+  document.getElementById('btnSyncSheet').addEventListener('click', syncWeekToSheet);
   document.getElementById('btnNotifyPermission').addEventListener('click', requestNotificationPermission);
 
-  ['workHours', 'lunchMinutes', 'notifyBefore'].forEach((id) => {
-    document.getElementById(id).addEventListener('change', handleSettingsChange);
+  ['workHours', 'lunchMinutes', 'notifyBefore', 'userName', 'sheetUrl'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('change', handleSettingsChange);
+    if (el.tagName === 'INPUT') el.addEventListener('blur', handleSettingsChange);
   });
 
   render();
