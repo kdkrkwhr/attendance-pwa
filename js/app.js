@@ -1221,6 +1221,8 @@ function renderSettings() {
   if (themeEl) themeEl.value = settings.theme || 'system';
   const fortuneNotifyEl = document.getElementById('fortuneNotify');
   if (fortuneNotifyEl) fortuneNotifyEl.checked = settings.fortuneNotify !== false;
+  const lunchRouletteNotifyEl = document.getElementById('lunchRouletteNotify');
+  if (lunchRouletteNotifyEl) lunchRouletteNotifyEl.checked = settings.lunchRouletteNotify !== false;
   const birthDateEl = document.getElementById('birthDate');
   if (birthDateEl) birthDateEl.value = settings.birthDate || '';
   applyTheme(settings.theme || 'system');
@@ -1235,6 +1237,7 @@ function render() {
   if (typeof renderSaju === 'function') renderSaju();
   checkAndNotify();
   if (typeof checkFortuneNotify === 'function') checkFortuneNotify();
+  if (typeof checkLunchRouletteNotify === 'function') checkLunchRouletteNotify();
   loadTeamWeek();
   updateNetworkStatusUI();
   const canAttend = onCompanyNetwork || !isNetworkGuardActive() || isFieldWorkToday();
@@ -1417,6 +1420,7 @@ function handleSettingsChange() {
     sheetUrl: (document.getElementById('sheetUrl')?.value || '').trim(),
     theme,
     fortuneNotify: document.getElementById('fortuneNotify')?.checked !== false,
+    lunchRouletteNotify: document.getElementById('lunchRouletteNotify')?.checked !== false,
     birthDate: (document.getElementById('birthDate')?.value || '').trim(),
   };
   saveSettings(settings);
@@ -1503,7 +1507,7 @@ function init() {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
 
-  ['notifyBefore', 'userName', 'birthDate', 'sheetUrl', 'themeMode', 'fortuneNotify'].forEach((id) => {
+  ['notifyBefore', 'userName', 'birthDate', 'sheetUrl', 'themeMode', 'fortuneNotify', 'lunchRouletteNotify'].forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
     el.addEventListener('change', handleSettingsChange);

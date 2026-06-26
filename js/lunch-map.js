@@ -505,6 +505,35 @@ function bindLunchMapControls() {
 
 bindLunchMapControls();
 
+const LUNCH_ROULETTE_NOTIFY_HOUR = 11;
+const LUNCH_ROULETTE_NOTIFY_MINUTE = 20;
+const LUNCH_ROULETTE_NOTIFY_WINDOW_MIN = 5;
+
+function checkLunchRouletteNotify() {
+  const settings = typeof loadSettings === 'function' ? loadSettings() : {};
+  if (settings.lunchRouletteNotify === false) return;
+
+  const now = new Date();
+  if (now.getHours() !== LUNCH_ROULETTE_NOTIFY_HOUR) return;
+  const minute = now.getMinutes();
+  if (minute < LUNCH_ROULETTE_NOTIFY_MINUTE || minute >= LUNCH_ROULETTE_NOTIFY_MINUTE + LUNCH_ROULETTE_NOTIFY_WINDOW_MIN) {
+    return;
+  }
+
+  const key = `${todayKey()}-lunch-roulette-11-20`;
+  if (typeof wasNotified === 'function' && wasNotified(key)) return;
+
+  if (typeof markNotified === 'function') markNotified(key);
+  if (typeof sendNotification === 'function') {
+    sendNotification(
+      '🎰 점심 룰렛',
+      '11시 30분 점심! 오늘 뭐 먹을지 룰렛을 돌려보세요',
+      'lunch-roulette-reminder',
+      './?tab=lunch',
+    );
+  }
+}
+
 function consumeLunchDeepLink() {
   const params = new URLSearchParams(window.location.search);
   const tab = params.get('tab');

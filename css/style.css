@@ -1601,6 +1601,18 @@ body {
   accent-color: #8b5cf6;
 }
 
+.setting-row-lunch {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--border);
+}
+
+.setting-row-lunch input[type="checkbox"] {
+  width: 1.125rem;
+  height: 1.125rem;
+  accent-color: #10b981;
+}
+
 .tab-btn[data-tab="fun"].active {
   color: #8b5cf6;
 }
