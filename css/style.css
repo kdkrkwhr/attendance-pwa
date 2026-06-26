@@ -1914,15 +1914,66 @@ body {
   backdrop-filter: blur(12px);
   box-shadow: 0 -8px 32px rgba(15, 23, 42, 0.18);
   overflow: hidden;
+  transform: translateY(0);
+  transition: transform 0.28s ease;
+  --sheet-peek: 3.5rem;
+}
+
+.lunch-float-bottom.is-collapsed {
+  transform: translateY(calc(100% - var(--sheet-peek)));
+}
+
+.lunch-float-bottom.is-collapsed .lunch-roulette-block,
+.lunch-float-bottom.is-collapsed .lunch-list-section,
+.lunch-float-bottom.is-collapsed .lunch-map-attribution {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .lunch-sheet-handle {
+  width: 3rem;
+  height: 1.35rem;
+  margin: 0.1rem auto 0.5rem;
+  border: none;
+  padding: 0;
+  background: transparent;
+  flex-shrink: 0;
+  cursor: grab;
+  touch-action: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lunch-sheet-handle::before {
+  content: '';
   width: 2.5rem;
   height: 4px;
-  margin: 0.15rem auto 0.5rem;
   border-radius: 999px;
   background: #cbd5e1;
+}
+
+.lunch-sheet-handle:active {
+  cursor: grabbing;
+}
+
+.lunch-sheet-peek {
+  display: none;
+  margin: -0.35rem 0 0.15rem;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
   flex-shrink: 0;
+  user-select: none;
+}
+
+.lunch-float-bottom.is-collapsed .lunch-sheet-peek {
+  display: block;
+}
+
+.lunch-float-bottom.is-collapsed .lunch-sheet-handle {
+  margin-bottom: 0.25rem;
 }
 
 .lunch-float-bottom .lunch-roulette-block {

@@ -490,6 +490,64 @@ function focusLunchOffice() {
   officeMarker?.openPopup();
 }
 
+function bindLunchSheetControls() {
+  const sheet = document.getElementById('lunchFloatBottom');
+  const handle = document.getElementById('lunchSheetHandle');
+  if (!sheet || !handle) return;
+
+  const updateSheetAria = () => {
+    const expanded = !sheet.classList.contains('is-collapsed');
+    handle.setAttribute('aria-expanded', String(expanded));
+    handle.setAttribute('aria-label', expanded ? '맛집 패널 접기' : '맛집 패널 펼치기');
+  };
+
+  const setSheetCollapsed = (collapsed) => {
+    sheet.classList.toggle('is-collapsed', collapsed);
+    updateSheetAria();
+    requestAnimationFrame(() => lunchMapInstance?.invalidateSize());
+  };
+
+  let dragStartY = null;
+  let dragMoved = false;
+
+  const finishDrag = (clientY) => {
+    if (dragStartY == null) return;
+    const delta = clientY - dragStartY;
+    if (!dragMoved) {
+      setSheetCollapsed(!sheet.classList.contains('is-collapsed'));
+    } else if (delta > 40) {
+      setSheetCollapsed(true);
+    } else if (delta < -40) {
+      setSheetCollapsed(false);
+    }
+    dragStartY = null;
+    dragMoved = false;
+  };
+
+  handle.addEventListener('pointerdown', (e) => {
+    dragStartY = e.clientY;
+    dragMoved = false;
+    handle.setPointerCapture(e.pointerId);
+  });
+
+  handle.addEventListener('pointermove', (e) => {
+    if (dragStartY == null) return;
+    if (Math.abs(e.clientY - dragStartY) > 8) dragMoved = true;
+  });
+
+  handle.addEventListener('pointerup', (e) => finishDrag(e.clientY));
+  handle.addEventListener('pointercancel', (e) => finishDrag(e.clientY));
+
+  handle.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setSheetCollapsed(!sheet.classList.contains('is-collapsed'));
+    }
+  });
+
+  updateSheetAria();
+}
+
 function bindLunchMapControls() {
   document.getElementById('lunchCategoryFilter')?.addEventListener('change', handleLunchCategoryFilter);
   document.getElementById('btnLunchRoulette')?.addEventListener('click', spinLunchRoulette);
@@ -504,6 +562,7 @@ function bindLunchMapControls() {
 }
 
 bindLunchMapControls();
+bindLunchSheetControls();
 
 const LUNCH_ROULETTE_NOTIFY_HOUR = 11;
 const LUNCH_ROULETTE_NOTIFY_MINUTE = 20;
