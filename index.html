@@ -119,6 +119,50 @@
         </div>
       </div>
 
+      <!-- Fun -->
+      <div class="tab-panel" id="tabFun" data-tab-panel="fun">
+        <section class="fun-hero">
+          <p class="fun-hero-emoji">🎲</p>
+          <h2 class="fun-hero-title">Fun</h2>
+          <p class="fun-hero-desc">출퇴근 말고 가볍게 즐기는 공간이에요</p>
+        </section>
+
+        <section class="card fortune-card" id="fortuneCard">
+          <div class="fortune-card-header">
+            <span class="fortune-card-badge">오늘의 운세</span>
+            <span class="fortune-card-hint">하루 1회</span>
+          </div>
+
+          <div id="fortuneIdle" class="fortune-idle">
+            <div class="fortune-crystal">🔮</div>
+            <p class="fortune-idle-text">오늘 당신의 업무 운세는…?</p>
+            <button type="button" class="btn btn-fortune" id="btnDrawFortune">운세 뽑기 ✨</button>
+          </div>
+
+          <div id="fortuneResult" class="fortune-result hidden">
+            <div class="fortune-result-top">
+              <span class="fortune-emoji" id="fortuneEmoji">✨</span>
+              <span class="fortune-grade" id="fortuneGrade">길</span>
+            </div>
+            <p class="fortune-text" id="fortuneText"></p>
+            <div class="fortune-chips">
+              <span class="fortune-chip fortune-chip-lucky">🍀 행운 <strong id="fortuneLucky"></strong></span>
+              <span class="fortune-chip fortune-chip-avoid">🙅 피하기 <strong id="fortuneAvoid"></strong></span>
+            </div>
+            <p class="fortune-stamp" id="fortuneStamp">오늘 확인 완료</p>
+          </div>
+        </section>
+
+        <section class="card fun-coming">
+          <h3 class="fun-coming-title">곧 올 기능 👀</h3>
+          <ul class="fun-coming-list">
+            <li>오늘의 한마디</li>
+            <li>점심 메뉴 룰렛</li>
+            <li>팀 밈 보드</li>
+          </ul>
+        </section>
+      </div>
+
       <!-- 설정 -->
       <div class="tab-panel" id="tabSettings" data-tab-panel="settings">
         <section class="card card-install" id="installCard">
@@ -175,6 +219,10 @@
             </select>
           </div>
           <button type="button" class="btn btn-ghost" id="btnNotifyPermission">알림 권한 허용</button>
+          <div class="setting-row setting-row-fortune">
+            <label for="fortuneNotify">오늘의 운세 (10:00)</label>
+            <input type="checkbox" id="fortuneNotify" checked>
+          </div>
         </section>
 
         <section class="card" id="teamCard">
@@ -203,6 +251,10 @@
         <span class="tab-icon">📅</span>
         <span class="tab-label">주간</span>
       </button>
+      <button type="button" class="tab-btn" data-tab="fun">
+        <span class="tab-icon">🎲</span>
+        <span class="tab-label">Fun</span>
+      </button>
       <button type="button" class="tab-btn" data-tab="settings">
         <span class="tab-icon">⚙️</span>
         <span class="tab-label">설정</span>
@@ -211,6 +263,7 @@
   </div>
 
   <script src="config.js"></script>
+  <script src="js/fortune.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

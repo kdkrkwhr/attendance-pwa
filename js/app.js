@@ -15,6 +15,7 @@ const DEFAULT_SETTINGS = {
   userName: '',
   sheetUrl: '',
   theme: 'system',
+  fortuneNotify: true,
 };
 
 let tickInterval = null;
@@ -423,6 +424,9 @@ function switchTab(tabName) {
     btn.classList.toggle('active', active);
     btn.setAttribute('aria-current', active ? 'page' : 'false');
   });
+  if (tabName === 'fun' && typeof renderFortune === 'function') {
+    renderFortune();
+  }
 }
 
 function renderProgress(record, previewCheckInISO = null) {
@@ -996,7 +1000,7 @@ async function requestNotificationPermission() {
   return false;
 }
 
-function sendNotification(title, body, tag = 'leave-reminder') {
+function sendNotification(title, body, tag = 'leave-reminder', url = './') {
   if (Notification.permission !== 'granted') return;
 
   if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
@@ -1005,6 +1009,7 @@ function sendNotification(title, body, tag = 'leave-reminder') {
       title,
       body,
       tag,
+      url,
     });
   } else {
     new Notification(title, { body, icon: 'icon-192.png', tag });
@@ -1203,6 +1208,8 @@ function renderSettings() {
   if (nameEl) nameEl.value = settings.userName || '';
   if (sheetEl) sheetEl.value = settings.sheetUrl || '';
   if (themeEl) themeEl.value = settings.theme || 'system';
+  const fortuneNotifyEl = document.getElementById('fortuneNotify');
+  if (fortuneNotifyEl) fortuneNotifyEl.checked = settings.fortuneNotify !== false;
   applyTheme(settings.theme || 'system');
 }
 
@@ -1211,7 +1218,9 @@ function render() {
   renderWeek();
   renderSettings();
   renderWifiSuggestion();
+  if (typeof renderFortune === 'function') renderFortune();
   checkAndNotify();
+  if (typeof checkFortuneNotify === 'function') checkFortuneNotify();
   loadTeamWeek();
   updateNetworkStatusUI();
   const canAttend = onCompanyNetwork || !isNetworkGuardActive() || isFieldWorkToday();
@@ -1393,6 +1402,7 @@ function handleSettingsChange() {
     userName: (document.getElementById('userName')?.value || '').trim(),
     sheetUrl: (document.getElementById('sheetUrl')?.value || '').trim(),
     theme,
+    fortuneNotify: document.getElementById('fortuneNotify')?.checked !== false,
   };
   saveSettings(settings);
   applyTheme(theme);
@@ -1423,6 +1433,7 @@ async function registerSW() {
 
 function init() {
   consumeWifiDeepLink();
+  if (typeof consumeFunDeepLink === 'function') consumeFunDeepLink();
   registerSW();
 
   window.addEventListener('beforeinstallprompt', (e) => {
@@ -1469,16 +1480,17 @@ function init() {
   document.getElementById('btnWifiApply')?.addEventListener('click', handleWifiApply);
   document.getElementById('btnWifiCheckIn')?.addEventListener('click', handleWifiCheckIn);
   document.getElementById('btnWifiDismiss')?.addEventListener('click', handleWifiDismiss);
+  document.getElementById('btnDrawFortune')?.addEventListener('click', handleDrawFortune);
 
   document.querySelectorAll('.tab-btn').forEach((btn) => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
 
-  ['notifyBefore', 'userName', 'sheetUrl', 'themeMode'].forEach((id) => {
+  ['notifyBefore', 'userName', 'sheetUrl', 'themeMode', 'fortuneNotify'].forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
     el.addEventListener('change', handleSettingsChange);
-    if (el.tagName === 'INPUT') el.addEventListener('blur', handleSettingsChange);
+    if (el.tagName === 'INPUT' && el.type !== 'checkbox') el.addEventListener('blur', handleSettingsChange);
   });
 
   applyTheme(loadSettings().theme || 'system');

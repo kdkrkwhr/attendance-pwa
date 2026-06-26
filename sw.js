@@ -1,10 +1,11 @@
-const CACHE_NAME = 'attendance-pwa-v16';
+const CACHE_NAME = 'attendance-pwa-v17';
 const ASSETS = [
   './',
   './index.html',
   './config.js',
   './css/style.css',
   './js/app.js',
+  './js/fortune.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
@@ -40,19 +41,24 @@ self.addEventListener('message', (event) => {
       badge: './icon-192.png',
       tag: event.data.tag || 'leave-reminder',
       renotify: true,
-      data: { url: './' },
+      data: { url: event.data.url || './' },
     });
   }
 });
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const targetUrl = event.notification.data?.url || './';
+  const targetUrl = new URL(event.notification.data?.url || './', self.location.origin).href;
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
       for (const client of clients) {
         if ('focus' in client) {
-          return client.focus();
+          return client.focus().then((c) => {
+            if (c && 'navigate' in c) {
+              return c.navigate(targetUrl);
+            }
+            return c;
+          });
         }
       }
       if (self.clients.openWindow) {
