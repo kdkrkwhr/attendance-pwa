@@ -12,6 +12,6 @@ window.APP_CONFIG = {
   networkGuard: {
     enabled: true,
     /** 회사 Wi-Fi에서 보이는 공인 IP (여러 개면 쉼표로 구분 가능) */
-    allowedPublicIps: [],
+    allowedPublicIps: ['222.235.88.35'],
   },
 };
