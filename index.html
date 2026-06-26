@@ -20,6 +20,16 @@
     </header>
 
     <main>
+      <!-- 내 정보 (출근 전에 먼저) -->
+      <section class="card card-profile">
+        <h2 class="card-title">내 정보</h2>
+        <div class="setting-field">
+          <label for="userName">이름</label>
+          <input type="text" id="userName" class="text-input" placeholder="홍길동" maxlength="20">
+        </div>
+        <p class="field-hint">출근 등록 전에 이름을 입력해주세요.</p>
+      </section>
+
       <!-- 앱 설치 안내 -->
       <section class="card card-install" id="installCard">
         <h2 class="card-title">📲 휴대폰에 설치</h2>
@@ -60,18 +70,9 @@
 
         <div class="actions" id="mainActions">
           <button type="button" class="btn btn-primary" id="btnCheckIn">출근 등록</button>
+          <button type="button" class="btn btn-ghost hidden" id="btnSaveCheckIn">출근 시각 저장</button>
           <button type="button" class="btn btn-secondary hidden" id="btnCheckOut">퇴근 체크</button>
         </div>
-      </section>
-
-      <!-- 내 정보 -->
-      <section class="card">
-        <h2 class="card-title">내 정보</h2>
-        <div class="setting-field">
-          <label for="userName">이름</label>
-          <input type="text" id="userName" class="text-input" placeholder="홍길동" maxlength="20">
-        </div>
-        <p class="field-hint">이름과 출퇴근 기록은 이 폰에 저장됩니다.</p>
       </section>
 
       <!-- 알림 설정 -->

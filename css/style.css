@@ -66,6 +66,10 @@ body {
   border-top: 4px solid var(--primary);
 }
 
+.card-profile {
+  border-top: 4px solid #0ea5e9;
+}
+
 .card-install {
   border-top: 4px solid #7c3aed;
   background: linear-gradient(180deg, #faf5ff 0%, var(--card) 40%);

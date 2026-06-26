@@ -16,6 +16,8 @@ const DEFAULT_SETTINGS = {
 let tickInterval = null;
 let deferredInstallPrompt = null;
 let checkInInputFocused = false;
+let checkInInputTouched = false;
+let checkInTimeDirty = false;
 
 // ── PWA 설치 ──────────────────────────────────────────
 
@@ -415,23 +417,28 @@ function renderToday() {
   const leaveEl = document.getElementById('leaveTime');
   const countdown = document.getElementById('countdown');
   const btnIn = document.getElementById('btnCheckIn');
+  const btnSave = document.getElementById('btnSaveCheckIn');
   const btnOut = document.getElementById('btnCheckOut');
 
   if (checkInInput && !checkInInputFocused) {
-    checkInInput.value = hasCheckIn
-      ? toTimeInputValue(parseISO(record.checkIn))
-      : toTimeInputValue(now);
-    checkInInput.disabled = !!record?.checkOut;
+    if (hasCheckIn) {
+      checkInInput.value = toTimeInputValue(parseISO(record.checkIn));
+      checkInInput.disabled = false;
+    } else if (!checkInInputTouched) {
+      checkInInput.value = toTimeInputValue(now);
+      checkInInput.disabled = false;
+    }
   }
 
   if (!hasCheckIn) {
     badge.textContent = '미출근';
     badge.className = 'badge';
     leaveEl.textContent = '—';
-    if (checkInHint) checkInHint.textContent = '출근 시각 선택 후 등록';
-    countdown.textContent = '지문 찍을 때 출근 시각도 맞춰주세요';
+    if (checkInHint) checkInHint.textContent = '① 이름 입력 → ② 출근 시각 선택 → ③ 출근 등록';
+    countdown.textContent = '출근 시각은 등록 후에도 바꿀 수 있어요';
     countdown.className = 'countdown';
     btnIn.classList.remove('hidden');
+    btnSave?.classList.add('hidden');
     btnOut.classList.add('hidden');
 
     if (checkInInput?.value) {
@@ -445,7 +452,9 @@ function renderToday() {
   const leaveTime = calcLeaveTime(record.checkIn);
   leaveEl.textContent = formatTime(leaveTime);
   if (checkInHint) {
-    checkInHint.textContent = record.checkOut ? '퇴근 완료' : '탭해서 출근 시각 수정';
+    checkInHint.textContent = record.checkOut
+      ? '퇴근 완료 · 출근 시각을 바꾸려면 아래 저장 버튼'
+      : '출근 시각 바꾼 뒤 「출근 시각 저장」을 눌러주세요';
   }
 
   if (record.checkOut) {
@@ -455,6 +464,7 @@ function renderToday() {
     countdown.textContent = `실제 근무: ${formatDuration(calcNetWorkMinutes(record.checkIn, record.checkOut))} (체류 ${formatDuration(worked)})`;
     countdown.className = 'countdown';
     btnIn.classList.add('hidden');
+    btnSave?.classList.toggle('hidden', !checkInTimeDirty);
     btnOut.classList.add('hidden');
     return;
   }
@@ -462,6 +472,7 @@ function renderToday() {
   badge.textContent = '근무 중';
   badge.className = 'badge working';
   btnIn.classList.add('hidden');
+  btnSave?.classList.toggle('hidden', !checkInTimeDirty);
   btnOut.classList.remove('hidden');
 
   const diffMs = leaveTime - now;
@@ -576,6 +587,8 @@ function handleCheckIn() {
     checkIn: checkInISOFromTimeInput(input.value),
     userName: getUserName(),
   });
+  checkInInputTouched = false;
+  checkInTimeDirty = false;
 
   if (Notification.permission === 'default') {
     requestNotificationPermission();
@@ -589,39 +602,73 @@ function handleCheckIn() {
   }
 }
 
-function handleCheckInTimeChange() {
+function applyCheckInTimeChange() {
   const record = getTodayRecord();
-  if (!record?.checkIn || record.checkOut) return;
+  if (!record?.checkIn) return false;
 
   const input = document.getElementById('checkInInput');
-  if (!input?.value) return;
+  if (!input?.value) return false;
 
   const newCheckIn = checkInISOFromTimeInput(input.value);
-  if (newCheckIn === record.checkIn) return;
+  if (newCheckIn === record.checkIn) {
+    checkInTimeDirty = false;
+    return false;
+  }
 
-  saveTodayRecord({
-    ...record,
-    checkIn: newCheckIn,
-  });
+  const updated = { ...record, checkIn: newCheckIn };
+  if (record.checkOut) {
+    const worked = calcWorkedMinutes(newCheckIn, record.checkOut);
+    if (worked < 0) {
+      alert('출근 시각이 퇴근 시각보다 늦을 수 없습니다.');
+      return false;
+    }
+  }
+
+  saveTodayRecord(updated);
   clearTodayNotifications();
+  checkInTimeDirty = false;
 
   render();
   const settings = loadSettings();
   if (settings.sheetUrl) {
     syncRecordToSheet(todayKey(), getTodayRecord()).catch(() => {});
   }
+  return true;
+}
+
+function handleCheckInTimeChange() {
+  const record = getTodayRecord();
+  if (!record?.checkIn) return;
+  applyCheckInTimeChange();
+}
+
+function markCheckInTimeDirty() {
+  const record = getTodayRecord();
+  if (!record?.checkIn) return;
+
+  const input = document.getElementById('checkInInput');
+  if (!input?.value) return;
+
+  const newCheckIn = checkInISOFromTimeInput(input.value);
+  checkInTimeDirty = newCheckIn !== record.checkIn;
+
+  const btnSave = document.getElementById('btnSaveCheckIn');
+  btnSave?.classList.toggle('hidden', !checkInTimeDirty);
 }
 
 function handleCheckInTimePreview() {
-  const record = getTodayRecord();
-  if (record?.checkIn) return;
-
   const input = document.getElementById('checkInInput');
   const leaveEl = document.getElementById('leaveTime');
   if (!input?.value || !leaveEl) return;
 
+  checkInInputTouched = true;
   const preview = calcLeaveTime(checkInISOFromTimeInput(input.value));
   leaveEl.textContent = formatTime(preview);
+
+  const record = getTodayRecord();
+  if (record?.checkIn) {
+    markCheckInTimeDirty();
+  }
 }
 
 function handleCheckOut() {
@@ -648,6 +695,8 @@ function handleResetToday() {
   const records = loadRecords();
   delete records[todayKey()];
   saveRecords(records);
+  checkInInputTouched = false;
+  checkInTimeDirty = false;
 
   const notified = loadNotified();
   Object.keys(notified).forEach((k) => {
@@ -789,21 +838,24 @@ function init() {
 
   document.getElementById('btnInstall')?.addEventListener('click', handleInstall);
   document.getElementById('btnCheckIn').addEventListener('click', handleCheckIn);
+  document.getElementById('btnSaveCheckIn')?.addEventListener('click', () => {
+    if (applyCheckInTimeChange()) {
+      setSyncStatus('출근 시각이 저장되었습니다.', 'ok');
+    }
+  });
   document.getElementById('btnCheckOut').addEventListener('click', handleCheckOut);
 
   const checkInInput = document.getElementById('checkInInput');
   if (checkInInput) {
     checkInInput.addEventListener('focus', () => { checkInInputFocused = true; });
-    checkInInput.addEventListener('blur', () => {
-      checkInInputFocused = false;
-      handleCheckInTimeChange();
-      render();
-    });
+    checkInInput.addEventListener('blur', () => { checkInInputFocused = false; });
     checkInInput.addEventListener('input', handleCheckInTimePreview);
     checkInInput.addEventListener('change', () => {
-      handleCheckInTimeChange();
       handleCheckInTimePreview();
-      render();
+      const record = getTodayRecord();
+      if (record?.checkIn && !record.checkOut) {
+        applyCheckInTimeChange();
+      }
     });
   }
 
