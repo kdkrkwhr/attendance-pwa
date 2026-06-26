@@ -35,7 +35,33 @@
         <section class="card card-today" id="todayCard">
           <div class="date-row">
             <span class="date" id="todayDate"></span>
-            <span class="badge" id="statusBadge">미출근</span>
+            <div class="date-badges">
+              <span class="badge badge-field hidden" id="fieldWorkBadge">외근</span>
+              <span class="badge" id="statusBadge">미출근</span>
+            </div>
+          </div>
+
+          <div class="field-work-row">
+            <label class="field-work-toggle" for="fieldWorkToggle">
+              <input type="checkbox" id="fieldWorkToggle">
+              <span>오늘 외근</span>
+            </label>
+            <span class="field-work-hint">외근 시 회사 Wi-Fi 없이 출퇴근 · 복귀 후 메모 작성</span>
+          </div>
+
+          <div class="field-memo hidden" id="fieldMemoBox">
+            <p class="field-memo-title">외근 메모 (복귀 후)</p>
+            <p class="field-memo-desc">방문처·업무 내용을 적고 퇴근해 주세요.</p>
+            <textarea id="fieldMemoInput" class="field-memo-input" rows="3" maxlength="200" placeholder="예: A사 미팅, 강남"></textarea>
+            <div class="field-memo-actions">
+              <button type="button" class="btn btn-primary btn-sm" id="btnFieldCheckOut">퇴근 완료</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="btnFieldMemoCancel">취소</button>
+            </div>
+          </div>
+
+          <div class="field-memo-display hidden" id="fieldMemoDisplay">
+            <p class="field-memo-label">외근 메모</p>
+            <p class="field-memo-text" id="fieldMemoText"></p>
           </div>
 
           <div class="wifi-suggest hidden" id="wifiSuggestBox">

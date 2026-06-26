@@ -3,6 +3,7 @@ const SETTINGS_KEY = 'attendance-settings';
 const NOTIFIED_KEY = 'attendance-notified';
 const WIFI_SUGGEST_KEY = 'attendance-wifi-suggest';
 const NETWORK_MORNING_STATE_KEY = 'attendance-network-morning-state';
+const FIELD_MODE_PENDING_KEY = 'attendance-field-pending';
 
 /** 8시간 근무 + 점심 1시간 (고정) */
 const WORK_HOURS = 8;
@@ -104,6 +105,12 @@ function updateNetworkStatusUI() {
   const el = document.getElementById('networkStatus');
   if (!el) return;
 
+  if (isFieldWorkToday() && isNetworkGuardActive()) {
+    el.textContent = '외근 모드 · 회사 Wi-Fi 제한 없음';
+    el.className = 'network-banner field';
+    return;
+  }
+
   if (!isNetworkGuardActive()) {
     el.textContent = '회사 Wi-Fi 제한: 미설정 (config.js)';
     el.className = 'network-banner warn';
@@ -136,6 +143,12 @@ function setAttendanceButtonsEnabled(enabled) {
 }
 
 async function requireCompanyNetwork() {
+  if (isFieldWorkToday()) {
+    updateNetworkStatusUI();
+    setAttendanceButtonsEnabled(true);
+    return true;
+  }
+
   const ok = await checkCompanyNetwork(true);
   updateNetworkStatusUI();
   setAttendanceButtonsEnabled(ok || !isNetworkGuardActive());
@@ -143,7 +156,7 @@ async function requireCompanyNetwork() {
   if (!isNetworkGuardActive()) return true;
 
   if (!ok) {
-    alert('회사 Wi-Fi에 연결된 후 출퇴근할 수 있습니다.');
+    alert('회사 Wi-Fi에 연결된 후 출퇴근할 수 있습니다.\n외근이면 「오늘 외근」을 켜 주세요.');
     return false;
   }
   return true;
@@ -153,10 +166,120 @@ async function refreshNetworkGuard() {
   const previous = onCompanyNetwork;
   await checkCompanyNetwork(true);
   updateNetworkStatusUI();
-  const canAttend = onCompanyNetwork || !isNetworkGuardActive();
+  const canAttend = onCompanyNetwork || !isNetworkGuardActive() || isFieldWorkToday();
   setAttendanceButtonsEnabled(canAttend);
   evaluateMorningNetworkCheckIn(previous, onCompanyNetwork);
   syncMorningNetworkPolling();
+}
+
+// ── 외근 모드 ──────────────────────────────────────────
+
+function loadFieldModePending() {
+  try {
+    const pending = JSON.parse(localStorage.getItem(FIELD_MODE_PENDING_KEY) || 'null');
+    if (!pending || pending.dayKey !== todayKey()) return null;
+    return pending;
+  } catch {
+    return null;
+  }
+}
+
+function saveFieldModePending(enabled) {
+  if (enabled) {
+    localStorage.setItem(FIELD_MODE_PENDING_KEY, JSON.stringify({
+      dayKey: todayKey(),
+      enabled: true,
+    }));
+  } else {
+    localStorage.removeItem(FIELD_MODE_PENDING_KEY);
+  }
+}
+
+function isFieldWorkToday() {
+  const record = getTodayRecord();
+  if (record?.fieldWork) return true;
+  return !!loadFieldModePending()?.enabled;
+}
+
+function hideFieldMemoForm() {
+  document.getElementById('fieldMemoBox')?.classList.add('hidden');
+  document.getElementById('btnCheckOut')?.classList.remove('hidden');
+  const input = document.getElementById('fieldMemoInput');
+  if (input) input.value = '';
+}
+
+function showFieldMemoForm() {
+  document.getElementById('fieldMemoBox')?.classList.remove('hidden');
+  document.getElementById('btnCheckOut')?.classList.add('hidden');
+  document.getElementById('fieldMemoInput')?.focus();
+}
+
+function handleFieldWorkToggle() {
+  const toggle = document.getElementById('fieldWorkToggle');
+  const enabled = !!toggle?.checked;
+  const record = getTodayRecord();
+
+  if (record?.checkOut) {
+    if (toggle) toggle.checked = !!record.fieldWork;
+    return;
+  }
+
+  if (record?.checkIn) {
+    const updated = { ...record, fieldWork: enabled };
+    if (!enabled) {
+      delete updated.fieldMemo;
+      hideFieldMemoForm();
+    }
+    saveTodayRecord(updated);
+  } else {
+    saveFieldModePending(enabled);
+  }
+
+  updateNetworkStatusUI();
+  refreshNetworkGuard();
+  renderToday();
+  renderWeek();
+}
+
+async function completeCheckOut(record, fieldMemo = '') {
+  if (!(await requireCompanyNetwork())) return;
+
+  const updated = {
+    ...record,
+    checkOut: new Date().toISOString(),
+  };
+
+  if (record.fieldWork) {
+    updated.fieldMemo = fieldMemo.trim();
+  }
+
+  saveTodayRecord(updated);
+  hideFieldMemoForm();
+
+  render();
+  const settings = loadSettings();
+  if (settings.sheetUrl) {
+    syncRecordToSheet(todayKey(), getTodayRecord()).then((r) => {
+      if (r.ok) setSyncStatus('팀 시트에 퇴근 저장됨', 'ok');
+      loadTeamWeek();
+    }).catch(() => {});
+  }
+}
+
+async function handleFieldCheckOut() {
+  const record = getTodayRecord();
+  if (!record?.checkIn || record.checkOut) return;
+
+  const memo = document.getElementById('fieldMemoInput')?.value?.trim() || '';
+  if (!memo) {
+    if (!confirm('외근 메모 없이 퇴근할까요?')) return;
+  }
+
+  await completeCheckOut(record, memo);
+}
+
+function handleFieldMemoCancel() {
+  hideFieldMemoForm();
 }
 
 function getMorningDetectConfig() {
@@ -206,6 +329,7 @@ function saveNetworkMorningState(state) {
 function evaluateMorningNetworkCheckIn(wasOnCompany, isOnCompany) {
   const cfg = getMorningDetectConfig();
   if (!cfg.enabled || !isNetworkGuardActive() || !isMorningCheckInWindow()) return;
+  if (isFieldWorkToday()) return;
 
   const record = getTodayRecord();
   if (record?.checkIn || record?.checkOut) return;
@@ -677,6 +801,8 @@ function recordToSyncRow(dateKey, record) {
     checkOut: record.checkOut ? formatTimeShort(parseISO(record.checkOut)) : '',
     leavePlanned: formatTimeShort(leave),
     netHours,
+    fieldWork: record.fieldWork ? '외근' : '사무실',
+    fieldMemo: record.fieldMemo || '',
   };
 }
 
@@ -928,9 +1054,33 @@ function renderToday() {
   const record = getTodayRecord();
   const now = new Date();
   const hasCheckIn = !!(record?.checkIn);
+  const fieldWork = isFieldWorkToday();
+  const todayCard = document.getElementById('todayCard');
+  const fieldBadge = document.getElementById('fieldWorkBadge');
+  const fieldToggle = document.getElementById('fieldWorkToggle');
+  const fieldMemoDisplay = document.getElementById('fieldMemoDisplay');
+  const fieldMemoText = document.getElementById('fieldMemoText');
 
   document.getElementById('todayDate').textContent =
     `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 (${DAY_NAMES[now.getDay()]})`;
+
+  todayCard?.classList.toggle('card-field-work', fieldWork);
+  fieldBadge?.classList.toggle('hidden', !fieldWork);
+  if (fieldToggle) {
+    fieldToggle.checked = fieldWork;
+    fieldToggle.disabled = !!record?.checkOut;
+  }
+
+  if (record?.checkOut && record.fieldWork && record.fieldMemo) {
+    fieldMemoDisplay?.classList.remove('hidden');
+    if (fieldMemoText) fieldMemoText.textContent = record.fieldMemo;
+  } else {
+    fieldMemoDisplay?.classList.add('hidden');
+  }
+
+  if (!record?.checkOut) {
+    hideFieldMemoForm();
+  }
 
   const badge = document.getElementById('statusBadge');
   const checkInInput = document.getElementById('checkInInput');
@@ -955,8 +1105,8 @@ function renderToday() {
   }
 
   if (!hasCheckIn) {
-    badge.textContent = '미출근';
-    badge.className = 'badge';
+    badge.textContent = fieldWork ? '외근 예정' : '미출근';
+    badge.className = fieldWork ? 'badge badge-field' : 'badge';
     leaveEl.textContent = previewISO ? formatTime(calcLeaveTime(previewISO)) : '—';
     btnIn.classList.remove('hidden');
     btnSave?.classList.add('hidden');
@@ -969,8 +1119,8 @@ function renderToday() {
   leaveEl.textContent = formatTime(leaveTime);
 
   if (record.checkOut) {
-    badge.textContent = '퇴근 완료';
-    badge.className = 'badge done';
+    badge.textContent = record.fieldWork ? '외근 완료' : '퇴근 완료';
+    badge.className = record.fieldWork ? 'badge badge-field done' : 'badge done';
     btnIn.classList.add('hidden');
     btnSave?.classList.toggle('hidden', !checkInTimeDirty);
     btnOut.classList.add('hidden');
@@ -978,8 +1128,8 @@ function renderToday() {
     return;
   }
 
-  badge.textContent = '근무 중';
-  badge.className = 'badge working';
+  badge.textContent = fieldWork ? '외근 중' : '근무 중';
+  badge.className = fieldWork ? 'badge badge-field working' : 'badge working';
   btnIn.classList.add('hidden');
   btnSave?.classList.toggle('hidden', !checkInTimeDirty);
   btnOut.classList.remove('hidden');
@@ -1033,9 +1183,9 @@ function renderWeek() {
       hoursText = '진행';
     }
 
-    return `<li class="week-item ${isToday ? 'today' : ''}">
-      <span class="day">${dayLabel}</span>
-      <span class="times">${timesText}</span>
+    return `<li class="week-item ${isToday ? 'today' : ''} ${record.fieldWork ? 'field-work' : ''}">
+      <span class="day">${dayLabel}${record.fieldWork ? '<span class="week-field-tag">외근</span>' : ''}</span>
+      <span class="times">${timesText}${record.fieldMemo ? `<span class="week-memo">${escapeHtml(record.fieldMemo)}</span>` : ''}</span>
       <span class="hours">${hoursText}</span>
     </li>`;
   }).join('');
@@ -1064,9 +1214,8 @@ function render() {
   checkAndNotify();
   loadTeamWeek();
   updateNetworkStatusUI();
-  if (isNetworkGuardActive() && onCompanyNetwork === false) {
-    setAttendanceButtonsEnabled(false);
-  }
+  const canAttend = onCompanyNetwork || !isNetworkGuardActive() || isFieldWorkToday();
+  setAttendanceButtonsEnabled(canAttend);
 }
 
 // ── 액션 ──────────────────────────────────────────
@@ -1087,7 +1236,9 @@ async function handleCheckIn() {
   saveTodayRecord({
     checkIn: checkInISOFromTimeInput(input.value),
     userName: getUserName(),
+    fieldWork: isFieldWorkToday(),
   });
+  saveFieldModePending(false);
   clearWifiSuggestion();
   checkInInputTouched = false;
   checkInTimeDirty = false;
@@ -1173,24 +1324,16 @@ function handleCheckInTimePreview() {
 }
 
 async function handleCheckOut() {
-  if (!(await requireCompanyNetwork())) return;
-
   const record = getTodayRecord();
   if (!record?.checkIn || record.checkOut) return;
 
-  saveTodayRecord({
-    ...record,
-    checkOut: new Date().toISOString(),
-  });
-
-  render();
-  const settings = loadSettings();
-  if (settings.sheetUrl) {
-    syncRecordToSheet(todayKey(), getTodayRecord()).then((r) => {
-      if (r.ok) setSyncStatus('팀 시트에 퇴근 저장됨', 'ok');
-      loadTeamWeek();
-    }).catch(() => {});
+  if (record.fieldWork) {
+    showFieldMemoForm();
+    return;
   }
+
+  if (!(await requireCompanyNetwork())) return;
+  await completeCheckOut(record);
 }
 
 function handleResetToday() {
@@ -1200,6 +1343,7 @@ function handleResetToday() {
   saveRecords(records);
   checkInInputTouched = false;
   checkInTimeDirty = false;
+  saveFieldModePending(false);
 
   const notified = loadNotified();
   Object.keys(notified).forEach((k) => {
@@ -1213,7 +1357,7 @@ function handleResetToday() {
 function handleExport() {
   const records = loadRecords();
   const name = getUserName();
-  const rows = [['이름', '날짜', '출근', '퇴근', '퇴근예정', '순근무(분)']];
+  const rows = [['이름', '날짜', '근무유형', '출근', '퇴근', '퇴근예정', '순근무(분)', '외근메모']];
 
   Object.keys(records).sort().forEach((key) => {
     const r = records[key];
@@ -1223,10 +1367,12 @@ function handleExport() {
     rows.push([
       r.userName || name,
       key,
+      r.fieldWork ? '외근' : '사무실',
       formatTimeShort(parseISO(r.checkIn)),
       r.checkOut ? formatTimeShort(parseISO(r.checkOut)) : '',
       formatTimeShort(leave),
       netWork,
+      r.fieldMemo || '',
     ]);
   });
 
@@ -1298,6 +1444,9 @@ function init() {
     }
   });
   document.getElementById('btnCheckOut').addEventListener('click', handleCheckOut);
+  document.getElementById('fieldWorkToggle')?.addEventListener('change', handleFieldWorkToggle);
+  document.getElementById('btnFieldCheckOut')?.addEventListener('click', handleFieldCheckOut);
+  document.getElementById('btnFieldMemoCancel')?.addEventListener('click', handleFieldMemoCancel);
 
   const checkInInput = document.getElementById('checkInInput');
   if (checkInInput) {
