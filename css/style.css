@@ -2438,9 +2438,18 @@ body {
   min-height: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   padding: max(0.75rem, env(safe-area-inset-top)) 0.75rem 0;
   padding-bottom: var(--chat-kb-offset, 0px);
   background: var(--bg);
+}
+
+.chat-stage .chat-setup.card {
+  margin-bottom: 0.5rem;
+  padding: 0.875rem 1rem;
+  flex-shrink: 0;
+  box-shadow: none;
+  border: 1px solid var(--border);
 }
 
 .chat-topbar {
@@ -2561,7 +2570,7 @@ body {
 
 .chat-footer {
   flex-shrink: 0;
-  padding: 0.5rem 0 0.25rem;
+  padding: 0.5rem 0 max(0.25rem, env(safe-area-inset-bottom));
   background: var(--bg);
   border-top: 1px solid var(--border);
 }
@@ -2631,11 +2640,13 @@ body {
 }
 
 .chat-form .btn,
+.chat-form .btn-primary,
 .chat-send-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: auto;
+  max-width: none;
   flex: 0 0 auto;
   flex-shrink: 0;
   min-width: 3.25rem;
@@ -2643,6 +2654,7 @@ body {
   padding-left: 0.875rem;
   padding-right: 0.875rem;
   border-radius: 999px;
+  white-space: nowrap;
 }
 
 @media (prefers-color-scheme: dark) {

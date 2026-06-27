@@ -11,6 +11,32 @@ const FORTUNE_GRADES = {
   chill: { label: '평온', emoji: '☁️', color: '#60a5fa' },
 };
 
+/** 사주 오행 궁합 → 운세 등급 */
+const SAJU_RELATION_TO_GRADE = {
+  same: 'great',
+  input: 'great',
+  output: 'good',
+  control: 'normal',
+  pressure: 'chill',
+  neutral: 'normal',
+};
+
+/** 오늘 일진 오행 → 한마디 태그 */
+const SAJU_ELEMENT_QUOTE_TAGS = {
+  wood: ['성장', '실행', '아이디어', '집중'],
+  fire: ['소통', '협업', '관계', '응원'],
+  earth: ['정리', '마무리', '균형', '팁'],
+  metal: ['팁', '집중', '실행', '정리'],
+  water: ['마음', '휴식', '균형', '리셋'],
+};
+
+const SAJU_STAR_SCORE_RANGE = {
+  5: { min: 93, max: 100 },
+  4: { min: 87, max: 95 },
+  3: { min: 83, max: 90 },
+  2: { min: 80, max: 87 },
+};
+
 /** 등급별 행운 점수 구간 (전체 평균 ~90점대) */
 const GRADE_SCORE_RANGE = {
   great: { min: 93, max: 100 },
@@ -118,7 +144,50 @@ function getFortuneUserName() {
   return typeof getUserName === 'function' ? getUserName() : '';
 }
 
+function getBirthISOForDaily() {
+  if (typeof getBirthDateFromSettings === 'function') return getBirthDateFromSettings();
+  return '';
+}
+
+function getSajuContext() {
+  const birthISO = getBirthISOForDaily();
+  if (!birthISO || typeof buildTodaySaju !== 'function') return null;
+  return buildTodaySaju(birthISO);
+}
+
+function pickFromPool(pool, seed) {
+  if (!pool.length) return 0;
+  return pool[seed % pool.length];
+}
+
+function pickDailyQuoteIndexFromSaju(saju, birthISO) {
+  const tags = SAJU_ELEMENT_QUOTE_TAGS[saju.dayElement] || [];
+  const tagged = DAILY_QUOTES.map((q, i) => i).filter((i) => tags.includes(DAILY_QUOTES[i].tag));
+  const pool = tagged.length ? tagged : DAILY_QUOTES.map((_, i) => i);
+  const seed = hashFortuneSeed(`${todayKey()}:${birthISO}:quote`);
+  return pickFromPool(pool, seed);
+}
+
+function pickFortuneIndexFromSaju(saju, birthISO) {
+  const grade = SAJU_RELATION_TO_GRADE[saju.relation] || 'normal';
+  const matched = FORTUNES.map((f, i) => i).filter((i) => FORTUNES[i].grade === grade);
+  const pool = matched.length ? matched : FORTUNES.map((_, i) => i);
+  const seed = hashFortuneSeed(`${todayKey()}:${birthISO}:fortune`);
+  return pickFromPool(pool, seed);
+}
+
+function pickLuckScoreFromSaju(saju, birthISO) {
+  const range = SAJU_STAR_SCORE_RANGE[saju.starCount] || SAJU_STAR_SCORE_RANGE[3];
+  const seed = hashFortuneSeed(`${todayKey()}:${birthISO}:score`);
+  const span = range.max - range.min + 1;
+  return range.min + (seed % span);
+}
+
 function pickDailyQuoteIndex() {
+  const birthISO = getBirthISOForDaily();
+  const saju = birthISO ? getSajuContext() : null;
+  if (saju) return pickDailyQuoteIndexFromSaju(saju, birthISO);
+
   const name = getFortuneUserName();
   const seed = hashFortuneSeed(`${todayKey()}:${name || '사원'}:quote`);
   return seed % DAILY_QUOTES.length;
@@ -132,6 +201,11 @@ function loadTodayFortune() {
   try {
     const data = JSON.parse(localStorage.getItem(FORTUNE_STORAGE_KEY) || 'null');
     if (!data || data.dayKey !== todayKey()) return null;
+    const birthISO = getBirthISOForDaily();
+    if (birthISO && !data.sajuLinked) {
+      localStorage.removeItem(FORTUNE_STORAGE_KEY);
+      return null;
+    }
     return data;
   } catch {
     return null;
@@ -140,8 +214,13 @@ function loadTodayFortune() {
 
 function saveTodayFortune(fortuneIndex) {
   const fortune = FORTUNES[fortuneIndex];
-  const quote = getTodayQuote();
-  const luckScore = pickLuckScore(fortune.grade, fortuneIndex);
+  const birthISO = getBirthISOForDaily();
+  const saju = birthISO ? getSajuContext() : null;
+  const quoteIndex = pickDailyQuoteIndex();
+  const quote = DAILY_QUOTES[quoteIndex];
+  const luckScore = saju
+    ? pickLuckScoreFromSaju(saju, birthISO)
+    : pickLuckScore(fortune.grade, fortuneIndex);
   const record = {
     dayKey: todayKey(),
     index: fortuneIndex,
@@ -149,6 +228,7 @@ function saveTodayFortune(fortuneIndex) {
     quoteText: quote.text,
     quoteTag: quote.tag,
     luckScore,
+    sajuLinked: Boolean(saju),
     ...fortune,
   };
   localStorage.setItem(FORTUNE_STORAGE_KEY, JSON.stringify(record));
@@ -156,6 +236,10 @@ function saveTodayFortune(fortuneIndex) {
 }
 
 function pickFortuneIndex() {
+  const birthISO = getBirthISOForDaily();
+  const saju = birthISO ? getSajuContext() : null;
+  if (saju) return pickFortuneIndexFromSaju(saju, birthISO);
+
   const name = getFortuneUserName();
   const seed = hashFortuneSeed(`${todayKey()}:${name || '사원'}`);
   return seed % FORTUNES.length;
@@ -171,6 +255,9 @@ function pickLuckScore(grade, fortuneIndex) {
 
 function getLuckScore(record) {
   if (typeof record.luckScore === 'number') return record.luckScore;
+  const birthISO = getBirthISOForDaily();
+  const saju = birthISO ? getSajuContext() : null;
+  if (saju) return pickLuckScoreFromSaju(saju, birthISO);
   return pickLuckScore(record.grade, record.index ?? 0);
 }
 
