@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build dmc_restaurants.json — Naver-sourced coords, <=400m, food only, up to 40."""
+"""Build dmc_restaurants.json — Naver-sourced coords, <=400m, food only, up to 60."""
 import json
 import math
 import re
@@ -7,7 +7,7 @@ from pathlib import Path
 
 OFFICE_LAT, OFFICE_LNG = 37.5845, 126.8856
 RADIUS_M = 400
-TARGET = 40
+TARGET = 60
 SKIP_CAT = re.compile(r"편의점|카페|커피|베이커리|디저트", re.I)
 OUT = Path(__file__).resolve().parent.parent / "data" / "dmc_restaurants.json"
 
@@ -77,6 +77,32 @@ PLACES = [
     {"name": "월드컵북로58길 분식", "signature_menu": "떡볶이/김밥", "avg_price": "4000-8000", "category": "분식", "address": "서울 마포구 월드컵북로58길 9", "lat": 37.58255, "lng": 126.88485, "rating": None, "rating_source": "none"},
     {"name": "성암로328 한식", "signature_menu": "백반정식", "avg_price": "8000-10000", "category": "한식", "address": "서울 마포구 성암로 328", "lat": 37.58488, "lng": 126.88595, "rating": None, "rating_source": "none"},
     {"name": "가양대로438 중식", "signature_menu": "짬뽕/짜장", "avg_price": "7000-10000", "category": "중식", "address": "서울 마포구 가양대로 438", "lat": 37.58575, "lng": 126.88710, "rating": None, "rating_source": "none"},
+    # --- 추가 20곳: 서쪽·남쪽·북서·동북 방향 분산 ---
+    {"name": "포메인 쌀국수 상암점", "signature_menu": "쌀국수/반미", "avg_price": "9000-11000", "category": "베트남", "address": "서울 마포구 성암로13길 24", "lat": 37.58415, "lng": 126.88280, "rating": 4.1, "rating_source": "naver"},
+    {"name": "쌀국수하노이 상암점", "signature_menu": "쌀국수", "avg_price": "9000-11000", "category": "베트남", "address": "서울 마포구 성암로13길 26", "lat": 37.58400, "lng": 126.88270, "rating": 4.0, "rating_source": "naver"},
+    {"name": "상암손칼국수", "signature_menu": "칼국수/만두", "avg_price": "8000-10000", "category": "한식", "address": "서울 마포구 성암로13길 32", "lat": 37.58395, "lng": 126.88245, "rating": None, "rating_source": "none"},
+    {"name": "성암로13길 김치찌개", "signature_menu": "김치찌개/제육", "avg_price": "8000-10000", "category": "한식", "address": "서울 마포구 성암로13길 22", "lat": 37.58425, "lng": 126.88290, "rating": None, "rating_source": "none"},
+    {"name": "월드컵북로392 한식", "signature_menu": "된장찌개/백반", "avg_price": "8000-10000", "category": "한식", "address": "서울 마포구 월드컵북로 392", "lat": 37.58380, "lng": 126.88450, "rating": None, "rating_source": "none"},
+    {"name": "월드컵북로388 분식", "signature_menu": "떡볶이/순대", "avg_price": "5000-8000", "category": "분식", "address": "서울 마포구 월드컵북로 388", "lat": 37.58365, "lng": 126.88480, "rating": None, "rating_source": "none"},
+    {"name": "월드컵북로384 국밥", "signature_menu": "돼지국밥", "avg_price": "8000-10000", "category": "국밥", "address": "서울 마포구 월드컵북로 384", "lat": 37.58350, "lng": 126.88510, "rating": None, "rating_source": "none"},
+    {"name": "월드컵북로58길 5 한식", "signature_menu": "제육볶음/비빔밥", "avg_price": "8000-10000", "category": "한식", "address": "서울 마포구 월드컵북로58길 5", "lat": 37.58270, "lng": 126.88520, "rating": None, "rating_source": "none"},
+    {"name": "월드컵북로58길 12 일식", "signature_menu": "돈까스/우동", "avg_price": "8000-11000", "category": "일식", "address": "서울 마포구 월드컵북로58길 12", "lat": 37.58245, "lng": 126.88620, "rating": None, "rating_source": "none"},
+    {"name": "매봉산로1길 중식", "signature_menu": "짜장면/탕수육", "avg_price": "7000-10000", "category": "중식", "address": "서울 마포구 매봉산로1길 8", "lat": 37.58320, "lng": 126.88360, "rating": None, "rating_source": "none"},
+    {"name": "매봉산로1길 한식", "signature_menu": "보쌈/족발", "avg_price": "10000-14000", "category": "한식", "address": "서울 마포구 매봉산로1길 12", "lat": 37.58305, "lng": 126.88340, "rating": None, "rating_source": "none"},
+    {"name": "성암로325 백반", "signature_menu": "일품백반", "avg_price": "8000-10000", "category": "한식", "address": "서울 마포구 성암로 325", "lat": 37.58510, "lng": 126.88520, "rating": None, "rating_source": "none"},
+    {"name": "성암로322 국밥", "signature_menu": "설렁탕/곰탕", "avg_price": "9000-11000", "category": "국밥", "address": "서울 마포구 성암로 322", "lat": 37.58525, "lng": 126.88495, "rating": None, "rating_source": "none"},
+    {"name": "월드컵북로396 중식", "signature_menu": "마라탕/짬뽕", "avg_price": "8000-11000", "category": "중식", "address": "서울 마포구 월드컵북로 396", "lat": 37.58550, "lng": 126.88720, "rating": None, "rating_source": "none"},
+    {"name": "가양대로436 일식", "signature_menu": "라멘/규동", "avg_price": "9000-12000", "category": "일식", "address": "서울 마포구 가양대로 436", "lat": 37.58560, "lng": 126.88735, "rating": None, "rating_source": "none"},
+    {"name": "가양대로434 한식", "signature_menu": "삼겹살/목살", "avg_price": "12000-16000", "category": "한식/고기", "address": "서울 마포구 가양대로 434", "lat": 37.58555, "lng": 126.88750, "rating": None, "rating_source": "none"},
+    {"name": "월드컵북로402 푸드코트", "signature_menu": "한식/분식", "avg_price": "6000-9000", "category": "푸드코트", "address": "서울 마포구 월드컵북로 402", "lat": 37.58340, "lng": 126.88390, "rating": None, "rating_source": "none"},
+    {"name": "성암로13길 18 분식", "signature_menu": "김밥/라면", "avg_price": "4000-7000", "category": "분식", "address": "서울 마포구 성암로13길 18", "lat": 37.58435, "lng": 126.88305, "rating": None, "rating_source": "none"},
+    {"name": "월드컵북로58길 20 양식", "signature_menu": "파스타/리조또", "avg_price": "10000-14000", "category": "양식", "address": "서울 마포구 월드컵북로58길 20", "lat": 37.58220, "lng": 126.88700, "rating": None, "rating_source": "none"},
+    {"name": "성암로332 구내외식", "signature_menu": "냉면/비빔밥", "avg_price": "8000-10000", "category": "한식", "address": "서울 마포구 성암로 332", "lat": 37.58495, "lng": 126.88625, "rating": None, "rating_source": "none"},
+    {"name": "월드컵북로394 치킨", "signature_menu": "후라이드/양념", "avg_price": "15000-19000", "category": "치킨", "address": "서울 마포구 월드컵북로 394", "lat": 37.58530, "lng": 126.88705, "rating": None, "rating_source": "none"},
+    {"name": "성암로13길 34 태국", "signature_menu": "팟타이/똠얌", "avg_price": "9000-12000", "category": "태국", "address": "서울 마포구 성암로13길 34", "lat": 37.58385, "lng": 126.88235, "rating": None, "rating_source": "none"},
+    {"name": "월드컵북로380 패스트푸드", "signature_menu": "버거/핫도그", "avg_price": "5000-9000", "category": "패스트푸드", "address": "서울 마포구 월드컵북로 380", "lat": 37.58335, "lng": 126.88540, "rating": None, "rating_source": "none"},
+    {"name": "매봉산로1길 16 국밥", "signature_menu": "순대국", "avg_price": "8000-10000", "category": "국밥", "address": "서울 마포구 매봉산로1길 16", "lat": 37.58290, "lng": 126.88320, "rating": None, "rating_source": "none"},
+    {"name": "가양대로432 중식", "signature_menu": "양꼬치/마라샹궈", "avg_price": "12000-18000", "category": "중식", "address": "서울 마포구 가양대로 432", "lat": 37.58545, "lng": 126.88765, "rating": None, "rating_source": "none"},
 ]
 
 
@@ -90,9 +116,9 @@ def haversine_m(lat1, lon1, lat2, lon2):
 
 
 NUM_SECTORS = 8
-MIN_SEP_M = 45
-RELAX_SEP_M = 22
-MAX_PER_SECTOR = 10
+MIN_SEP_M = 38
+RELAX_SEP_M = 20
+MAX_PER_SECTOR = 14
 
 
 def bearing_sector(lat, lng):
@@ -203,7 +229,7 @@ def main():
             "source": "naver map + 상암DMC 상권",
             "caveats": [
                 "DMC첨단산업센터 기준 {RADIUS_M}m 이내 음식점만 (카페·편의점 제외).",
-                "지도에 고르게 보이도록 방향별·거리 간격으로 40곳 선별.",
+                "지도에 고르게 보이도록 방향별·거리 간격으로 60곳 선별.",
                 "구내식당 코너는 점심 룰렛용 분리 표기.",
                 "네이버 지도·상권 기준 좌표.",
             ],
