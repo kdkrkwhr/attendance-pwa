@@ -26,6 +26,7 @@ window.APP_CONFIG = {
     dataUrl: './data/dmc_restaurants.json',
     defaultCenter: [37.5845, 126.8856],
     defaultZoom: 16,
+    radiusM: 300,
   },
   /**
    * Hermes gateway OpenAI 호환 API (설정 탭에서 URL·키 저장, 이 기기 localStorage)

@@ -4,6 +4,7 @@
  */
 const OSM_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const OSM_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
+const LUNCH_RADIUS_M = 300;
 
 let lunchMapInstance = null;
 let lunchMapMarkers = [];
@@ -16,6 +17,35 @@ let lunchOfficeCircle = null;
 
 function getLunchMapConfig() {
   return window.APP_CONFIG?.lunchMap || {};
+}
+
+function getLunchRadiusM(data) {
+  const metaR = Number(data?.meta?.radius_m);
+  if (Number.isFinite(metaR) && metaR > 0) return metaR;
+  const cfgR = Number(getLunchMapConfig().radiusM);
+  if (Number.isFinite(cfgR) && cfgR > 0) return cfgR;
+  return LUNCH_RADIUS_M;
+}
+
+function haversineM(lat1, lon1, lat2, lon2) {
+  const r = 6371000;
+  const p1 = (lat1 * Math.PI) / 180;
+  const p2 = (lat2 * Math.PI) / 180;
+  const dphi = ((lat2 - lat1) * Math.PI) / 180;
+  const dlambda = ((lon2 - lon1) * Math.PI) / 180;
+  const a = Math.sin(dphi / 2) ** 2 + Math.cos(p1) * Math.cos(p2) * Math.sin(dlambda / 2) ** 2;
+  return 2 * r * Math.asin(Math.sqrt(a));
+}
+
+function filterPlacesByOfficeRadius(places, office, radiusM) {
+  if (!office || !Number.isFinite(radiusM)) return places;
+  return places
+    .map((place) => {
+      const dist = haversineM(office.lat, office.lng, place.lat, place.lng);
+      return { ...place, distance_m: Math.round(dist * 10) / 10 };
+    })
+    .filter((place) => place.distance_m <= radiusM)
+    .sort((a, b) => a.distance_m - b.distance_m);
 }
 
 function getLunchMapDataUrl() {
@@ -134,9 +164,11 @@ function normalizeRestaurantData(raw) {
     }
   }
 
-  const places = sourcePlaces
-    .map((place, index) => normalizePlace(place, index, 'dmc'))
-    .filter(Boolean);
+  const places = filterPlacesByOfficeRadius(
+    sourcePlaces.map((place, index) => normalizePlace(place, index, 'dmc')).filter(Boolean),
+    office,
+    getLunchRadiusM({ meta }),
+  );
 
   return { office, places, meta };
 }
@@ -179,7 +211,8 @@ function updateLunchMapDesc(data) {
   const descEl = document.getElementById('lunchMapDesc');
   if (!descEl) return;
   const anchor = data.meta?.anchor || data.office?.name || 'DMC';
-  descEl.textContent = `${anchor} · ${data.places.length}곳`;
+  const radius = getLunchRadiusM(data);
+  descEl.textContent = `${anchor} · ${data.places.length}곳 · ${radius}m`;
 }
 
 function getMapCenter(data) {
@@ -355,9 +388,9 @@ function renderLunchMapMarkers(data) {
     lunchOfficeCircle = L.circle([data.office.lat, data.office.lng], {
       color: '#2563eb',
       fillColor: '#3b82f6',
-      fillOpacity: 0.18,
-      radius: 90,
-      weight: 3,
+      fillOpacity: 0.12,
+      radius: getLunchRadiusM(data),
+      weight: 2,
       dashArray: '6 4',
     }).addTo(lunchMapInstance);
 
