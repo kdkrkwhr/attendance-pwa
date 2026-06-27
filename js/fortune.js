@@ -307,6 +307,12 @@ function drawTodayFortune() {
   return saveTodayFortune(pickFortuneIndex());
 }
 
+/** 생년월일 있으면 사주·한마디·운세·점수를 같은 날 번들로 맞춤 */
+function ensureTodayFortune() {
+  if (!getBirthISOForDaily()) return loadTodayFortune();
+  return drawTodayFortune();
+}
+
 function getFortuneGradeMeta(grade) {
   return FORTUNE_GRADES[grade] || FORTUNE_GRADES.normal;
 }
@@ -323,6 +329,8 @@ function renderDailyQuote() {
   const tagEl = document.getElementById('dailyQuoteTag');
   if (!quoteEl) return;
 
+  if (getBirthISOForDaily()) ensureTodayFortune();
+
   const record = loadTodayFortune();
   const quote = record?.quoteText
     ? { text: record.quoteText, tag: record.quoteTag }
@@ -333,6 +341,7 @@ function renderDailyQuote() {
 }
 
 function renderFortune() {
+  if (getBirthISOForDaily()) ensureTodayFortune();
   renderDailyQuote();
 
   const idleEl = document.getElementById('fortuneIdle');

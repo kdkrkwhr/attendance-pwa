@@ -70,6 +70,13 @@ PLACES = [
     {"name": "이마트24 상암DMC점", "signature_menu": "도시락", "avg_price": "3000-6000", "category": "편의점", "address": "서울 마포구 가양대로 440", "lat": 37.58586, "lng": 126.88554, "rating": None, "rating_source": "none"},
     {"name": "빽다방 상암DMC점", "signature_menu": "아메리카노", "avg_price": "2000-5000", "category": "카페", "address": "서울 마포구 성암로 328", "lat": 37.58481, "lng": 126.88584, "rating": None, "rating_source": "none"},
     {"name": "탐앤탐스 상암점", "signature_menu": "커피/베이커리", "avg_price": "4000-7000", "category": "카페", "address": "서울 마포구 가양대로 440", "lat": 37.58604, "lng": 126.88546, "rating": None, "rating_source": "none"},
+    {"name": "오한수우육면가 상암DMC점", "signature_menu": "우육면/냉면", "avg_price": "9000-12000", "category": "중식", "address": "서울 마포구 성암로 330", "lat": 37.58492, "lng": 126.88542, "rating": 4.0, "rating_source": "naver"},
+    {"name": "일포베트남쌀국수", "signature_menu": "쌀국수/분짜", "avg_price": "9000-11000", "category": "베트남", "address": "서울 마포구 성암로13길 28", "lat": 37.58390, "lng": 126.88265, "rating": 4.2, "rating_source": "naver"},
+    {"name": "상암동국밥", "signature_menu": "사골국밥", "avg_price": "8000-10000", "category": "국밥", "address": "서울 마포구 성암로13길 30", "lat": 37.58405, "lng": 126.88255, "rating": None, "rating_source": "none"},
+    {"name": "DMC푸르지오시티 푸드코트", "signature_menu": "한식/분식", "avg_price": "6000-9000", "category": "푸드코트", "address": "서울 마포구 월드컵북로 400", "lat": 37.58355, "lng": 126.88420, "rating": None, "rating_source": "none"},
+    {"name": "월드컵북로58길 분식", "signature_menu": "떡볶이/김밥", "avg_price": "4000-8000", "category": "분식", "address": "서울 마포구 월드컵북로58길 9", "lat": 37.58255, "lng": 126.88485, "rating": None, "rating_source": "none"},
+    {"name": "성암로328 한식", "signature_menu": "백반정식", "avg_price": "8000-10000", "category": "한식", "address": "서울 마포구 성암로 328", "lat": 37.58488, "lng": 126.88595, "rating": None, "rating_source": "none"},
+    {"name": "가양대로438 중식", "signature_menu": "짬뽕/짜장", "avg_price": "7000-10000", "category": "중식", "address": "서울 마포구 가양대로 438", "lat": 37.58575, "lng": 126.88710, "rating": None, "rating_source": "none"},
 ]
 
 
@@ -80,6 +87,89 @@ def haversine_m(lat1, lon1, lat2, lon2):
     dl = math.radians(lon2 - lon1)
     a = math.sin(dphi / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
     return 2 * r * math.asin(math.sqrt(a))
+
+
+NUM_SECTORS = 8
+MIN_SEP_M = 45
+RELAX_SEP_M = 22
+MAX_PER_SECTOR = 10
+
+
+def bearing_sector(lat, lng):
+    dy = lat - OFFICE_LAT
+    dx = lng - OFFICE_LNG
+    ang = (math.degrees(math.atan2(dx, dy)) + 360) % 360
+    return int(ang // 45) % NUM_SECTORS
+
+
+def too_close(candidate, selected, min_sep_m):
+    for item in selected:
+        if haversine_m(candidate["lat"], candidate["lng"], item["lat"], item["lng"]) < min_sep_m:
+            return True
+    return False
+
+
+def select_spread(candidates, target=TARGET):
+    """ponytail: 8-sector round-robin + min separation; upgrade path = k-means cluster caps."""
+    by_sector = [[] for _ in range(NUM_SECTORS)]
+    for item in sorted(candidates, key=lambda x: x["distance_m"]):
+        by_sector[bearing_sector(item["lat"], item["lng"])].append(item)
+
+    selected = []
+    seen = set()
+    counts = [0] * NUM_SECTORS
+
+    def add(item):
+        key = item["name"]
+        if key in seen:
+            return False
+        selected.append(item)
+        seen.add(key)
+        counts[bearing_sector(item["lat"], item["lng"])] += 1
+        return True
+
+    for sec in range(NUM_SECTORS):
+        for item in by_sector[sec]:
+            if too_close(item, selected, MIN_SEP_M):
+                continue
+            if add(item):
+                break
+
+    sec = 0
+    guard = 0
+    while len(selected) < target and guard < target * NUM_SECTORS * 4:
+        guard += 1
+        if counts[sec] >= MAX_PER_SECTOR or not by_sector[sec]:
+            sec = (sec + 1) % NUM_SECTORS
+            continue
+        picked = False
+        for item in by_sector[sec]:
+            if item["name"] in seen or too_close(item, selected, MIN_SEP_M):
+                continue
+            add(item)
+            picked = True
+            break
+        sec = (sec + 1) % NUM_SECTORS
+        if not picked and guard > NUM_SECTORS * 2:
+            break
+
+    if len(selected) < target:
+        for item in sorted(candidates, key=lambda x: x["distance_m"]):
+            if len(selected) >= target:
+                break
+            if item["name"] in seen or too_close(item, selected, RELAX_SEP_M):
+                continue
+            add(item)
+
+    if len(selected) < target:
+        for item in sorted(candidates, key=lambda x: x["distance_m"]):
+            if len(selected) >= target:
+                break
+            if item["name"] in seen:
+                continue
+            add(item)
+
+    return selected[:target]
 
 
 def main():
@@ -98,9 +188,8 @@ def main():
         seen.add(key)
         kept.append({**p, "coord_confidence": "naver", "phone": "", "distance_m": round(dist, 1)})
 
-    kept.sort(key=lambda x: x["distance_m"])
-    kept = kept[:TARGET]
-    print(f"kept {len(kept)}")
+    kept = select_spread(kept, TARGET)
+    print(f"kept {len(kept)} (spread across {len({bearing_sector(p['lat'], p['lng']) for p in kept})} sectors)")
 
     restaurants = [{k: v for k, v in p.items() if k not in ("distance_m",)} for p in kept]
     out = {
@@ -113,7 +202,8 @@ def main():
             "purpose": f"점심 맛집 지도 (회사 반경 {RADIUS_M}m, 음식점만)",
             "source": "naver map + 상암DMC 상권",
             "caveats": [
-                f"DMC첨단산업센터 기준 {RADIUS_M}m 이내 음식점만 (카페·편의점 제외).",
+                "DMC첨단산업센터 기준 {RADIUS_M}m 이내 음식점만 (카페·편의점 제외).",
+                "지도에 고르게 보이도록 방향별·거리 간격으로 40곳 선별.",
                 "구내식당 코너는 점심 룰렛용 분리 표기.",
                 "네이버 지도·상권 기준 좌표.",
             ],
