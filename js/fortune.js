@@ -21,13 +21,14 @@ const SAJU_RELATION_TO_GRADE = {
   neutral: 'normal',
 };
 
-/** 오늘 일진 오행 → 한마디 태그 */
-const SAJU_ELEMENT_QUOTE_TAGS = {
-  wood: ['성장', '실행', '아이디어', '집중'],
-  fire: ['소통', '협업', '관계', '응원'],
-  earth: ['정리', '마무리', '균형', '팁'],
-  metal: ['팁', '집중', '실행', '정리'],
-  water: ['마음', '휴식', '균형', '리셋'],
+/** 오행 궁합 → 한마디 태그 (운세 등급·점수와 같은 축) */
+const SAJU_RELATION_QUOTE_TAGS = {
+  same: ['성장', '실행', '응원', '긍정', '협업'],
+  input: ['응원', '성장', '마음', '긍정'],
+  output: ['협업', '소통', '관계', '실행'],
+  control: ['균형', '팁', '집중', '마무리'],
+  pressure: ['휴식', '마음', '균형', '리셋'],
+  neutral: ['균형', '마무리', '집중', '팁'],
 };
 
 const SAJU_STAR_SCORE_RANGE = {
@@ -160,33 +161,57 @@ function pickFromPool(pool, seed) {
   return pool[seed % pool.length];
 }
 
-function pickDailyQuoteIndexFromSaju(saju, birthISO) {
-  const tags = SAJU_ELEMENT_QUOTE_TAGS[saju.dayElement] || [];
-  const tagged = DAILY_QUOTES.map((q, i) => i).filter((i) => tags.includes(DAILY_QUOTES[i].tag));
-  const pool = tagged.length ? tagged : DAILY_QUOTES.map((_, i) => i);
-  const seed = hashFortuneSeed(`${todayKey()}:${birthISO}:quote`);
-  return pickFromPool(pool, seed);
-}
+let dailyBundleCache = null;
 
-function pickFortuneIndexFromSaju(saju, birthISO) {
+function buildSajuDailyBundle(birthISO) {
+  const saju = getSajuContext();
+  if (!saju) return null;
+
   const grade = SAJU_RELATION_TO_GRADE[saju.relation] || 'normal';
-  const matched = FORTUNES.map((f, i) => i).filter((i) => FORTUNES[i].grade === grade);
-  const pool = matched.length ? matched : FORTUNES.map((_, i) => i);
-  const seed = hashFortuneSeed(`${todayKey()}:${birthISO}:fortune`);
-  return pickFromPool(pool, seed);
+  const fortunePool = FORTUNES.map((f, i) => i).filter((i) => FORTUNES[i].grade === grade);
+  const fortuneIndex = pickFromPool(
+    fortunePool.length ? fortunePool : FORTUNES.map((_, i) => i),
+    hashFortuneSeed(`${todayKey()}:${birthISO}:fortune`),
+  );
+
+  const quoteTags = SAJU_RELATION_QUOTE_TAGS[saju.relation] || SAJU_RELATION_QUOTE_TAGS.neutral;
+  const quotePool = DAILY_QUOTES.map((q, i) => i).filter((i) => quoteTags.includes(DAILY_QUOTES[i].tag));
+  const quoteIndex = pickFromPool(
+    quotePool.length ? quotePool : DAILY_QUOTES.map((_, i) => i),
+    hashFortuneSeed(`${todayKey()}:${birthISO}:quote`),
+  );
+
+  const scoreRange = SAJU_STAR_SCORE_RANGE[saju.starCount] || SAJU_STAR_SCORE_RANGE[3];
+  const scoreSpan = scoreRange.max - scoreRange.min + 1;
+  const luckScore = scoreRange.min + (hashFortuneSeed(`${todayKey()}:${birthISO}:score`) % scoreSpan);
+
+  return {
+    dayKey: todayKey(),
+    birthISO,
+    saju,
+    grade,
+    fortuneIndex,
+    quoteIndex,
+    luckScore,
+  };
 }
 
-function pickLuckScoreFromSaju(saju, birthISO) {
-  const range = SAJU_STAR_SCORE_RANGE[saju.starCount] || SAJU_STAR_SCORE_RANGE[3];
-  const seed = hashFortuneSeed(`${todayKey()}:${birthISO}:score`);
-  const span = range.max - range.min + 1;
-  return range.min + (seed % span);
+function getSajuDailyBundle() {
+  const birthISO = getBirthISOForDaily();
+  if (!birthISO) {
+    dailyBundleCache = null;
+    return null;
+  }
+  if (dailyBundleCache?.dayKey === todayKey() && dailyBundleCache?.birthISO === birthISO) {
+    return dailyBundleCache;
+  }
+  dailyBundleCache = buildSajuDailyBundle(birthISO);
+  return dailyBundleCache;
 }
 
 function pickDailyQuoteIndex() {
-  const birthISO = getBirthISOForDaily();
-  const saju = birthISO ? getSajuContext() : null;
-  if (saju) return pickDailyQuoteIndexFromSaju(saju, birthISO);
+  const bundle = getSajuDailyBundle();
+  if (bundle) return bundle.quoteIndex;
 
   const name = getFortuneUserName();
   const seed = hashFortuneSeed(`${todayKey()}:${name || '사원'}:quote`);
@@ -206,6 +231,11 @@ function loadTodayFortune() {
       localStorage.removeItem(FORTUNE_STORAGE_KEY);
       return null;
     }
+    const bundle = birthISO ? getSajuDailyBundle() : null;
+    if (bundle && data.sajuLinked && data.grade !== bundle.grade) {
+      localStorage.removeItem(FORTUNE_STORAGE_KEY);
+      return null;
+    }
     return data;
   } catch {
     return null;
@@ -213,13 +243,13 @@ function loadTodayFortune() {
 }
 
 function saveTodayFortune(fortuneIndex) {
+  const bundle = getSajuDailyBundle();
   const fortune = FORTUNES[fortuneIndex];
-  const birthISO = getBirthISOForDaily();
-  const saju = birthISO ? getSajuContext() : null;
-  const quoteIndex = pickDailyQuoteIndex();
-  const quote = DAILY_QUOTES[quoteIndex];
-  const luckScore = saju
-    ? pickLuckScoreFromSaju(saju, birthISO)
+  const quote = bundle
+    ? DAILY_QUOTES[bundle.quoteIndex]
+    : DAILY_QUOTES[pickDailyQuoteIndex()];
+  const luckScore = bundle
+    ? bundle.luckScore
     : pickLuckScore(fortune.grade, fortuneIndex);
   const record = {
     dayKey: todayKey(),
@@ -228,7 +258,7 @@ function saveTodayFortune(fortuneIndex) {
     quoteText: quote.text,
     quoteTag: quote.tag,
     luckScore,
-    sajuLinked: Boolean(saju),
+    sajuLinked: Boolean(bundle),
     ...fortune,
   };
   localStorage.setItem(FORTUNE_STORAGE_KEY, JSON.stringify(record));
@@ -236,9 +266,8 @@ function saveTodayFortune(fortuneIndex) {
 }
 
 function pickFortuneIndex() {
-  const birthISO = getBirthISOForDaily();
-  const saju = birthISO ? getSajuContext() : null;
-  if (saju) return pickFortuneIndexFromSaju(saju, birthISO);
+  const bundle = getSajuDailyBundle();
+  if (bundle) return bundle.fortuneIndex;
 
   const name = getFortuneUserName();
   const seed = hashFortuneSeed(`${todayKey()}:${name || '사원'}`);
@@ -255,13 +284,16 @@ function pickLuckScore(grade, fortuneIndex) {
 
 function getLuckScore(record) {
   if (typeof record.luckScore === 'number') return record.luckScore;
-  const birthISO = getBirthISOForDaily();
-  const saju = birthISO ? getSajuContext() : null;
-  if (saju) return pickLuckScoreFromSaju(saju, birthISO);
+  const bundle = getSajuDailyBundle();
+  if (bundle) return bundle.luckScore;
   return pickLuckScore(record.grade, record.index ?? 0);
 }
 
-function getLuckScoreMessage(score) {
+function getLuckScoreMessage(score, grade) {
+  if (grade === 'great') return '오늘은 최고의 날! ✨';
+  if (grade === 'good') return '운이 좋은 편이에요';
+  if (grade === 'normal') return '무난한 하루예요';
+  if (grade === 'chill') return '차분히 가도 충분해요';
   if (score >= 97) return '오늘은 최고의 날! ✨';
   if (score >= 92) return '운이 아주 좋은 날이에요';
   if (score >= 87) return '기분 좋은 하루 예감이에요';
@@ -341,7 +373,7 @@ function renderFortune() {
   const scoreMsgEl = document.getElementById('fortuneScoreMsg');
   if (scoreEl) scoreEl.textContent = String(score);
   if (scoreFillEl) scoreFillEl.style.width = `${score}%`;
-  if (scoreMsgEl) scoreMsgEl.textContent = getLuckScoreMessage(score);
+  if (scoreMsgEl) scoreMsgEl.textContent = getLuckScoreMessage(score, record.grade);
 
   if (resultEl) {
     resultEl.style.setProperty('--fortune-accent', meta.color);

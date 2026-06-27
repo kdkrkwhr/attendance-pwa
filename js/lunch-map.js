@@ -55,6 +55,31 @@ function filterPlacesByOfficeRadius(places, office, radiusM) {
     .sort((a, b) => a.distance_m - b.distance_m);
 }
 
+/** ponytail: same-block POIs get display offset so pins don't stack; true lat/lng kept for distance */
+function spreadMapDisplayCoords(places, minSepM = 30) {
+  const placed = [];
+  const golden = 2.399963;
+
+  return places.map((place, index) => {
+    let lat = place.lat;
+    let lng = place.lng;
+
+    for (let attempt = 0; attempt < 14; attempt += 1) {
+      const crowded = placed.some((p) => haversineM(lat, lng, p.lat, p.lng) < minSepM);
+      if (!crowded) break;
+      const angle = (index * golden + attempt * 0.85) % (Math.PI * 2);
+      const radius = minSepM * (0.55 + attempt * 0.28);
+      const metersPerLat = 111320;
+      const metersPerLng = 111320 * Math.cos((place.lat * Math.PI) / 180);
+      lat = place.lat + (Math.cos(angle) * radius) / metersPerLat;
+      lng = place.lng + (Math.sin(angle) * radius) / metersPerLng;
+    }
+
+    placed.push({ lat, lng });
+    return { ...place, displayLat: lat, displayLng: lng };
+  });
+}
+
 function getLunchMapDataUrl() {
   return getLunchMapConfig().dataUrl || './data/dmc_restaurants.json';
 }
@@ -171,10 +196,12 @@ function normalizeRestaurantData(raw) {
     }
   }
 
-  const places = filterPlacesByOfficeRadius(
-    sourcePlaces.map((place, index) => normalizePlace(place, index, 'dmc')).filter(Boolean),
-    office,
-    getLunchRadiusM({ meta }),
+  const places = spreadMapDisplayCoords(
+    filterPlacesByOfficeRadius(
+      sourcePlaces.map((place, index) => normalizePlace(place, index, 'dmc')).filter(Boolean),
+      office,
+      getLunchRadiusM({ meta }),
+    ),
   );
 
   return { office, places, meta };
@@ -330,7 +357,9 @@ function focusLunchPlace(placeId) {
   if (!lunchMapInstance || !lunchMapData) return;
   const place = lunchMapData.places.find((p) => p.id === placeId);
   if (!place) return;
-  lunchMapInstance.setView([place.lat, place.lng], Math.max(lunchMapInstance.getZoom(), 17), { animate: true });
+  const lat = place.displayLat ?? place.lat;
+  const lng = place.displayLng ?? place.lng;
+  lunchMapInstance.setView([lat, lng], Math.max(lunchMapInstance.getZoom(), 17), { animate: true });
   const marker = lunchMapMarkers.find((m) => m.placeId === placeId);
   marker?.openPopup();
   highlightLunchListItem(placeId);
@@ -417,7 +446,9 @@ function renderLunchMapMarkers(data) {
   }
 
   data.places.forEach((place) => {
-    const marker = L.marker([place.lat, place.lng], {
+    const lat = place.displayLat ?? place.lat;
+    const lng = place.displayLng ?? place.lng;
+    const marker = L.marker([lat, lng], {
       icon: createEmojiIcon('🍽️', 'lunch-map-pin-place'),
     }).addTo(lunchMapInstance);
     marker.placeId = place.id;
@@ -430,7 +461,7 @@ function renderLunchMapMarkers(data) {
 
   const boundsPoints = [];
   if (data.office) boundsPoints.push([data.office.lat, data.office.lng]);
-  data.places.forEach((p) => boundsPoints.push([p.lat, p.lng]));
+  data.places.forEach((p) => boundsPoints.push([p.displayLat ?? p.lat, p.displayLng ?? p.lng]));
   if (boundsPoints.length > 1) {
     lunchMapInstance.fitBounds(boundsPoints, { padding: [28, 28], maxZoom: 17 });
   }
@@ -500,7 +531,7 @@ async function initLunchMap(force = false) {
     requestAnimationFrame(() => {
       lunchMapInstance?.invalidateSize();
       if (data.places.length > 0) {
-        const boundsPoints = data.places.map((p) => [p.lat, p.lng]);
+        const boundsPoints = data.places.map((p) => [p.displayLat ?? p.lat, p.displayLng ?? p.lng]);
         if (data.office) boundsPoints.push([data.office.lat, data.office.lng]);
         if (boundsPoints.length > 1) {
           lunchMapInstance.fitBounds(boundsPoints, { padding: [28, 28], maxZoom: 17 });
