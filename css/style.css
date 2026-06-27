@@ -2433,7 +2433,7 @@ body {
   top: 0;
   right: 0;
   left: 0;
-  bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom));
+  bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom) + var(--chat-kb-offset, 0px));
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -2559,7 +2559,7 @@ body {
 
 .chat-footer {
   flex-shrink: 0;
-  padding: 0.5rem 0 max(0.25rem, env(safe-area-inset-bottom));
+  padding: 0.5rem 0 0.25rem;
   background: var(--bg);
   border-top: 1px solid var(--border);
 }
@@ -2653,6 +2653,20 @@ body {
     background: #0f172a;
     border-color: #334155;
   }
+}
+
+[data-theme="dark"] .chat-bubble-assistant {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .chat-input {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+.tab-btn[data-tab="chat"].active {
+  color: #2563eb;
 }
 
 /* ── 퇴근길 (commute-time) ── */

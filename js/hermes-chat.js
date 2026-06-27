@@ -301,11 +301,30 @@ function seedHermesDevDefaults() {
 }
 
 let hermesChatInited = false;
+let chatViewportBound = false;
+
+function bindChatViewport() {
+  if (chatViewportBound || !window.visualViewport) return;
+  const stage = document.querySelector('.chat-stage');
+  if (!stage) return;
+  chatViewportBound = true;
+
+  const sync = () => {
+    const vv = window.visualViewport;
+    const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+    stage.style.setProperty('--chat-kb-offset', `${kb}px`);
+  };
+
+  window.visualViewport.addEventListener('resize', sync);
+  window.visualViewport.addEventListener('scroll', sync);
+  sync();
+}
 
 function initHermesChat() {
   if (hermesChatInited) return;
   hermesChatInited = true;
 
+  bindChatViewport();
   seedHermesDevDefaults();
 
   document.getElementById('chatForm')?.addEventListener('submit', handleChatSubmit);
