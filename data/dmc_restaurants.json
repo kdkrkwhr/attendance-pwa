@@ -3,43 +3,17 @@
     "anchor": "DMC첨단산업센터 (서울 마포구 성암로 330)",
     "anchor_lat": 37.5845,
     "anchor_lng": 126.8856,
-    "radius_m": 300,
+    "radius_m": 400,
     "count": 40,
-    "purpose": "점심 맛집 지도 (회사 반경 300m 이내)",
-    "source": "verified coords + 가양대로/성암로 상권",
+    "purpose": "점심 맛집 지도 (회사 반경 400m, 음식점만)",
+    "source": "naver map + 상암DMC 상권",
     "caveats": [
-      "DMC첨단산업센터 기준 300m 이내만 포함.",
+      "DMC첨단산업센터 기준 400m 이내 음식점만 (카페·편의점 제외).",
       "구내식당 코너는 점심 룰렛용 분리 표기.",
-      "일부 상권 좌표는 건물/상가 근사값."
+      "네이버 지도·상권 기준 좌표."
     ]
   },
   "restaurants": [
-    {
-      "name": "투썸플레이스 상암우리센터",
-      "signature_menu": "샌드위치/케이크",
-      "avg_price": "6000-10000",
-      "category": "카페(식사가능)",
-      "address": "서울 마포구 성암로 330",
-      "lat": 37.58455,
-      "lng": 126.88575,
-      "rating": 4.0,
-      "rating_source": "naver",
-      "coord_confidence": "verified",
-      "phone": ""
-    },
-    {
-      "name": "공차 상암DMC점",
-      "signature_menu": "버블티",
-      "avg_price": "4000-7000",
-      "category": "카페",
-      "address": "서울 마포구 성암로 330",
-      "lat": 37.58471,
-      "lng": 126.88572,
-      "rating": null,
-      "rating_source": "none",
-      "coord_confidence": "verified",
-      "phone": ""
-    },
     {
       "name": "레이시오",
       "signature_menu": "양식",
@@ -50,20 +24,7 @@
       "lng": 126.88582,
       "rating": null,
       "rating_source": "none",
-      "coord_confidence": "verified",
-      "phone": ""
-    },
-    {
-      "name": "GS25 상암DMC점",
-      "signature_menu": "도시락/컵라면",
-      "avg_price": "3000-6000",
-      "category": "편의점",
-      "address": "서울 마포구 성암로 330",
-      "lat": 37.58476,
-      "lng": 126.88574,
-      "rating": null,
-      "rating_source": "none",
-      "coord_confidence": "verified",
+      "coord_confidence": "naver",
       "phone": ""
     },
     {
@@ -76,7 +37,7 @@
       "lng": 126.88595,
       "rating": null,
       "rating_source": "none",
-      "coord_confidence": "verified",
+      "coord_confidence": "naver",
       "phone": ""
     },
     {
@@ -89,33 +50,7 @@
       "lng": 126.88598,
       "rating": null,
       "rating_source": "none",
-      "coord_confidence": "verified",
-      "phone": ""
-    },
-    {
-      "name": "CU 상암DMC점",
-      "signature_menu": "도시락/삼각김밥",
-      "avg_price": "3000-6000",
-      "category": "편의점",
-      "address": "서울 마포구 성암로 330",
-      "lat": 37.5848,
-      "lng": 126.88568,
-      "rating": null,
-      "rating_source": "none",
-      "coord_confidence": "verified",
-      "phone": ""
-    },
-    {
-      "name": "메가MGC커피 상암DMC점",
-      "signature_menu": "커피/토스트",
-      "avg_price": "3000-6000",
-      "category": "카페",
-      "address": "서울 마포구 성암로 330",
-      "lat": 37.58478,
-      "lng": 126.88578,
-      "rating": null,
-      "rating_source": "none",
-      "coord_confidence": "verified",
+      "coord_confidence": "naver",
       "phone": ""
     },
     {
@@ -128,7 +63,7 @@
       "lng": 126.8859,
       "rating": 4.0,
       "rating_source": "naver",
-      "coord_confidence": "verified",
+      "coord_confidence": "naver",
       "phone": ""
     },
     {
@@ -141,20 +76,7 @@
       "lng": 126.886,
       "rating": 4.2,
       "rating_source": "naver",
-      "coord_confidence": "verified",
-      "phone": ""
-    },
-    {
-      "name": "빽다방 상암DMC점",
-      "signature_menu": "아메리카노",
-      "avg_price": "2000-5000",
-      "category": "카페",
-      "address": "서울 마포구 성암로 328",
-      "lat": 37.58481,
-      "lng": 126.88584,
-      "rating": null,
-      "rating_source": "none",
-      "coord_confidence": "verified",
+      "coord_confidence": "naver",
       "phone": ""
     },
     {
@@ -167,20 +89,7 @@
       "lng": 126.88605,
       "rating": null,
       "rating_source": "none",
-      "coord_confidence": "verified",
-      "phone": ""
-    },
-    {
-      "name": "이디야커피 상암DMC점",
-      "signature_menu": "샌드위치/커피",
-      "avg_price": "5000-8000",
-      "category": "카페(식사가능)",
-      "address": "서울 마포구 성암로 328",
-      "lat": 37.58483,
-      "lng": 126.88588,
-      "rating": 3.9,
-      "rating_source": "naver",
-      "coord_confidence": "verified",
+      "coord_confidence": "naver",
       "phone": ""
     },
     {
@@ -193,20 +102,7 @@
       "lng": 126.88608,
       "rating": null,
       "rating_source": "none",
-      "coord_confidence": "verified",
-      "phone": ""
-    },
-    {
-      "name": "세븐일레븐 상암DMC점",
-      "signature_menu": "도시락",
-      "avg_price": "3000-6000",
-      "category": "편의점",
-      "address": "서울 마포구 성암로 328",
-      "lat": 37.58485,
-      "lng": 126.88586,
-      "rating": null,
-      "rating_source": "none",
-      "coord_confidence": "verified",
+      "coord_confidence": "naver",
       "phone": ""
     },
     {
@@ -219,33 +115,46 @@
       "lng": 126.8855,
       "rating": null,
       "rating_source": "none",
-      "coord_confidence": "verified",
+      "coord_confidence": "naver",
       "phone": ""
     },
     {
-      "name": "파리바게뜨 상암DMC점",
-      "signature_menu": "샌드위치/베이커리",
-      "avg_price": "4000-8000",
-      "category": "카페(식사가능)",
-      "address": "서울 마포구 성암로 328",
-      "lat": 37.58487,
-      "lng": 126.88582,
-      "rating": 4.0,
+      "name": "헤비스테이크 상암DMC점",
+      "signature_menu": "스테이크/치즈불고기",
+      "avg_price": "8900-12000",
+      "category": "양식",
+      "address": "서울 마포구 월드컵북로 396",
+      "lat": 37.58542,
+      "lng": 126.88685,
+      "rating": 4.2,
       "rating_source": "naver",
-      "coord_confidence": "verified",
+      "coord_confidence": "naver",
       "phone": ""
     },
     {
-      "name": "이마트24 상암DMC점",
-      "signature_menu": "도시락",
-      "avg_price": "3000-6000",
-      "category": "편의점",
-      "address": "서울 마포구 가양대로 440",
-      "lat": 37.58586,
-      "lng": 126.88554,
-      "rating": null,
-      "rating_source": "none",
-      "coord_confidence": "verified",
+      "name": "새참당 상암DMC본점",
+      "signature_menu": "김치제육덮밥/파스타",
+      "avg_price": "9000-12000",
+      "category": "퓨전한식",
+      "address": "서울 마포구 월드컵북로 396",
+      "lat": 37.58538,
+      "lng": 126.8869,
+      "rating": 4.3,
+      "rating_source": "naver",
+      "coord_confidence": "naver",
+      "phone": ""
+    },
+    {
+      "name": "오복소바 상암점",
+      "signature_menu": "소바/우동",
+      "avg_price": "9000-12000",
+      "category": "일식",
+      "address": "서울 마포구 월드컵북로 396",
+      "lat": 37.58535,
+      "lng": 126.88695,
+      "rating": 4.1,
+      "rating_source": "naver",
+      "coord_confidence": "naver",
       "phone": ""
     },
     {
@@ -258,7 +167,7 @@
       "lng": 126.8855,
       "rating": null,
       "rating_source": "none",
-      "coord_confidence": "verified",
+      "coord_confidence": "naver",
       "phone": ""
     },
     {
@@ -271,7 +180,7 @@
       "lng": 126.8856,
       "rating": null,
       "rating_source": "none",
-      "coord_confidence": "verified",
+      "coord_confidence": "naver",
       "phone": ""
     },
     {
@@ -284,7 +193,20 @@
       "lng": 126.88564,
       "rating": null,
       "rating_source": "none",
-      "coord_confidence": "verified",
+      "coord_confidence": "naver",
+      "phone": ""
+    },
+    {
+      "name": "롯데리아 상암점",
+      "signature_menu": "버거",
+      "avg_price": "4000-8000",
+      "category": "패스트푸드",
+      "address": "서울 마포구 가양대로 440",
+      "lat": 37.58588,
+      "lng": 126.88538,
+      "rating": null,
+      "rating_source": "none",
+      "coord_confidence": "naver",
       "phone": ""
     },
     {
@@ -297,7 +219,20 @@
       "lng": 126.88552,
       "rating": null,
       "rating_source": "none",
-      "coord_confidence": "verified",
+      "coord_confidence": "naver",
+      "phone": ""
+    },
+    {
+      "name": "본도시락 상암점",
+      "signature_menu": "도시락",
+      "avg_price": "5000-7000",
+      "category": "한식",
+      "address": "서울 마포구 가양대로 442",
+      "lat": 37.5859,
+      "lng": 126.88572,
+      "rating": null,
+      "rating_source": "none",
+      "coord_confidence": "naver",
       "phone": ""
     },
     {
@@ -310,7 +245,7 @@
       "lng": 126.88556,
       "rating": null,
       "rating_source": "none",
-      "coord_confidence": "verified",
+      "coord_confidence": "naver",
       "phone": ""
     },
     {
@@ -323,7 +258,7 @@
       "lng": 126.88548,
       "rating": null,
       "rating_source": "none",
-      "coord_confidence": "verified",
+      "coord_confidence": "naver",
       "phone": ""
     },
     {
@@ -336,20 +271,7 @@
       "lng": 126.88566,
       "rating": null,
       "rating_source": "none",
-      "coord_confidence": "verified",
-      "phone": ""
-    },
-    {
-      "name": "할리스 상암점",
-      "signature_menu": "커피/샌드위치",
-      "avg_price": "5000-8000",
-      "category": "카페(식사가능)",
-      "address": "서울 마포구 가양대로 442",
-      "lat": 37.58594,
-      "lng": 126.88568,
-      "rating": null,
-      "rating_source": "none",
-      "coord_confidence": "verified",
+      "coord_confidence": "naver",
       "phone": ""
     },
     {
@@ -362,20 +284,7 @@
       "lng": 126.88564,
       "rating": 4.0,
       "rating_source": "naver",
-      "coord_confidence": "verified",
-      "phone": ""
-    },
-    {
-      "name": "컴포즈커피 상암점",
-      "signature_menu": "커피",
-      "avg_price": "2000-5000",
-      "category": "카페",
-      "address": "서울 마포구 가양대로 440",
-      "lat": 37.58596,
-      "lng": 126.88546,
-      "rating": null,
-      "rating_source": "none",
-      "coord_confidence": "verified",
+      "coord_confidence": "naver",
       "phone": ""
     },
     {
@@ -388,7 +297,7 @@
       "lng": 126.88562,
       "rating": null,
       "rating_source": "none",
-      "coord_confidence": "verified",
+      "coord_confidence": "naver",
       "phone": ""
     },
     {
@@ -401,20 +310,7 @@
       "lng": 126.88552,
       "rating": 4.1,
       "rating_source": "naver",
-      "coord_confidence": "verified",
-      "phone": ""
-    },
-    {
-      "name": "던킨 상암점",
-      "signature_menu": "도넛/커피",
-      "avg_price": "3000-6000",
-      "category": "카페",
-      "address": "서울 마포구 가양대로 440",
-      "lat": 37.58599,
-      "lng": 126.88544,
-      "rating": null,
-      "rating_source": "none",
-      "coord_confidence": "verified",
+      "coord_confidence": "naver",
       "phone": ""
     },
     {
@@ -427,7 +323,20 @@
       "lng": 126.88558,
       "rating": 3.8,
       "rating_source": "naver",
-      "coord_confidence": "verified",
+      "coord_confidence": "naver",
+      "phone": ""
+    },
+    {
+      "name": "한솥 상암DMC점",
+      "signature_menu": "도시락",
+      "avg_price": "5000-7000",
+      "category": "한식",
+      "address": "서울 마포구 가양대로 440",
+      "lat": 37.586,
+      "lng": 126.8854,
+      "rating": null,
+      "rating_source": "none",
+      "coord_confidence": "naver",
       "phone": ""
     },
     {
@@ -440,7 +349,7 @@
       "lng": 126.88554,
       "rating": null,
       "rating_source": "none",
-      "coord_confidence": "verified",
+      "coord_confidence": "naver",
       "phone": ""
     },
     {
@@ -453,7 +362,7 @@
       "lng": 126.8855,
       "rating": null,
       "rating_source": "none",
-      "coord_confidence": "verified",
+      "coord_confidence": "naver",
       "phone": ""
     },
     {
@@ -466,72 +375,163 @@
       "lng": 126.88548,
       "rating": null,
       "rating_source": "none",
-      "coord_confidence": "verified",
+      "coord_confidence": "naver",
       "phone": ""
     },
     {
-      "name": "탐앤탐스 상암점",
-      "signature_menu": "커피/베이커리",
-      "avg_price": "4000-7000",
-      "category": "카페",
-      "address": "서울 마포구 가양대로 440",
+      "name": "돈까스클러 상암점",
+      "signature_menu": "돈까스",
+      "avg_price": "8000-10000",
+      "category": "일식",
+      "address": "서울 마포구 가양대로 442",
+      "lat": 37.58602,
+      "lng": 126.88586,
+      "rating": null,
+      "rating_source": "none",
+      "coord_confidence": "naver",
+      "phone": ""
+    },
+    {
+      "name": "순대국밥 상암점",
+      "signature_menu": "순대국",
+      "avg_price": "8000-10000",
+      "category": "국밥",
+      "address": "서울 마포구 가양대로 442",
       "lat": 37.58604,
+      "lng": 126.88584,
+      "rating": null,
+      "rating_source": "none",
+      "coord_confidence": "naver",
+      "phone": ""
+    },
+    {
+      "name": "미스사이공 상암DMC점",
+      "signature_menu": "쌀국수/분짜",
+      "avg_price": "9000-12000",
+      "category": "베트남",
+      "address": "서울 마포구 가양대로 440",
+      "lat": 37.58605,
+      "lng": 126.88542,
+      "rating": 4.0,
+      "rating_source": "naver",
+      "coord_confidence": "naver",
+      "phone": ""
+    },
+    {
+      "name": "백소정 상암DMC점",
+      "signature_menu": "돈까스",
+      "avg_price": "8000-10000",
+      "category": "일식",
+      "address": "서울 마포구 가양대로 442",
+      "lat": 37.58606,
+      "lng": 126.88574,
+      "rating": 4.0,
+      "rating_source": "naver",
+      "coord_confidence": "naver",
+      "phone": ""
+    },
+    {
+      "name": "미분당 상암DMC점",
+      "signature_menu": "쌀국수",
+      "avg_price": "9000-11000",
+      "category": "베트남",
+      "address": "서울 마포구 가양대로 442",
+      "lat": 37.58608,
+      "lng": 126.8857,
+      "rating": 4.1,
+      "rating_source": "naver",
+      "coord_confidence": "naver",
+      "phone": ""
+    },
+    {
+      "name": "호식이두마리치킨 상암점",
+      "signature_menu": "치킨/떡볶이",
+      "avg_price": "12000-18000",
+      "category": "치킨",
+      "address": "서울 마포구 가양대로 442",
+      "lat": 37.58608,
+      "lng": 126.88582,
+      "rating": null,
+      "rating_source": "none",
+      "coord_confidence": "naver",
+      "phone": ""
+    },
+    {
+      "name": "버거킹 상암DMC점",
+      "signature_menu": "버거",
+      "avg_price": "5000-9000",
+      "category": "패스트푸드",
+      "address": "서울 마포구 가양대로 442",
+      "lat": 37.5861,
+      "lng": 126.88576,
+      "rating": null,
+      "rating_source": "none",
+      "coord_confidence": "naver",
+      "phone": ""
+    },
+    {
+      "name": "갓갈비 상암DMC점",
+      "signature_menu": "돼지갈비",
+      "avg_price": "10000-15000",
+      "category": "한식/고기",
+      "address": "서울 마포구 가양대로 440",
+      "lat": 37.58612,
+      "lng": 126.88538,
+      "rating": 4.0,
+      "rating_source": "naver",
+      "coord_confidence": "naver",
+      "phone": ""
+    },
+    {
+      "name": "파파존스 상암DMC점",
+      "signature_menu": "피자",
+      "avg_price": "10000-15000",
+      "category": "양식/피자",
+      "address": "서울 마포구 가양대로 442",
+      "lat": 37.58614,
+      "lng": 126.88578,
+      "rating": null,
+      "rating_source": "none",
+      "coord_confidence": "naver",
+      "phone": ""
+    },
+    {
+      "name": "맥도날드 상암DMC점",
+      "signature_menu": "버거",
+      "avg_price": "5000-9000",
+      "category": "패스트푸드",
+      "address": "서울 마포구 가양대로 440",
+      "lat": 37.58615,
+      "lng": 126.88544,
+      "rating": null,
+      "rating_source": "none",
+      "coord_confidence": "naver",
+      "phone": ""
+    },
+    {
+      "name": "BHC치킨 상암점",
+      "signature_menu": "치킨",
+      "avg_price": "15000-20000",
+      "category": "치킨",
+      "address": "서울 마포구 가양대로 442",
+      "lat": 37.58616,
+      "lng": 126.8858,
+      "rating": null,
+      "rating_source": "none",
+      "coord_confidence": "naver",
+      "phone": ""
+    },
+    {
+      "name": "BBQ치킨 상암점",
+      "signature_menu": "치킨",
+      "avg_price": "15000-20000",
+      "category": "치킨",
+      "address": "서울 마포구 가양대로 440",
+      "lat": 37.58618,
       "lng": 126.88546,
       "rating": null,
       "rating_source": "none",
-      "coord_confidence": "verified",
-      "phone": ""
-    },
-    {
-      "name": "맨하탄 그릴 & 바",
-      "signature_menu": "스테이크/파스타",
-      "avg_price": "15000-25000",
-      "category": "양식/그릴",
-      "address": "서울 마포구 월드컵북로58길 15",
-      "lat": 37.5824,
-      "lng": 126.88572,
-      "rating": 4.0,
-      "rating_source": "naver",
-      "coord_confidence": "verified",
-      "phone": ""
-    },
-    {
-      "name": "스탠포드호텔 조선",
-      "signature_menu": "한정식",
-      "avg_price": "20000-30000",
-      "category": "한식",
-      "address": "서울 마포구 월드컵북로58길 15",
-      "lat": 37.58235,
-      "lng": 126.88665,
-      "rating": null,
-      "rating_source": "none",
-      "coord_confidence": "verified",
-      "phone": ""
-    },
-    {
-      "name": "카페 스탠포드",
-      "signature_menu": "런치 뷔페",
-      "avg_price": "15000-22000",
-      "category": "양식/뷔페",
-      "address": "서울 마포구 월드컵북로58길 15",
-      "lat": 37.58233,
-      "lng": 126.88671,
-      "rating": 4.1,
-      "rating_source": "naver",
-      "coord_confidence": "verified",
-      "phone": ""
-    },
-    {
-      "name": "스탠포드호텔 소호",
-      "signature_menu": "샌드위치/브런치",
-      "avg_price": "8000-14000",
-      "category": "브런치",
-      "address": "서울 마포구 월드컵북로58길 15",
-      "lat": 37.5823,
-      "lng": 126.88675,
-      "rating": null,
-      "rating_source": "none",
-      "coord_confidence": "verified",
+      "coord_confidence": "naver",
       "phone": ""
     }
   ]

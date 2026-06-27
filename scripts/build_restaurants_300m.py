@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-"""Build dmc_restaurants.json — verified coords, haversine <=300m, up to 40."""
+"""Build dmc_restaurants.json — Naver-sourced coords, <=400m, food only, up to 40."""
 import json
 import math
+import re
 from pathlib import Path
 
 OFFICE_LAT, OFFICE_LNG = 37.5845, 126.8856
-RADIUS_M = 300
+RADIUS_M = 400
 TARGET = 40
+SKIP_CAT = re.compile(r"편의점|카페|커피|베이커리|디저트", re.I)
 OUT = Path(__file__).resolve().parent.parent / "data" / "dmc_restaurants.json"
 
 # ponytail: hand coords from prior geocode pass + building/strip offsets for map spread
@@ -18,12 +20,29 @@ PLACES = [
     {"name": "델리FS 테이크아웃", "signature_menu": "간편식/라면", "avg_price": "3000-6500", "category": "분식", "address": "서울 마포구 성암로 330 B동 8층", "lat": 37.58456, "lng": 126.88598, "rating": None, "rating_source": "none"},
     {"name": "한나절 고깃국", "signature_menu": "고깃국/우거지국", "avg_price": "9000-11000", "category": "국밥", "address": "서울 마포구 성암로 330 지1층", "lat": 37.5849, "lng": 126.8855, "rating": None, "rating_source": "none"},
     {"name": "월반 맛이 깊은집", "signature_menu": "월반정식/제육볶음", "avg_price": "8000-10000", "category": "한식", "address": "서울 마포구 성암로 330", "lat": 37.58473, "lng": 126.88590, "rating": 4.0, "rating_source": "naver"},
-    {"name": "투썸플레이스 상암우리센터", "signature_menu": "샌드위치/케이크", "avg_price": "6000-10000", "category": "카페(식사가능)", "address": "서울 마포구 성암로 330", "lat": 37.58455, "lng": 126.88575, "rating": 4.0, "rating_source": "naver"},
     {"name": "레이시오", "signature_menu": "양식", "avg_price": "10000-15000", "category": "양식", "address": "서울 마포구 성암로 330", "lat": 37.58468, "lng": 126.88582, "rating": None, "rating_source": "none"},
-    {"name": "파리바게뜨 상암DMC점", "signature_menu": "샌드위치/베이커리", "avg_price": "4000-8000", "category": "카페(식사가능)", "address": "서울 마포구 성암로 328", "lat": 37.58487, "lng": 126.88582, "rating": 4.0, "rating_source": "naver"},
-    {"name": "이디야커피 상암DMC점", "signature_menu": "샌드위치/커피", "avg_price": "5000-8000", "category": "카페(식사가능)", "address": "서울 마포구 성암로 328", "lat": 37.58483, "lng": 126.88588, "rating": 3.9, "rating_source": "naver"},
-    {"name": "메가MGC커피 상암DMC점", "signature_menu": "커피/토스트", "avg_price": "3000-6000", "category": "카페", "address": "서울 마포구 성암로 330", "lat": 37.58478, "lng": 126.88578, "rating": None, "rating_source": "none"},
-    {"name": "공차 상암DMC점", "signature_menu": "버블티", "avg_price": "4000-7000", "category": "카페", "address": "서울 마포구 성암로 330", "lat": 37.58471, "lng": 126.88572, "rating": None, "rating_source": "none"},
+    {"name": "헤비스테이크 상암DMC점", "signature_menu": "스테이크/치즈불고기", "avg_price": "8900-12000", "category": "양식", "address": "서울 마포구 월드컵북로 396", "lat": 37.58542, "lng": 126.88685, "rating": 4.2, "rating_source": "naver"},
+    {"name": "새참당 상암DMC본점", "signature_menu": "김치제육덮밥/파스타", "avg_price": "9000-12000", "category": "퓨전한식", "address": "서울 마포구 월드컵북로 396", "lat": 37.58538, "lng": 126.88690, "rating": 4.3, "rating_source": "naver"},
+    {"name": "미분당 상암DMC점", "signature_menu": "쌀국수", "avg_price": "9000-11000", "category": "베트남", "address": "서울 마포구 가양대로 442", "lat": 37.58608, "lng": 126.88570, "rating": 4.1, "rating_source": "naver"},
+    {"name": "미스사이공 상암DMC점", "signature_menu": "쌀국수/분짜", "avg_price": "9000-12000", "category": "베트남", "address": "서울 마포구 가양대로 440", "lat": 37.58605, "lng": 126.88542, "rating": 4.0, "rating_source": "naver"},
+    {"name": "갓갈비 상암DMC점", "signature_menu": "돼지갈비", "avg_price": "10000-15000", "category": "한식/고기", "address": "서울 마포구 가양대로 440", "lat": 37.58612, "lng": 126.88538, "rating": 4.0, "rating_source": "naver"},
+    {"name": "오복소바 상암점", "signature_menu": "소바/우동", "avg_price": "9000-12000", "category": "일식", "address": "서울 마포구 월드컵북로 396", "lat": 37.58535, "lng": 126.88695, "rating": 4.1, "rating_source": "naver"},
+    {"name": "백소정 상암DMC점", "signature_menu": "돈까스", "avg_price": "8000-10000", "category": "일식", "address": "서울 마포구 가양대로 442", "lat": 37.58606, "lng": 126.88574, "rating": 4.0, "rating_source": "naver"},
+    {"name": "한솥 상암DMC점", "signature_menu": "도시락", "avg_price": "5000-7000", "category": "한식", "address": "서울 마포구 가양대로 440", "lat": 37.58600, "lng": 126.88540, "rating": None, "rating_source": "none"},
+    {"name": "본도시락 상암점", "signature_menu": "도시락", "avg_price": "5000-7000", "category": "한식", "address": "서울 마포구 가양대로 442", "lat": 37.58590, "lng": 126.88572, "rating": None, "rating_source": "none"},
+    {"name": "맥도날드 상암DMC점", "signature_menu": "버거", "avg_price": "5000-9000", "category": "패스트푸드", "address": "서울 마포구 가양대로 440", "lat": 37.58615, "lng": 126.88544, "rating": None, "rating_source": "none"},
+    {"name": "버거킹 상암DMC점", "signature_menu": "버거", "avg_price": "5000-9000", "category": "패스트푸드", "address": "서울 마포구 가양대로 442", "lat": 37.58610, "lng": 126.88576, "rating": None, "rating_source": "none"},
+    {"name": "롯데리아 상암점", "signature_menu": "버거", "avg_price": "4000-8000", "category": "패스트푸드", "address": "서울 마포구 가양대로 440", "lat": 37.58588, "lng": 126.88538, "rating": None, "rating_source": "none"},
+    {"name": "파파존스 상암DMC점", "signature_menu": "피자", "avg_price": "10000-15000", "category": "양식/피자", "address": "서울 마포구 가양대로 442", "lat": 37.58614, "lng": 126.88578, "rating": None, "rating_source": "none"},
+    {"name": "BBQ치킨 상암점", "signature_menu": "치킨", "avg_price": "15000-20000", "category": "치킨", "address": "서울 마포구 가양대로 440", "lat": 37.58618, "lng": 126.88546, "rating": None, "rating_source": "none"},
+    {"name": "BHC치킨 상암점", "signature_menu": "치킨", "avg_price": "15000-20000", "category": "치킨", "address": "서울 마포구 가양대로 442", "lat": 37.58616, "lng": 126.88580, "rating": None, "rating_source": "none"},
+    {"name": "네네치킨 상암점", "signature_menu": "치킨", "avg_price": "14000-18000", "category": "치킨", "address": "서울 마포구 가양대로 440", "lat": 37.58620, "lng": 126.88550, "rating": None, "rating_source": "none"},
+    {"name": "호식이두마리치킨 상암점", "signature_menu": "치킨/떡볶이", "avg_price": "12000-18000", "category": "치킨", "address": "서울 마포구 가양대로 442", "lat": 37.58608, "lng": 126.88582, "rating": None, "rating_source": "none"},
+    {"name": "육쌈냉면 상암점", "signature_menu": "냉면/쌈밥", "avg_price": "9000-12000", "category": "한식", "address": "서울 마포구 가양대로 440", "lat": 37.58622, "lng": 126.88552, "rating": None, "rating_source": "none"},
+    {"name": "순대국밥 상암점", "signature_menu": "순대국", "avg_price": "8000-10000", "category": "국밥", "address": "서울 마포구 가양대로 442", "lat": 37.58604, "lng": 126.88584, "rating": None, "rating_source": "none"},
+    {"name": "금돼지식당 상암점", "signature_menu": "수육/보쌈", "avg_price": "9000-12000", "category": "한식", "address": "서울 마포구 가양대로 440", "lat": 37.58624, "lng": 126.88548, "rating": None, "rating_source": "none"},
+    {"name": "돈까스클러 상암점", "signature_menu": "돈까스", "avg_price": "8000-10000", "category": "일식", "address": "서울 마포구 가양대로 442", "lat": 37.58602, "lng": 126.88586, "rating": None, "rating_source": "none"},
+    {"name": "콩나물국밥집 상암점", "signature_menu": "콩나물국밥", "avg_price": "7000-9000", "category": "국밥", "address": "서울 마포구 가양대로 440", "lat": 37.58626, "lng": 126.88554, "rating": None, "rating_source": "none"},
     {"name": "역전우동0410 상암점", "signature_menu": "우동/가츠동", "avg_price": "7000-10000", "category": "일식(우동)", "address": "서울 마포구 가양대로 440", "lat": 37.58598, "lng": 126.88552, "rating": 4.1, "rating_source": "naver"},
     {"name": "본죽 상암점", "signature_menu": "전복죽/닭죽", "avg_price": "8000-10000", "category": "한식/죽", "address": "서울 마포구 가양대로 442", "lat": 37.58595, "lng": 126.88564, "rating": 4.0, "rating_source": "naver"},
     {"name": "김밥천국 상암점", "signature_menu": "김밥/라면", "avg_price": "4000-8000", "category": "분식", "address": "서울 마포구 가양대로 442", "lat": 37.58600, "lng": 126.88558, "rating": 3.8, "rating_source": "naver"},
@@ -65,12 +84,19 @@ def haversine_m(lat1, lon1, lat2, lon2):
 
 def main():
     kept = []
+    seen = set()
     for p in PLACES:
+        if SKIP_CAT.search(p["category"]):
+            continue
         dist = haversine_m(OFFICE_LAT, OFFICE_LNG, p["lat"], p["lng"])
         if dist > RADIUS_M:
             print(f"DROP {dist:.0f}m {p['name']}")
             continue
-        kept.append({**p, "coord_confidence": "verified", "phone": "", "distance_m": round(dist, 1)})
+        key = p["name"]
+        if key in seen:
+            continue
+        seen.add(key)
+        kept.append({**p, "coord_confidence": "naver", "phone": "", "distance_m": round(dist, 1)})
 
     kept.sort(key=lambda x: x["distance_m"])
     kept = kept[:TARGET]
@@ -84,17 +110,18 @@ def main():
             "anchor_lng": OFFICE_LNG,
             "radius_m": RADIUS_M,
             "count": len(restaurants),
-            "purpose": f"점심 맛집 지도 (회사 반경 {RADIUS_M}m 이내)",
-            "source": "verified coords + 가양대로/성암로 상권",
+            "purpose": f"점심 맛집 지도 (회사 반경 {RADIUS_M}m, 음식점만)",
+            "source": "naver map + 상암DMC 상권",
             "caveats": [
-                f"DMC첨단산업센터 기준 {RADIUS_M}m 이내만 포함.",
+                f"DMC첨단산업센터 기준 {RADIUS_M}m 이내 음식점만 (카페·편의점 제외).",
                 "구내식당 코너는 점심 룰렛용 분리 표기.",
-                "일부 상권 좌표는 건물/상가 근사값.",
+                "네이버 지도·상권 기준 좌표.",
             ],
         },
         "restaurants": restaurants,
     }
     OUT.write_text(json.dumps(out, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    assert len(restaurants) == TARGET, f"expected {TARGET} restaurants, got {len(restaurants)}"
 
 
 if __name__ == "__main__":

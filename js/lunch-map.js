@@ -4,7 +4,8 @@
  */
 const OSM_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const OSM_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
-const LUNCH_RADIUS_M = 300;
+const LUNCH_RADIUS_M = 400;
+const LUNCH_SKIP_CAT = /편의점|카페|커피|베이커리|디저트/i;
 
 let lunchMapInstance = null;
 let lunchMapMarkers = [];
@@ -37,9 +38,15 @@ function haversineM(lat1, lon1, lat2, lon2) {
   return 2 * r * Math.asin(Math.sqrt(a));
 }
 
+function isFoodPlace(place) {
+  const cat = String(place?.category || '');
+  return cat && !LUNCH_SKIP_CAT.test(cat);
+}
+
 function filterPlacesByOfficeRadius(places, office, radiusM) {
-  if (!office || !Number.isFinite(radiusM)) return places;
+  if (!office || !Number.isFinite(radiusM)) return places.filter(isFoodPlace);
   return places
+    .filter(isFoodPlace)
     .map((place) => {
       const dist = haversineM(office.lat, office.lng, place.lat, place.lng);
       return { ...place, distance_m: Math.round(dist * 10) / 10 };
