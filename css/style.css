@@ -12,6 +12,7 @@
   --surface-muted: #e2e8f0;
   --radius: 16px;
   --shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+  --tab-bar-height: 3.75rem;
 }
 
 * {
@@ -191,8 +192,12 @@ body {
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
   width: auto;
-  flex: 1;
   min-width: 5.5rem;
+}
+
+.actions .btn-sm,
+.time-actions .btn-sm {
+  flex: 1;
 }
 
 .header {
@@ -2401,7 +2406,6 @@ body {
 /* ── Hermes AI 채팅 ── */
 .app.is-chat-tab {
   padding: 0;
-  padding-bottom: calc(3.75rem + env(safe-area-inset-bottom));
   max-width: none;
   height: 100dvh;
   overflow: hidden;
@@ -2426,7 +2430,10 @@ body {
 
 .chat-stage {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -2477,7 +2484,7 @@ body {
 }
 
 .chat-messages-wrap {
-  flex: 1;
+  flex: 1 1 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -2486,7 +2493,7 @@ body {
 }
 
 .chat-messages {
-  flex: 1;
+  flex: 1 1 0;
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
@@ -2582,9 +2589,10 @@ body {
 }
 
 .chat-form {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.5rem;
-  align-items: flex-end;
+  align-items: end;
 }
 
 .chat-form.is-busy {
@@ -2592,7 +2600,7 @@ body {
 }
 
 .chat-input {
-  flex: 1;
+  width: 100%;
   min-width: 0;
   min-height: 2.75rem;
   max-height: 7rem;
@@ -2612,9 +2620,11 @@ body {
   outline-offset: 1px;
 }
 
-.chat-topbar .btn {
+.chat-topbar .btn,
+.chat-topbar .btn-sm {
   display: inline-flex;
   width: auto;
+  flex: 0 0 auto;
   flex-shrink: 0;
 }
 
@@ -2624,8 +2634,10 @@ body {
   align-items: center;
   justify-content: center;
   width: auto;
+  flex: 0 0 auto;
   flex-shrink: 0;
   min-width: 3.25rem;
+  min-height: 2.75rem;
   padding-left: 0.875rem;
   padding-right: 0.875rem;
   border-radius: 999px;
