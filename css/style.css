@@ -646,8 +646,10 @@ body {
 }
 
 .btn {
-  display: block;
-  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
   padding: 0.875rem 1rem;
   border: none;
   border-radius: 12px;
@@ -660,6 +662,13 @@ body {
 
 .btn:active {
   transform: scale(0.98);
+}
+
+.actions .btn,
+.card > .btn,
+.card-compact > .btn {
+  display: flex;
+  width: 100%;
 }
 
 .btn-primary {
@@ -2394,6 +2403,8 @@ body {
   padding: 0;
   padding-bottom: calc(3.75rem + env(safe-area-inset-bottom));
   max-width: none;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 .app.is-chat-tab .header {
