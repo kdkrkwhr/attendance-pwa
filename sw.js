@@ -10,6 +10,7 @@ const PRECACHE_ASSETS = [
   './js/saju.js',
   './js/lunch-map.js',
   './js/hermes-chat.js',
+  './js/user-location.js',
   './js/commute-time.js',
   './data/dmc_restaurants.json',
   './vendor/leaflet/leaflet.css',

@@ -2495,6 +2495,65 @@ body {
   font-weight: 600;
 }
 
+.chat-location {
+  flex-shrink: 0;
+  margin-bottom: 0.5rem;
+  padding: 0.75rem 0.875rem;
+  box-shadow: none;
+  border: 1px solid var(--border);
+}
+
+.chat-location-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.chat-location-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.chat-location-map {
+  width: 100%;
+  height: 140px;
+  border-radius: 0.625rem;
+  overflow: hidden;
+  background: var(--border);
+}
+
+.chat-location-map .leaflet-container {
+  width: 100%;
+  height: 100%;
+  font: inherit;
+}
+
+.chat-location-coords {
+  margin: 0.375rem 0 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.chat-loc-pin {
+  background: transparent;
+  border: none;
+}
+
+.chat-loc-pin-dot {
+  display: block;
+  width: 16px;
+  height: 16px;
+  margin: 4px;
+  background: #2563eb;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
 .chat-messages-wrap {
   flex: 1 1 0;
   min-height: 0;

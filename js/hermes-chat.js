@@ -180,6 +180,9 @@ async function sendHermesChatMessage(userText) {
     return;
   }
 
+  const outbound =
+    typeof appendLocationToChatMessage === 'function' ? appendLocationToChatMessage(text) : text;
+
   const messages = loadChatMessages();
   const userMsg = { role: 'user', content: text, at: new Date().toISOString() };
   messages.push(userMsg);
@@ -190,7 +193,8 @@ async function sendHermesChatMessage(userText) {
 
   const apiMessages = [
     { role: 'system', content: systemPrompt },
-    ...messages.map(({ role, content }) => ({ role, content })),
+    ...messages.slice(0, -1).map(({ role, content }) => ({ role, content })),
+    { role: 'user', content: outbound },
   ];
 
   try {

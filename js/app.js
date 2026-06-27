@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '42';
+const APP_BUILD = '43';
 const APP_VERSION_KEY = 'attendance-app-version';
 
 const DEFAULT_SETTINGS = {
@@ -452,9 +452,13 @@ function switchTab(tabName) {
   if (tabName === 'chat') {
     if (typeof initHermesChat === 'function') initHermesChat();
     if (typeof renderHermesChat === 'function') renderHermesChat();
+    if (typeof initUserLocation === 'function') initUserLocation();
     requestAnimationFrame(() => {
       const listEl = document.getElementById('chatMessages');
       if (listEl) listEl.scrollTop = listEl.scrollHeight;
+      setTimeout(() => {
+        if (typeof userLocMap !== 'undefined' && userLocMap) userLocMap.invalidateSize();
+      }, 200);
     });
   }
 }
