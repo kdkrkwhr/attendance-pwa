@@ -3103,3 +3103,135 @@ body {
   font-size: 0.8125rem;
   color: var(--text-muted);
 }
+/* ── 맛집 지도 날씨 ── */
+.lunch-weather-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(14, 165, 233, 0.25);
+  max-width: 100%;
+}
+
+.lunch-weather-chip.hidden {
+  display: none;
+}
+
+.lunch-weather-icon {
+  font-size: 1.35rem;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+}
+
+.lunch-weather-temp {
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: #0369a1;
+  white-space: nowrap;
+}
+
+.lunch-weather-text {
+  font-size: 0.75rem;
+  color: #475569;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.lunch-map-pin-weather-wrap {
+  background: transparent;
+  border: none;
+}
+
+.weather-pin {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  filter: drop-shadow(0 4px 10px rgba(14, 165, 233, 0.35));
+}
+
+.weather-pin-glow {
+  position: absolute;
+  top: 6px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.55), transparent 70%);
+  animation: weather-pin-pulse 2.4s ease-in-out infinite;
+}
+
+.weather-pin-bubble {
+  position: relative;
+  z-index: 1;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #e0f2fe, #bae6fd);
+  border: 2px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.weather-pin-emoji {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.weather-pin-temp {
+  position: relative;
+  z-index: 1;
+  margin-top: -4px;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: #0284c7;
+  color: #fff;
+  font-size: 0.625rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.weather-pin-tail {
+  width: 0;
+  height: 0;
+  margin-top: -2px;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 10px solid #bae6fd;
+}
+
+@keyframes weather-pin-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
+.lunch-map-popup-weather strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+[data-theme="dark"] .lunch-weather-chip {
+  background: rgba(15, 23, 42, 0.92);
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+[data-theme="dark"] .lunch-weather-text {
+  color: #94a3b8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .lunch-weather-chip {
+    background: rgba(15, 23, 42, 0.92);
+    border-color: rgba(56, 189, 248, 0.35);
+  }
+  :root:not([data-theme="light"]) .lunch-weather-text {
+    color: #94a3b8;
+  }
+}
+

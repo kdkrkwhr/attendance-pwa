@@ -18,6 +18,9 @@ let lunchOfficeCircle = null;
 let lunchUserMarker = null;
 let lunchUserCircle = null;
 let lunchMapInitialViewDone = false;
+let lunchWeatherMarker = null;
+let lunchWeatherData = null;
+
 const LUNCH_USER_ZOOM = 17;
 
 function getLunchMapConfig() {
@@ -326,6 +329,95 @@ function getMapCenter(data) {
   return [first.lat, first.lng];
 }
 
+
+function createWeatherPinIcon(emoji, tempLabel) {
+  const safeTemp = escapePinLabel(tempLabel || '');
+  return L.divIcon({
+    className: 'lunch-map-pin-weather-wrap',
+    html: `
+      <div class="weather-pin" role="img" aria-label="회사 날씨">
+        <span class="weather-pin-glow" aria-hidden="true"></span>
+        <span class="weather-pin-bubble"><span class="weather-pin-emoji">${emoji}</span></span>
+        ${safeTemp ? `<span class="weather-pin-temp">${safeTemp}</span>` : ''}
+        <span class="weather-pin-tail" aria-hidden="true"></span>
+      </div>
+    `,
+    iconSize: [56, 68],
+    iconAnchor: [28, 62],
+    popupAnchor: [0, -56],
+  });
+}
+
+function buildWeatherPopupHtml(data, period) {
+  const emoji = weatherEmojiFromPeriod(period);
+  const temp = formatWeatherTempLabel(data, period);
+  const sky = period?.sky ? `<p class="lunch-map-popup-memo">${period.sky}${period.pty && period.pty !== '없음' ? ` · ${period.pty}` : ''}</p>` : '';
+  const pop = period?.pop != null && period.pop > 0 ? `<p class="lunch-map-popup-memo">강수확률 ${period.pop}%</p>` : '';
+  return `
+    <div class="lunch-map-popup lunch-map-popup-weather">
+      <strong>${emoji} ${data.location || '회사'} 날씨</strong>
+      ${temp ? `<p class="lunch-map-popup-price">${temp}</p>` : ''}
+      ${sky}
+      ${pop}
+      ${data.summary ? `<p class="lunch-map-popup-memo">${data.summary}</p>` : ''}
+    </div>
+  `;
+}
+
+function renderLunchWeatherChip(data, period) {
+  const chip = document.getElementById('lunchWeatherChip');
+  const iconEl = document.getElementById('lunchWeatherIcon');
+  const tempEl = document.getElementById('lunchWeatherTemp');
+  const textEl = document.getElementById('lunchWeatherText');
+  if (!chip || !data?.summary) {
+    chip?.classList.add('hidden');
+    return;
+  }
+  const emoji = weatherEmojiFromPeriod(period);
+  const temp = formatWeatherTempLabel(data, period);
+  if (iconEl) iconEl.textContent = emoji;
+  if (tempEl) tempEl.textContent = temp;
+  if (textEl) {
+    const bits = [period?.sky, period?.pty && period.pty !== '없음' ? period.pty : ''].filter(Boolean);
+    textEl.textContent = bits.length ? bits.join(' · ') : data.summary.slice(0, 36);
+  }
+  chip.classList.remove('hidden');
+}
+
+function renderLunchWeatherMarker(data) {
+  if (!lunchMapInstance || !data) return;
+  if (lunchWeatherMarker) {
+    lunchWeatherMarker.remove();
+    lunchWeatherMarker = null;
+  }
+  const lat = Number(data.lat ?? lunchMapData?.office?.lat);
+  const lng = Number(data.lng ?? lunchMapData?.office?.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+  const period = getWeatherPeriodNow(data);
+  const emoji = weatherEmojiFromPeriod(period);
+  const temp = formatWeatherTempLabel(data, period);
+  lunchWeatherMarker = L.marker([lat + 0.00055, lng + 0.00045], {
+    icon: createWeatherPinIcon(emoji, temp),
+    zIndexOffset: 2800,
+  }).addTo(lunchMapInstance);
+  lunchWeatherMarker.isWeather = true;
+  lunchWeatherMarker.bindPopup(buildWeatherPopupHtml(data, period));
+}
+
+async function initLunchMapWeather() {
+  if (typeof loadTodayWeather !== 'function') return;
+  try {
+    lunchWeatherData = await loadTodayWeather();
+    if (!lunchWeatherData) return;
+    const period = getWeatherPeriodNow(lunchWeatherData);
+    renderLunchWeatherChip(lunchWeatherData, period);
+    renderLunchWeatherMarker(lunchWeatherData);
+  } catch (err) {
+    console.warn('lunch weather:', err);
+  }
+}
+
 function clearLunchMapMarkers() {
   lunchMapMarkers.forEach((marker) => marker.remove());
   lunchMapMarkers = [];
@@ -340,6 +432,10 @@ function clearLunchMapMarkers() {
   if (lunchUserCircle) {
     lunchUserCircle.remove();
     lunchUserCircle = null;
+  }
+  if (lunchWeatherMarker) {
+    lunchWeatherMarker.remove();
+    lunchWeatherMarker = null;
   }
 }
 
@@ -673,6 +769,7 @@ async function initLunchMap(force = false) {
     renderLunchList(data);
     lunchMapReady = true;
     hideLunchMapStatus();
+    initLunchMapWeather();
 
     requestAnimationFrame(() => {
       lunchMapInstance?.invalidateSize();

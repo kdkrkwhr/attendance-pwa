@@ -1,6 +1,37 @@
 /**
  * 오늘 탭 — 회사 근처 날씨 (data/weather/YYYY-MM-DD.json, cron 06:00 갱신)
  */
+function weatherEmojiFromPeriod(period) {
+  if (!period) return '🌤';
+  const pty = String(period.pty || '');
+  if (pty.includes('소나기') || pty.includes('비')) return '🌧️';
+  if (pty.includes('눈')) return '❄️';
+  const sky = String(period.sky || '');
+  if (sky.includes('맑')) return '☀️';
+  if (sky.includes('구름')) return '⛅';
+  if (sky.includes('흐림')) return '☁️';
+  return '🌤';
+}
+
+function getWeatherPeriodNow(data) {
+  if (!data?.periods?.length) return null;
+  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+  let best = data.periods[0];
+  for (const p of data.periods) {
+    const [h, m = 0] = String(p.time || '0:0').split(':').map(Number);
+    if (h * 60 + m <= nowMin) best = p;
+    else break;
+  }
+  return best;
+}
+
+function formatWeatherTempLabel(data, period) {
+  if (period?.temp != null) return `${period.temp}°C`;
+  const hi = data?.highlights || {};
+  if (hi.tempMin != null && hi.tempMax != null) return `${hi.tempMin}~${hi.tempMax}°C`;
+  return '';
+}
+
 function todayWeatherKey() {
   const d = new Date();
   const y = d.getFullYear();
