@@ -441,8 +441,9 @@ function switchTab(tabName) {
     if (typeof renderFortune === 'function') renderFortune();
     if (typeof renderSaju === 'function') renderSaju();
   }
-  if (tabName === 'lunch' && typeof initLunchMap === 'function') {
-    initLunchMap();
+  if (tabName === 'lunch') {
+    if (typeof initLunchMap === 'function') initLunchMap();
+    if (typeof initUserLocation === 'function') initUserLocation();
     setTimeout(() => {
       if (typeof lunchMapInstance !== 'undefined' && lunchMapInstance) {
         lunchMapInstance.invalidateSize();
@@ -452,13 +453,9 @@ function switchTab(tabName) {
   if (tabName === 'chat') {
     if (typeof initHermesChat === 'function') initHermesChat();
     if (typeof renderHermesChat === 'function') renderHermesChat();
-    if (typeof initUserLocation === 'function') initUserLocation();
     requestAnimationFrame(() => {
       const listEl = document.getElementById('chatMessages');
       if (listEl) listEl.scrollTop = listEl.scrollHeight;
-      setTimeout(() => {
-        if (typeof userLocMap !== 'undefined' && userLocMap) userLocMap.invalidateSize();
-      }, 200);
     });
   }
 }

@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=43">
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=43">
+  <link rel="stylesheet" href="css/style.css?v=44">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=44">
   <script>
     (function () {
       try {
@@ -242,8 +242,12 @@
           <div class="lunch-float-top">
             <div class="lunch-float-title-row">
               <span class="lunch-float-title">🍽️ DMC 맛집</span>
-              <button type="button" class="lunch-btn-office" id="btnLunchFocusOffice" title="DMC첨단산업센터">🏢 회사</button>
+              <div class="lunch-float-title-actions">
+                <button type="button" class="lunch-btn-office lunch-btn-user" id="btnLunchLocation" title="내 현재 위치">📍 내 위치</button>
+                <button type="button" class="lunch-btn-office" id="btnLunchFocusOffice" title="DMC첨단산업센터">🏢 회사</button>
+              </div>
             </div>
+            <p class="lunch-user-coords hidden" id="lunchLocationCoords"></p>
             <div class="lunch-float-bar">
               <p class="lunch-float-desc" id="lunchMapDesc">불러오는 중…</p>
               <select id="lunchCategoryFilter" class="lunch-map-filter" aria-label="카테고리 필터">
@@ -299,15 +303,6 @@
             <p class="chat-setup-title">연결 설정이 필요해요</p>
             <p class="field-hint">설정에서 Hermes API 주소(HTTPS 터널 URL)와 API 키를 입력한 뒤, PC에서 <code>hermes gateway</code>를 실행해 주세요.</p>
             <button type="button" class="btn btn-primary btn-sm" id="btnChatGoSettings">설정으로 이동</button>
-          </section>
-
-          <section class="chat-location card" id="chatLocationCard" aria-label="내 현재 위치">
-            <div class="chat-location-header">
-              <span class="chat-location-title">📍 내 위치</span>
-              <button type="button" class="btn btn-ghost btn-sm" id="btnChatLocation">위치 확인</button>
-            </div>
-            <div id="chatLocationMap" class="chat-location-map" role="application" aria-label="현재 위치 지도"></div>
-            <p class="chat-location-coords" id="chatLocationCoords">위치 권한을 허용하면 지도에 표시됩니다</p>
           </section>
 
           <div class="chat-messages-wrap">
@@ -475,14 +470,14 @@
     </nav>
   </div>
 
-  <script src="config.js?v=43"></script>
-  <script src="vendor/leaflet/leaflet.js?v=43"></script>
-  <script src="js/fortune.js?v=43"></script>
-  <script src="js/saju.js?v=43"></script>
-  <script src="js/lunch-map.js?v=43"></script>
-  <script src="js/user-location.js?v=43"></script>
-  <script src="js/hermes-chat.js?v=43"></script>
-  <script src="js/commute-time.js?v=43"></script>
-  <script src="js/app.js?v=43"></script>
+  <script src="config.js?v=44"></script>
+  <script src="vendor/leaflet/leaflet.js?v=44"></script>
+  <script src="js/fortune.js?v=44"></script>
+  <script src="js/saju.js?v=44"></script>
+  <script src="js/lunch-map.js?v=44"></script>
+  <script src="js/user-location.js?v=44"></script>
+  <script src="js/hermes-chat.js?v=44"></script>
+  <script src="js/commute-time.js?v=44"></script>
+  <script src="js/app.js?v=44"></script>
 </body>
 </html>

@@ -1874,6 +1874,45 @@ body {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
+.lunch-float-title-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.lunch-btn-user {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.4);
+}
+
+.lunch-user-coords {
+  margin: 0.25rem 0 0;
+  padding: 0 0.25rem;
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.lunch-user-coords.hidden {
+  display: none;
+}
+
+.lunch-map-pin-user {
+  background: transparent;
+  border: none;
+}
+
+.lunch-map-pin-dot {
+  display: block;
+  width: 16px;
+  height: 16px;
+  margin: 4px;
+  background: #16a34a;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
 .lunch-btn-office {
   border: none;
   font-family: inherit;

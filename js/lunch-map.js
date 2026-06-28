@@ -15,6 +15,8 @@ let lunchMapLoading = false;
 let lunchRouletteSpinning = false;
 let lunchRouletteWinnerId = null;
 let lunchOfficeCircle = null;
+let lunchUserMarker = null;
+let lunchUserCircle = null;
 
 function getLunchMapConfig() {
   return window.APP_CONFIG?.lunchMap || {};
@@ -108,6 +110,16 @@ function getOfficeShortName(name) {
   const n = String(name || 'DMC첨단산업센터');
   const idx = n.indexOf('(');
   return idx > 0 ? n.slice(0, idx).trim() : n;
+}
+
+function createUserLocationIcon() {
+  return L.divIcon({
+    className: 'lunch-map-pin lunch-map-pin-user',
+    html: '<span class="lunch-map-pin-dot" aria-hidden="true"></span>',
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -12],
+  });
 }
 
 function createOfficePinIcon(label) {
@@ -266,6 +278,53 @@ function clearLunchMapMarkers() {
     lunchOfficeCircle.remove();
     lunchOfficeCircle = null;
   }
+  if (lunchUserMarker) {
+    lunchUserMarker.remove();
+    lunchUserMarker = null;
+  }
+  if (lunchUserCircle) {
+    lunchUserCircle.remove();
+    lunchUserCircle = null;
+  }
+}
+
+function renderLunchUserLocation(data) {
+  if (!lunchMapInstance) return;
+  const loc = data || (typeof getStoredUserLocation === 'function' ? getStoredUserLocation() : null);
+  if (!loc) return;
+
+  if (lunchUserMarker) lunchUserMarker.remove();
+  if (lunchUserCircle) lunchUserCircle.remove();
+
+  lunchUserMarker = L.marker([loc.lat, loc.lng], {
+    icon: createUserLocationIcon(),
+    zIndexOffset: 3000,
+  }).addTo(lunchMapInstance);
+  lunchUserMarker.isUser = true;
+  lunchUserMarker.bindPopup('<div class="lunch-map-popup"><strong>내 위치</strong></div>');
+
+  const accuracy = Number(loc.accuracy);
+  if (accuracy > 0) {
+    lunchUserCircle = L.circle([loc.lat, loc.lng], {
+      radius: accuracy,
+      color: '#16a34a',
+      fillColor: '#22c55e',
+      fillOpacity: 0.1,
+      weight: 1,
+    }).addTo(lunchMapInstance);
+  }
+}
+
+function focusLunchUserLocation() {
+  if (!lunchMapInstance) return;
+  const loc = typeof getStoredUserLocation === 'function' ? getStoredUserLocation() : null;
+  if (!loc) {
+    if (typeof requestUserLocation === 'function') requestUserLocation();
+    return;
+  }
+  renderLunchUserLocation(loc);
+  lunchMapInstance.setView([loc.lat, loc.lng], Math.max(lunchMapInstance.getZoom(), 17), { animate: true });
+  lunchUserMarker?.openPopup();
 }
 
 function highlightLunchListItem(placeId) {
@@ -459,9 +518,13 @@ function renderLunchMapMarkers(data) {
     lunchMapMarkers.push(marker);
   });
 
+  renderLunchUserLocation();
+
   const boundsPoints = [];
   if (data.office) boundsPoints.push([data.office.lat, data.office.lng]);
   data.places.forEach((p) => boundsPoints.push([p.displayLat ?? p.lat, p.displayLng ?? p.lng]));
+  const userLoc = typeof getStoredUserLocation === 'function' ? getStoredUserLocation() : null;
+  if (userLoc) boundsPoints.push([userLoc.lat, userLoc.lng]);
   if (boundsPoints.length > 1) {
     lunchMapInstance.fitBounds(boundsPoints, { padding: [28, 28], maxZoom: 17 });
   }
