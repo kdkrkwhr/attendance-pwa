@@ -19,10 +19,11 @@ def run(cmd: list[str]) -> None:
 
 
 def main() -> int:
-    summary = sys.argv[1] if len(sys.argv) > 1 else None
     fetch_cmd = [sys.executable, str(ROOT / "scripts" / "fetch_daily_news.py")]
-    if summary:
-        fetch_cmd.append(summary)
+    if len(sys.argv) > 1:
+        fetch_cmd.append(sys.argv[1])
+    if len(sys.argv) > 2:
+        fetch_cmd.append(sys.argv[2])
     run(fetch_cmd)
 
     date = kst_today()

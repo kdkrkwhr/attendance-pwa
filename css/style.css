@@ -3102,6 +3102,38 @@ body {
   color: var(--text-muted, #64748b);
 }
 
+.news-market-toggle {
+  display: inline-flex;
+  gap: 0.35rem;
+  margin-top: 0.85rem;
+  padding: 0.25rem;
+  border-radius: 999px;
+  background: var(--surface-muted, rgba(148, 163, 184, 0.15));
+  border: 1px solid var(--border);
+}
+
+.news-market-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted, #64748b);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.news-market-btn.active {
+  background: var(--card-bg, #fff);
+  color: #ea580c;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+
+[data-theme="dark"] .news-market-btn.active {
+  background: rgba(30, 41, 59, 0.95);
+}
+
 .news-brief-card {
   margin: 0 0 1rem;
   padding: 0.875rem 1rem;

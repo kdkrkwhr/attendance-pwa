@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=58">
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=58">
+  <link rel="stylesheet" href="css/style.css?v=59">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=59">
   <script>
     (function () {
       try {
@@ -139,9 +139,13 @@
       <!-- News -->
       <div class="tab-panel" id="tabNews" data-tab-panel="news">
         <section class="news-hero">
-          <p class="news-hero-emoji">📰</p>
+          <p class="news-hero-emoji">📈</p>
           <h2 class="news-hero-title">News</h2>
           <p class="news-hero-date" id="newsTodayDate"></p>
+          <div class="news-market-toggle" role="tablist" aria-label="주식 시장 선택">
+            <button type="button" class="news-market-btn active" data-market="kr" role="tab" aria-selected="true">🇰🇷 국내</button>
+            <button type="button" class="news-market-btn" data-market="us" role="tab" aria-selected="false">🇺🇸 미국</button>
+          </div>
         </section>
 
         <section class="card news-brief-card hidden" id="newsBriefCard" aria-label="오늘 뉴스 요약">
@@ -153,7 +157,7 @@
         </section>
 
         <section class="card news-list-card hidden" id="newsListCard">
-          <h2 class="card-title">주요 기사</h2>
+          <h2 class="card-title" id="newsListTitle">국내 주식 기사</h2>
           <ul class="news-list" id="newsList"></ul>
         </section>
 
@@ -487,7 +491,7 @@
             <li>AI 채팅 — 빈 응답·SSE 끊김 수정 (v58, non-streaming)</li>
             <li>퇴근길 — 집 주소 설정 시 대중교통·자차 소요 (Hermes/ODsay)</li>
             <li>점심 룰렛 — 11:20 알림 (설정에서 끄기 가능)</li>
-            <li>News 탭 — 오늘 주요 뉴스 AI 요약 (매일 07:00 자동 갱신)</li>
+            <li>News 탭 — 국내·미국 주식 뉴스 전환 + AI 요약 (매일 07:00 갱신)</li>
             <li>2시간마다 Hermes가 PWA 자동 점검·배포 (변경 없으면 조용히 스킵)</li>
           </ul>
         </section>
@@ -522,16 +526,16 @@
     </nav>
   </div>
 
-  <script src="config.js?v=58"></script>
-  <script src="vendor/leaflet/leaflet.js?v=58"></script>
-  <script src="js/fortune.js?v=58"></script>
-  <script src="js/saju.js?v=58"></script>
-  <script src="js/lunch-map.js?v=58"></script>
-  <script src="js/user-location.js?v=58"></script>
-  <script src="js/weather-brief.js?v=58"></script>
-  <script src="js/news-brief.js?v=58"></script>
-  <script src="js/hermes-chat.js?v=58"></script>
-  <script src="js/commute-time.js?v=58"></script>
-  <script src="js/app.js?v=58"></script>
+  <script src="config.js?v=59"></script>
+  <script src="vendor/leaflet/leaflet.js?v=59"></script>
+  <script src="js/fortune.js?v=59"></script>
+  <script src="js/saju.js?v=59"></script>
+  <script src="js/lunch-map.js?v=59"></script>
+  <script src="js/user-location.js?v=59"></script>
+  <script src="js/weather-brief.js?v=59"></script>
+  <script src="js/news-brief.js?v=59"></script>
+  <script src="js/hermes-chat.js?v=59"></script>
+  <script src="js/commute-time.js?v=59"></script>
+  <script src="js/app.js?v=59"></script>
 </body>
 </html>
