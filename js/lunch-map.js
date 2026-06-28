@@ -384,12 +384,109 @@ function renderLunchWeatherChip(data, period) {
   chip.classList.remove('hidden');
 }
 
+let lunchRainRaf = 0;
+
+function stopLunchRainAnim(el) {
+  if (lunchRainRaf) {
+    cancelAnimationFrame(lunchRainRaf);
+    lunchRainRaf = 0;
+  }
+  el?._rainResizeObs?.disconnect();
+  delete el?._rainResizeObs;
+  const canvas = el?.querySelector('canvas');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    ctx?.clearRect(0, 0, canvas.width, canvas.height);
+  }
+}
+
+function startLunchRainAnim(el) {
+  stopLunchRainAnim(el);
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  let canvas = el.querySelector('canvas.lunch-map-rain-canvas');
+  if (!canvas) {
+    canvas = document.createElement('canvas');
+    canvas.className = 'lunch-map-rain-canvas';
+    canvas.setAttribute('aria-hidden', 'true');
+    el.appendChild(canvas);
+  }
+  const ctx = canvas.getContext('2d');
+  const drops = [];
+  const wind = -2.2;
+
+  function rainDropCount(w, h) {
+    return Math.min(140, Math.max(55, Math.floor((w * h) / 6500)));
+  }
+
+  function spawnDrop(w, h, randomY) {
+    const heavy = Math.random() < 0.22;
+    return {
+      x: Math.random() * (w + 40) - 20,
+      y: randomY ? Math.random() * h : -(8 + Math.random() * 24),
+      len: heavy ? 14 + Math.random() * 18 : 6 + Math.random() * 12,
+      speed: heavy ? 18 + Math.random() * 14 : 10 + Math.random() * 12,
+      opacity: heavy ? 0.28 + Math.random() * 0.32 : 0.12 + Math.random() * 0.22,
+      width: heavy ? 1.1 + Math.random() * 0.5 : 0.55 + Math.random() * 0.35,
+    };
+  }
+
+  function resize() {
+    const rect = el.getBoundingClientRect();
+    const w = Math.max(1, Math.floor(rect.width));
+    const h = Math.max(1, Math.floor(rect.height));
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.floor(w * dpr);
+    canvas.height = Math.floor(h * dpr);
+    canvas.style.width = `${w}px`;
+    canvas.style.height = `${h}px`;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const target = rainDropCount(w, h);
+    while (drops.length < target) drops.push(spawnDrop(w, h, true));
+    drops.length = target;
+  }
+
+  resize();
+  const ro = new ResizeObserver(resize);
+  ro.observe(el);
+  el._rainResizeObs = ro;
+
+  let lastTs = 0;
+  function tick(ts) {
+    const w = el.clientWidth;
+    const h = el.clientHeight;
+    if (!w || !h) {
+      lunchRainRaf = requestAnimationFrame(tick);
+      return;
+    }
+    const dt = Math.min(40, ts - lastTs || 16) / 16;
+    lastTs = ts;
+    ctx.clearRect(0, 0, w, h);
+    ctx.lineCap = 'round';
+    for (const d of drops) {
+      d.y += d.speed * dt;
+      d.x += wind * dt;
+      ctx.strokeStyle = `rgba(196, 220, 252, ${d.opacity})`;
+      ctx.lineWidth = d.width;
+      ctx.beginPath();
+      ctx.moveTo(d.x, d.y);
+      ctx.lineTo(d.x + wind * 1.6, d.y + d.len);
+      ctx.stroke();
+      if (d.y - d.len > h + 12) Object.assign(d, spawnDrop(w, h, false));
+    }
+    lunchRainRaf = requestAnimationFrame(tick);
+  }
+  lunchRainRaf = requestAnimationFrame(tick);
+}
+
 function updateLunchMapRainEffect(data) {
   const el = document.getElementById('lunchMapRain');
   if (!el) return;
   const show = typeof shouldShowMapRain === 'function' && shouldShowMapRain(data);
   el.classList.toggle('hidden', !show);
   el.setAttribute('aria-hidden', show ? 'false' : 'true');
+  if (show) startLunchRainAnim(el);
+  else stopLunchRainAnim(el);
 }
 
 function renderLunchWeatherMarker(data) {
