@@ -17,6 +17,8 @@ let lunchRouletteWinnerId = null;
 let lunchOfficeCircle = null;
 let lunchUserMarker = null;
 let lunchUserCircle = null;
+let lunchMapInitialViewDone = false;
+const LUNCH_USER_ZOOM = 17;
 
 function getLunchMapConfig() {
   return window.APP_CONFIG?.lunchMap || {};
@@ -154,17 +156,24 @@ function getOfficeShortName(name) {
 
 function createUserLocationIcon() {
   return L.divIcon({
-    className: 'lunch-map-pin-user-wrap',
+    className: 'lunch-map-pin lunch-map-pin-user',
     html: `
-      <div class="user-pin" role="img" aria-label="내 위치">
-        <span class="user-pin-ring" aria-hidden="true"></span>
-        <span class="user-pin-dot" aria-hidden="true"></span>
-        <span class="user-pin-label">내 위치</span>
+      <div class="user-face-pin" role="img" aria-label="내 위치">
+        <span class="user-face-pin-glow" aria-hidden="true"></span>
+        <span class="user-face-pin-head" aria-hidden="true">
+          <span class="user-face-pin-hair"></span>
+          <span class="user-face-pin-eye user-face-pin-eye-left"></span>
+          <span class="user-face-pin-eye user-face-pin-eye-right"></span>
+          <span class="user-face-pin-blush user-face-pin-blush-left"></span>
+          <span class="user-face-pin-blush user-face-pin-blush-right"></span>
+          <span class="user-face-pin-smile"></span>
+        </span>
+        <span class="user-face-pin-pointer" aria-hidden="true"></span>
       </div>
     `,
-    iconSize: [96, 68],
-    iconAnchor: [48, 50],
-    popupAnchor: [0, -44],
+    iconSize: [52, 60],
+    iconAnchor: [26, 54],
+    popupAnchor: [0, -48],
   });
 }
 
@@ -334,6 +343,31 @@ function clearLunchMapMarkers() {
   }
 }
 
+function zoomMapToUserLocation(loc, animate = true) {
+  if (!lunchMapInstance || !loc) return;
+  lunchMapInstance.setView([loc.lat, loc.lng], LUNCH_USER_ZOOM, { animate });
+  lunchMapInitialViewDone = true;
+}
+
+function applyLunchMapFallbackView() {
+  if (!lunchMapInstance || lunchMapInitialViewDone || !lunchMapData) return;
+  lunchMapInitialViewDone = true;
+  if (lunchMapData.office) {
+    lunchMapInstance.setView([lunchMapData.office.lat, lunchMapData.office.lng], 16, { animate: false });
+    return;
+  }
+  const boundsPoints = lunchMapData.places.map((p) => [p.displayLat ?? p.lat, p.displayLng ?? p.lng]);
+  if (boundsPoints.length > 1) {
+    lunchMapInstance.fitBounds(boundsPoints, { padding: [28, 28], maxZoom: LUNCH_USER_ZOOM });
+  }
+}
+
+function applyInitialLunchMapView(data) {
+  if (!lunchMapInstance || lunchMapInitialViewDone) return;
+  const userLoc = typeof getStoredUserLocation === 'function' ? getStoredUserLocation() : null;
+  if (userLoc) zoomMapToUserLocation(userLoc, false);
+}
+
 function renderLunchUserLocation(data) {
   if (!lunchMapInstance) return;
   const loc = data || (typeof getStoredUserLocation === 'function' ? getStoredUserLocation() : null);
@@ -359,6 +393,8 @@ function renderLunchUserLocation(data) {
       weight: 1,
     }).addTo(lunchMapInstance);
   }
+
+  if (!lunchMapInitialViewDone) zoomMapToUserLocation(loc, false);
 }
 
 function focusLunchUserLocation() {
@@ -566,15 +602,7 @@ function renderLunchMapMarkers(data) {
   });
 
   renderLunchUserLocation();
-
-  const boundsPoints = [];
-  if (data.office) boundsPoints.push([data.office.lat, data.office.lng]);
-  data.places.forEach((p) => boundsPoints.push([p.displayLat ?? p.lat, p.displayLng ?? p.lng]));
-  const userLoc = typeof getStoredUserLocation === 'function' ? getStoredUserLocation() : null;
-  if (userLoc) boundsPoints.push([userLoc.lat, userLoc.lng]);
-  if (boundsPoints.length > 1) {
-    lunchMapInstance.fitBounds(boundsPoints, { padding: [28, 28], maxZoom: 17 });
-  }
+  applyInitialLunchMapView(data);
 }
 
 function setLunchMapStatus(message, isError = false) {
@@ -640,13 +668,7 @@ async function initLunchMap(force = false) {
 
     requestAnimationFrame(() => {
       lunchMapInstance?.invalidateSize();
-      if (data.places.length > 0) {
-        const boundsPoints = data.places.map((p) => [p.displayLat ?? p.lat, p.displayLng ?? p.lng]);
-        if (data.office) boundsPoints.push([data.office.lat, data.office.lng]);
-        if (boundsPoints.length > 1) {
-          lunchMapInstance.fitBounds(boundsPoints, { padding: [28, 28], maxZoom: 17 });
-        }
-      }
+      applyInitialLunchMapView(data);
     });
   } catch (err) {
     console.warn('lunch map:', err);

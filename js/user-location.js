@@ -102,6 +102,7 @@ function requestUserLocation() {
       },
       (err) => {
         setLocationUI('error', { message: geolocationErrorMessage(err?.code) });
+        if (typeof applyLunchMapFallbackView === 'function') applyLunchMapFallbackView();
         userLocPending = false;
         resolve(null);
       },
