@@ -646,18 +646,26 @@ async function initLunchMap(force = false) {
     const zoom = Number(cfg.defaultZoom) || 16;
     const center = getMapCenter(data);
 
+    let bootUserLoc = typeof getStoredUserLocation === 'function' ? getStoredUserLocation() : null;
+    if (!bootUserLoc && typeof requestUserLocation === 'function') {
+      bootUserLoc = await requestUserLocation();
+    }
+    const initialCenter = bootUserLoc ? [bootUserLoc.lat, bootUserLoc.lng] : center;
+    const initialZoom = bootUserLoc ? LUNCH_USER_ZOOM : zoom;
+    if (bootUserLoc) lunchMapInitialViewDone = true;
+
     if (!lunchMapInstance) {
       lunchMapInstance = L.map(mapEl, {
         scrollWheelZoom: true,
         zoomControl: true,
-      }).setView(center, zoom);
+      }).setView(initialCenter, initialZoom);
 
       L.tileLayer(OSM_TILE_URL, {
         maxZoom: 19,
         attribution: OSM_ATTRIBUTION,
       }).addTo(lunchMapInstance);
     } else {
-      lunchMapInstance.setView(center, zoom);
+      lunchMapInstance.setView(initialCenter, initialZoom);
     }
 
     updateLunchMapDesc(data);

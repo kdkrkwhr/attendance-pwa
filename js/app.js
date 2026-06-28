@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '46';
+const APP_BUILD = '48';
 const APP_VERSION_KEY = 'attendance-app-version';
 
 const DEFAULT_SETTINGS = {
@@ -438,12 +438,16 @@ function switchTab(tabName) {
   document.querySelector('.app')?.classList.toggle('is-lunch-tab', tabName === 'lunch');
   document.querySelector('.app')?.classList.toggle('is-chat-tab', tabName === 'chat');
   if (tabName === 'fun') {
+    renderFunDate();
     if (typeof renderFortune === 'function') renderFortune();
     if (typeof renderSaju === 'function') renderSaju();
   }
   if (tabName === 'lunch') {
-    if (typeof initLunchMap === 'function') initLunchMap();
-    if (typeof initUserLocation === 'function') initUserLocation();
+    if (typeof initLunchMap === 'function') {
+      initLunchMap().then(() => {
+        if (typeof initUserLocation === 'function') initUserLocation();
+      });
+    }
     setTimeout(() => {
       if (typeof lunchMapInstance !== 'undefined' && lunchMapInstance) {
         lunchMapInstance.invalidateSize();
@@ -1093,6 +1097,15 @@ function checkAndNotify() {
 
 // ── UI 렌더 ──────────────────────────────────────────
 
+function formatTodayLabel(now = new Date()) {
+  return `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 (${DAY_NAMES[now.getDay()]})`;
+}
+
+function renderFunDate() {
+  const el = document.getElementById('funTodayDate');
+  if (el) el.textContent = formatTodayLabel();
+}
+
 function renderToday() {
   const record = getTodayRecord();
   const now = new Date();
@@ -1104,8 +1117,7 @@ function renderToday() {
   const fieldMemoDisplay = document.getElementById('fieldMemoDisplay');
   const fieldMemoText = document.getElementById('fieldMemoText');
 
-  document.getElementById('todayDate').textContent =
-    `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 (${DAY_NAMES[now.getDay()]})`;
+  document.getElementById('todayDate').textContent = formatTodayLabel(now);
 
   todayCard?.classList.toggle('card-field-work', fieldWork);
   fieldBadge?.classList.toggle('hidden', !fieldWork);
@@ -1270,6 +1282,7 @@ function renderSettings() {
 
 function render() {
   renderToday();
+  renderFunDate();
   renderWeek();
   renderSettings();
   renderAppVersion();

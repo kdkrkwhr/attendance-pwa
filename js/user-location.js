@@ -129,6 +129,7 @@ function initUserLocation(forceRefresh = false) {
       notifyUserLocationUpdated(stored);
       return;
     }
+    if (typeof lunchMapLoading !== 'undefined' && lunchMapLoading) return;
   }
 
   requestUserLocation();
