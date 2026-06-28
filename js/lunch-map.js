@@ -101,7 +101,7 @@ function fixLeafletIconPaths() {
   });
 }
 
-function fixLeafletIconPaths() {
+const PLACE_CAT_EMOJI = [
   [/국밥|찌개|탕|국수|면|라멘|우동|쌀국수|분식|김밥|떡볶/i, '🍜'],
   [/한식|정식|백반|고기|구이|삼겹|갈비|족발|보쌈/i, '🍱'],
   [/일식|초밥|돈까스/i, '🍣'],
