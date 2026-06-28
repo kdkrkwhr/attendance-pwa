@@ -2,6 +2,10 @@
  * Hermes OpenAI-compatible API 채팅 (설정 탭에서 URL·키 입력)
  */
 const HERMES_CHAT_KEY = 'attendance-hermes-chat';
+const CHAT_SHEET_LIMIT = 100;
+const CHAT_SYNC_COOLDOWN_MS = 30_000;
+let chatLastSyncAt = 0;
+let chatSyncInFlight = null;
 const HERMES_SYSTEM_PROMPT =
   '당신은 출퇴근 PWA 안의 간단한 AI 도우미입니다. 한국어로 짧고 명확하게 답하세요. ' +
   '사용자가 명시적으로 요청하지 않으면 터미널·파일 조작 등 도구는 사용하지 마세요. ' +
@@ -56,8 +60,80 @@ function loadChatMessages() {
 }
 
 function saveChatMessages(messages) {
-  const trimmed = messages.slice(-80);
+  const trimmed = messages.slice(-CHAT_SHEET_LIMIT);
   localStorage.setItem(HERMES_CHAT_KEY, JSON.stringify(trimmed));
+}
+
+function getChatSheetConfig() {
+  const settings = typeof loadSettings === 'function' ? loadSettings() : {};
+  const url = (settings.sheetUrl || '').trim();
+  const name = typeof getUserName === 'function' ? getUserName() : '';
+  return { url, name, ready: Boolean(url && name && name !== '사원') };
+}
+
+async function appendChatToSheet(msg) {
+  const { url, name, ready } = getChatSheetConfig();
+  if (!ready || !msg?.content) return;
+  try {
+    await fetch(url, {
+      method: 'POST',
+      mode: 'cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'chat',
+        name,
+        role: msg.role,
+        content: msg.content,
+        at: msg.at || new Date().toISOString(),
+      }),
+    });
+  } catch {
+    /* ponytail: local cache still holds the message */
+  }
+}
+
+async function clearChatOnSheet() {
+  const { url, name, ready } = getChatSheetConfig();
+  if (!ready) return;
+  try {
+    await fetch(url, {
+      method: 'POST',
+      mode: 'cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'chatClear', name }),
+    });
+  } catch {
+    /* ignore */
+  }
+}
+
+async function syncChatFromSheet(force = false) {
+  const { url, name, ready } = getChatSheetConfig();
+  if (!ready) return loadChatMessages();
+
+  const now = Date.now();
+  if (!force && chatSyncInFlight) return chatSyncInFlight;
+  if (!force && now - chatLastSyncAt < CHAT_SYNC_COOLDOWN_MS) return loadChatMessages();
+
+  chatSyncInFlight = (async () => {
+    try {
+      const qs = new URLSearchParams({ action: 'chat', name, limit: String(CHAT_SHEET_LIMIT) });
+      const res = await fetch(`${url}?${qs}`, { mode: 'cors', cache: 'no-store' });
+      const data = await res.json();
+      if (data.ok && Array.isArray(data.messages)) {
+        saveChatMessages(data.messages);
+        chatLastSyncAt = Date.now();
+        return data.messages;
+      }
+    } catch {
+      /* fall back to local */
+    } finally {
+      chatSyncInFlight = null;
+    }
+    return loadChatMessages();
+  })();
+
+  return chatSyncInFlight;
 }
 
 function escapeHtml(text) {
@@ -80,6 +156,12 @@ function formatChatTime(iso) {
 
 function renderHermesChat() {
   renderHermesChatFrom(loadChatMessages());
+}
+
+async function refreshHermesChatFromSheet(force = false) {
+  const messages = await syncChatFromSheet(force);
+  renderHermesChatFrom(messages);
+  return messages;
 }
 
 function renderHermesChatFrom(messages) {
@@ -289,6 +371,7 @@ async function sendHermesChatMessage(userText) {
   const userMsg = { role: 'user', content: text, at: new Date().toISOString() };
   messages.push(userMsg);
   saveChatMessages(messages);
+  appendChatToSheet(userMsg);
   renderHermesChat();
   setChatBusy(true);
   startChatElapsedTimer();
@@ -335,12 +418,14 @@ async function sendHermesChatMessage(userText) {
       reply = data?.choices?.[0]?.message?.content?.trim() || '';
       messages.push({ role: 'assistant', content: reply || '(빈 응답)', at: new Date().toISOString() });
       saveChatMessages(messages);
+      appendChatToSheet(messages[messages.length - 1]);
     }
 
     reply = reply || '(빈 응답)';
     if (contentType.includes('text/event-stream') && res.body) {
       messages[messages.length - 1] = { role: 'assistant', content: reply, at: new Date().toISOString() };
       saveChatMessages(messages);
+      appendChatToSheet(messages[messages.length - 1]);
     }
     setChatStatus('', '');
   } catch (e) {
@@ -375,6 +460,7 @@ function handleChatSubmit(e) {
 function handleChatClear() {
   if (!confirm('대화 기록을 모두 지울까요?')) return;
   localStorage.removeItem(HERMES_CHAT_KEY);
+  clearChatOnSheet();
   renderHermesChat();
   setChatStatus('', '');
 }
@@ -468,6 +554,8 @@ function initHermesChat() {
   document.getElementById('btnChatClear')?.addEventListener('click', handleChatClear);
   document.getElementById('btnChatGoSettings')?.addEventListener('click', handleChatGoSettings);
   document.getElementById('btnHermesTest')?.addEventListener('click', testHermesConnection);
+
+  refreshHermesChatFromSheet(true);
 
   const input = document.getElementById('chatInput');
   if (input) {
