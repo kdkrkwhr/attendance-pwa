@@ -426,7 +426,7 @@ function startLunchRainAnim(el) {
       y: randomY ? Math.random() * h : -(8 + Math.random() * 24),
       len: heavy ? 14 + Math.random() * 18 : 6 + Math.random() * 12,
       speed: heavy ? 18 + Math.random() * 14 : 10 + Math.random() * 12,
-      opacity: heavy ? 0.28 + Math.random() * 0.32 : 0.12 + Math.random() * 0.22,
+      opacity: heavy ? 0.38 + Math.random() * 0.38 : 0.2 + Math.random() * 0.28,
       width: heavy ? 1.1 + Math.random() * 0.5 : 0.55 + Math.random() * 0.35,
     };
   }
@@ -466,7 +466,7 @@ function startLunchRainAnim(el) {
     for (const d of drops) {
       d.y += d.speed * dt;
       d.x += wind * dt;
-      ctx.strokeStyle = `rgba(196, 220, 252, ${d.opacity})`;
+      ctx.strokeStyle = `rgba(210, 232, 255, ${d.opacity})`;
       ctx.lineWidth = d.width;
       ctx.beginPath();
       ctx.moveTo(d.x, d.y);
