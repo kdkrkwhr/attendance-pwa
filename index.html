@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=70">
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=70">
+  <link rel="stylesheet" href="css/style.css?v=71">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=71">
   <script>
     (function () {
       try {
@@ -472,9 +472,10 @@
           <h2 class="card-title">팀 기록 (선택)</h2>
           <div class="setting-field">
             <label for="sheetUrl">Google 시트 URL (Apps Script 웹앱)</label>
-            <input type="url" id="sheetUrl" class="text-input" placeholder="출퇴근·AI채팅 공용 웹앱 URL">
+            <input type="text" id="sheetUrl" class="text-input" placeholder="https://script.google.com/macros/s/.../exec" inputmode="url" autocapitalize="off" spellcheck="false">
+            <p class="field-hint">URL은 입력 후 자동 저장. ID만 넣어도 exec URL로 맞춤. 아래 버튼은 출퇴근 기록용.</p>
           </div>
-          <button type="button" class="btn btn-ghost" id="btnSyncSheet">팀 시트에 저장</button>
+          <button type="button" class="btn btn-ghost" id="btnSyncSheet">팀 시트에 저장 (출퇴근)</button>
           <p class="sync-status" id="syncStatus"></p>
         </section>
 
@@ -531,17 +532,17 @@
     </nav>
   </div>
 
-  <script src="config.js?v=70"></script>
-  <script src="vendor/leaflet/leaflet.js?v=70"></script>
-  <script src="js/util.js?v=70"></script>
-  <script src="js/fortune.js?v=70"></script>
-  <script src="js/saju.js?v=70"></script>
-  <script src="js/lunch-map.js?v=70"></script>
-  <script src="js/user-location.js?v=70"></script>
-  <script src="js/weather-brief.js?v=70"></script>
-  <script src="js/news-brief.js?v=70"></script>
-  <script src="js/hermes-chat.js?v=70"></script>
-  <script src="js/commute-time.js?v=70"></script>
-  <script src="js/app.js?v=70"></script>
+  <script src="config.js?v=71"></script>
+  <script src="vendor/leaflet/leaflet.js?v=71"></script>
+  <script src="js/util.js?v=71"></script>
+  <script src="js/fortune.js?v=71"></script>
+  <script src="js/saju.js?v=71"></script>
+  <script src="js/lunch-map.js?v=71"></script>
+  <script src="js/user-location.js?v=71"></script>
+  <script src="js/weather-brief.js?v=71"></script>
+  <script src="js/news-brief.js?v=71"></script>
+  <script src="js/hermes-chat.js?v=71"></script>
+  <script src="js/commute-time.js?v=71"></script>
+  <script src="js/app.js?v=71"></script>
 </body>
 </html>

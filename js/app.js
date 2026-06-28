@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '69';
+const APP_BUILD = '71';
 const APP_VERSION_KEY = 'attendance-app-version';
 
 const DEFAULT_SETTINGS = {
@@ -851,7 +851,8 @@ async function syncRecordToSheet(dateKey, record) {
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify(recordToSyncRow(dateKey, record)),
   });
-  return res.json();
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return parseSheetResponse(res);
 }
 
 async function syncWeekToSheet() {
@@ -905,7 +906,8 @@ async function loadTeamWeek() {
   try {
     const weekStart = getWeekStartKey();
     const res = await fetch(`${url}?weekStart=${weekStart}`, { mode: 'cors' });
-    const data = await res.json();
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await parseSheetResponse(res);
     if (!data.ok || !data.records?.length) {
       box.classList.add('hidden');
       return;
@@ -1459,7 +1461,7 @@ function handleSettingsChange() {
     ...prev,
     notifyBefore: document.getElementById('notifyBefore').value,
     userName: (document.getElementById('userName')?.value || '').trim(),
-    sheetUrl: (document.getElementById('sheetUrl')?.value || '').trim(),
+    sheetUrl: normalizeSheetUrl(document.getElementById('sheetUrl')?.value || ''),
     theme,
     fortuneNotify: document.getElementById('fortuneNotify')?.checked !== false,
     lunchRouletteNotify: document.getElementById('lunchRouletteNotify')?.checked !== false,
@@ -1478,6 +1480,12 @@ function handleSettingsChange() {
   }
   saveSettings(settings);
   applyTheme(theme);
+
+  const sheetEl = document.getElementById('sheetUrl');
+  if (sheetEl && sheetEl.value !== settings.sheetUrl) sheetEl.value = settings.sheetUrl;
+  if (sheetEl || document.getElementById('userName')) {
+    setSyncStatus('설정 저장됨', 'ok');
+  }
 
   if (typeof renderHermesChat === 'function') renderHermesChat();
   if (typeof renderCommuteCard === 'function') renderCommuteCard();

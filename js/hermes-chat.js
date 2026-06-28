@@ -98,7 +98,7 @@ function saveChatMessages(messages) {
 
 function getChatSheetConfig() {
   const settings = typeof loadSettings === 'function' ? loadSettings() : {};
-  const url = (settings.sheetUrl || '').trim();
+  const url = normalizeSheetUrl(settings.sheetUrl || '');
   const name = typeof getUserName === 'function' ? getUserName() : '';
   return { url, name, ready: Boolean(url && name && name !== '사원') };
 }
@@ -151,7 +151,7 @@ async function syncChatFromSheet(force = false) {
     try {
       const qs = new URLSearchParams({ action: 'chat', name, limit: String(CHAT_SHEET_LIMIT) });
       const res = await fetch(`${url}?${qs}`, { mode: 'cors', cache: 'no-store' });
-      const data = await res.json();
+      const data = await parseSheetResponse(res);
       if (data.ok && Array.isArray(data.messages)) {
         const sanitized = sanitizeChatMessages(data.messages);
         saveChatMessages(sanitized);

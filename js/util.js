@@ -34,6 +34,28 @@ async function loadDailyJson(folder) {
   return null;
 }
 
+/** script.google.com exec URL — bare deployment ID도 허용 */
+function normalizeSheetUrl(raw) {
+  const s = String(raw || '').trim();
+  if (!s) return '';
+  if (/^https?:\/\//i.test(s)) return s.replace(/\/+$/, '');
+  const id = s.match(/macros\/s\/([^/?#]+)/)?.[1] || (/^AKfycb[\w-]+$/i.test(s) ? s : '');
+  if (id) return `https://script.google.com/macros/s/${id}/exec`;
+  return s;
+}
+
+async function parseSheetResponse(res) {
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    if (/accounts\.google\.com|Sign in|로그인/i.test(text)) {
+      throw new Error('GAS 액세스 "모든 사용자"로 재배포 필요');
+    }
+    throw new Error('시트 응답 오류 (URL·배포 확인)');
+  }
+}
+
 function consumeTabDeepLink(tab) {
   const params = new URLSearchParams(window.location.search);
   if (params.get('tab') !== tab) return;
@@ -46,4 +68,6 @@ function consumeTabDeepLink(tab) {
 (function utilSelfCheck() {
   if (todayKey(new Date(2026, 5, 28)) !== '2026-06-28') throw new Error('todayKey');
   if (escapeHtml('<a&">') !== '&lt;a&amp;&quot;&gt;') throw new Error('escapeHtml');
+  const id = 'AKfycby6c6G5E_test';
+  if (!normalizeSheetUrl(id).endsWith(`${id}/exec`)) throw new Error('normalizeSheetUrl');
 })();
