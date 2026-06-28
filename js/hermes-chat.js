@@ -14,6 +14,8 @@ const HERMES_SYSTEM_PROMPT =
 const CHAT_EMPTY_MARKERS = new Set(['(빈 응답)', '(empty)', '(응답 없음)', '（응답 없음）', '…']);
 const CHAT_EMPTY_FALLBACK =
   '응답을 받지 못했어요. 앱을 새로고침하거나 잠시 후 다시 보내 보세요.';
+const CHAT_HISTORY_LIMIT = 40;
+const RUN_POLL_INTERVAL_MS = 3_000;
 
 function normalizeChatReply(text) {
   const t = String(text || '').trim();
@@ -334,6 +336,107 @@ function setHermesTestStatus(text, kind) {
   el.className = cls ? `sync-status ${cls}` : 'sync-status';
 }
 
+function getHermesApiRoot(baseUrl) {
+  return (baseUrl || '').replace(/\/v1\/?$/, '');
+}
+
+function trimChatHistory(messages) {
+  return messages.slice(-CHAT_HISTORY_LIMIT);
+}
+
+async function startHermesRun({ baseUrl, apiKey, model, systemPrompt, userText, history }) {
+  const root = getHermesApiRoot(baseUrl);
+  const res = await fetchWithTimeout(`${root}/v1/runs`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    cache: 'no-store',
+    body: JSON.stringify({
+      model,
+      input: userText,
+      instructions: systemPrompt,
+      conversation_history: trimChatHistory(history).map(({ role, content }) => ({ role, content })),
+    }),
+  }, 60_000);
+
+  if (res.status === 404 || res.status === 405) return null;
+
+  const data = await res.json().catch(() => ({}));
+  if (res.status !== 202) {
+    const errMsg = data?.error?.message || data?.message || `HTTP ${res.status}`;
+    throw new Error(errMsg);
+  }
+  return data.run_id || null;
+}
+
+async function pollHermesRun({ baseUrl, apiKey, runId, timeoutMs, onPartial }) {
+  const root = getHermesApiRoot(baseUrl);
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() < deadline) {
+    const res = await fetchWithTimeout(`${root}/v1/runs/${encodeURIComponent(runId)}`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${apiKey}` },
+      cache: 'no-store',
+    }, 30_000);
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data?.error?.message || data?.message || `HTTP ${res.status}`);
+    }
+
+    const status = data.status;
+    if (status === 'completed') {
+      return normalizeChatReply(data.output || '');
+    }
+    if (status === 'failed' || status === 'cancelled') {
+      throw new Error(data.error || `Hermes run ${status}`);
+    }
+
+    if (typeof onPartial === 'function' && data.output) {
+      onPartial(normalizeChatReply(data.output));
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, RUN_POLL_INTERVAL_MS));
+  }
+
+  throw new Error(`응답 시간 초과 (${Math.round(timeoutMs / 1000)}초). Hermes가 아직 처리 중일 수 있어요.`);
+}
+
+async function requestHermesChatReply({ baseUrl, apiKey, model, systemPrompt, userText, history, requestTimeoutMs, onPartial }) {
+  const runId = await startHermesRun({ baseUrl, apiKey, model, systemPrompt, userText, history });
+  if (runId) {
+    return pollHermesRun({ baseUrl, apiKey, runId, timeoutMs: requestTimeoutMs, onPartial });
+  }
+
+  // ponytail: fallback for gateways without /v1/runs
+  const apiMessages = [
+    { role: 'system', content: systemPrompt },
+    ...trimChatHistory(history).map(({ role, content }) => ({ role, content })),
+  ];
+  const res = await fetchWithTimeout(`${baseUrl}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    cache: 'no-store',
+    body: JSON.stringify({ model, messages: apiMessages, stream: false }),
+  }, requestTimeoutMs);
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const errMsg = data?.error?.message || data?.message || `HTTP ${res.status}`;
+    throw new Error(errMsg);
+  }
+
+  const rawReply = (data?.choices?.[0]?.message?.content || '').trim()
+    || (data?.error?.message || '').trim();
+  return normalizeChatReply(rawReply);
+}
+
 function getHermesConnectionHint(baseUrl) {
   const pageHttps = window.location.protocol === 'https:';
   const apiHttp = /^http:\/\//i.test(baseUrl || '');
@@ -408,41 +511,26 @@ async function sendHermesChatMessage(userText) {
   startChatElapsedTimer();
   startChatKeepalive();
 
-  const apiMessages = [
-    { role: 'system', content: systemPrompt },
-    ...messages.map(({ role, content }) => ({ role, content })),
-  ];
-
-  // ponytail: stream:false — ACP/cursor backends emit text only at end; SSE idle ~30s drops tunnel clients before answer arrives
-  const requestBody = {
-    model,
-    messages: apiMessages,
-    stream: false,
-  };
-
   try {
     messages.push({ role: 'assistant', content: '…', at: new Date().toISOString() });
     renderHermesChatFrom(messages);
 
-    const res = await fetchWithTimeout(`${baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
+    const reply = await requestHermesChatReply({
+      baseUrl,
+      apiKey,
+      model,
+      systemPrompt,
+      userText: text,
+      history: messages.slice(0, -1),
+      requestTimeoutMs,
+      onPartial: (partial) => {
+        const last = messages[messages.length - 1];
+        if (last?.role === 'assistant') {
+          last.content = partial;
+          renderHermesChatFrom(messages);
+        }
       },
-      cache: 'no-store',
-      body: JSON.stringify(requestBody),
-    }, requestTimeoutMs);
-
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      const errMsg = data?.error?.message || data?.message || `HTTP ${res.status}`;
-      throw new Error(errMsg);
-    }
-
-    const rawReply = (data?.choices?.[0]?.message?.content || '').trim()
-      || (data?.error?.message || '').trim();
-    const reply = normalizeChatReply(rawReply);
+    });
 
     messages[messages.length - 1] = { role: 'assistant', content: reply, at: new Date().toISOString() };
     saveChatMessages(messages);
