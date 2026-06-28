@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '57';
+const APP_BUILD = '58';
 const APP_VERSION_KEY = 'attendance-app-version';
 
 const DEFAULT_SETTINGS = {
@@ -250,7 +250,6 @@ function handleFieldWorkToggle() {
   updateNetworkStatusUI();
   refreshNetworkGuard();
   renderToday();
-  renderWeek();
 }
 
 async function completeCheckOut(record, fieldMemo = '') {
@@ -453,6 +452,9 @@ function switchTab(tabName) {
         lunchMapInstance.invalidateSize();
       }
     }, 200);
+  }
+  if (tabName === 'news') {
+    if (typeof initNewsBrief === 'function') initNewsBrief();
   }
   if (tabName === 'chat') {
     if (typeof initHermesChat === 'function') initHermesChat();
@@ -1290,7 +1292,6 @@ function renderSettings() {
 function render() {
   renderToday();
   renderFunDate();
-  renderWeek();
   renderSettings();
   renderAppVersion();
   renderWifiSuggestion();
@@ -1301,7 +1302,7 @@ function render() {
   if (typeof checkLunchRouletteNotify === 'function') checkLunchRouletteNotify();
   if (typeof maybePrefetchCommute === 'function') maybePrefetchCommute();
   if (typeof initWeatherBrief === 'function') initWeatherBrief();
-  loadTeamWeek();
+  if (typeof initNewsBrief === 'function') initNewsBrief();
   updateNetworkStatusUI();
   const canAttend = onCompanyNetwork || !isNetworkGuardActive() || isFieldWorkToday();
   setAttendanceButtonsEnabled(canAttend);

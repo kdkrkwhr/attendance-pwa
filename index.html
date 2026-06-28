@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=57">
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=57">
+  <link rel="stylesheet" href="css/style.css?v=58">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=58">
   <script>
     (function () {
       try {
@@ -136,19 +136,30 @@
         </section>
       </div>
 
-      <!-- 주간 -->
-      <div class="tab-panel" id="tabWeek" data-tab-panel="week">
-        <section class="card">
-          <div class="card-header-row">
-            <h2 class="card-title" id="weekTitle">이번 주</h2>
-            <span class="week-summary" id="weekSummary"></span>
-          </div>
-          <ul class="week-list" id="weekList"></ul>
+      <!-- News -->
+      <div class="tab-panel" id="tabNews" data-tab-panel="news">
+        <section class="news-hero">
+          <p class="news-hero-emoji">📰</p>
+          <h2 class="news-hero-title">News</h2>
+          <p class="news-hero-date" id="newsTodayDate"></p>
         </section>
-        <div id="teamWeekBox" class="card hidden">
-          <h2 class="card-title">팀 이번 주</h2>
-          <ul class="team-list" id="teamWeekList"></ul>
-        </div>
+
+        <section class="card news-brief-card hidden" id="newsBriefCard" aria-label="오늘 뉴스 요약">
+          <div class="news-brief-header">
+            <span class="news-brief-badge">📝 오늘 요약</span>
+            <span class="news-brief-meta" id="newsBriefMeta"></span>
+          </div>
+          <p class="news-brief-summary" id="newsBriefSummary"></p>
+        </section>
+
+        <section class="card news-list-card hidden" id="newsListCard">
+          <h2 class="card-title">주요 기사</h2>
+          <ul class="news-list" id="newsList"></ul>
+        </section>
+
+        <section class="card news-empty hidden" id="newsEmpty">
+          <p class="news-empty-text">아직 오늘 뉴스가 없어요.<br>매일 07:00에 갱신됩니다.</p>
+        </section>
       </div>
 
       <!-- Fun -->
@@ -473,9 +484,10 @@
             <li>맛집 지도 — 회사 날씨 칩·지도 마커</li>
             <li>Fun 탭 — 한마디·사주·운세는 탭해서 확인 (하루 1회)</li>
             <li>AI 채팅 — Google 시트에 대화 저장·복원 (최대 100개, 설정 이름 필요)</li>
-            <li>AI 채팅 — 빈 응답·SSE 끊김 수정 (v57, non-streaming)</li>
+            <li>AI 채팅 — 빈 응답·SSE 끊김 수정 (v58, non-streaming)</li>
             <li>퇴근길 — 집 주소 설정 시 대중교통·자차 소요 (Hermes/ODsay)</li>
             <li>점심 룰렛 — 11:20 알림 (설정에서 끄기 가능)</li>
+            <li>News 탭 — 오늘 주요 뉴스 AI 요약 (매일 07:00 자동 갱신)</li>
             <li>2시간마다 Hermes가 PWA 자동 점검·배포 (변경 없으면 조용히 스킵)</li>
           </ul>
         </section>
@@ -487,9 +499,9 @@
         <span class="tab-icon">⏱</span>
         <span class="tab-label">오늘</span>
       </button>
-      <button type="button" class="tab-btn" data-tab="week">
-        <span class="tab-icon">📅</span>
-        <span class="tab-label">주간</span>
+      <button type="button" class="tab-btn" data-tab="news">
+        <span class="tab-icon">📰</span>
+        <span class="tab-label">News</span>
       </button>
       <button type="button" class="tab-btn" data-tab="fun">
         <span class="tab-icon">🎲</span>
@@ -510,15 +522,16 @@
     </nav>
   </div>
 
-  <script src="config.js?v=57"></script>
-  <script src="vendor/leaflet/leaflet.js?v=57"></script>
-  <script src="js/fortune.js?v=57"></script>
-  <script src="js/saju.js?v=57"></script>
-  <script src="js/lunch-map.js?v=57"></script>
-  <script src="js/user-location.js?v=57"></script>
-  <script src="js/weather-brief.js?v=57"></script>
-  <script src="js/hermes-chat.js?v=57"></script>
-  <script src="js/commute-time.js?v=57"></script>
-  <script src="js/app.js?v=57"></script>
+  <script src="config.js?v=58"></script>
+  <script src="vendor/leaflet/leaflet.js?v=58"></script>
+  <script src="js/fortune.js?v=58"></script>
+  <script src="js/saju.js?v=58"></script>
+  <script src="js/lunch-map.js?v=58"></script>
+  <script src="js/user-location.js?v=58"></script>
+  <script src="js/weather-brief.js?v=58"></script>
+  <script src="js/news-brief.js?v=58"></script>
+  <script src="js/hermes-chat.js?v=58"></script>
+  <script src="js/commute-time.js?v=58"></script>
+  <script src="js/app.js?v=58"></script>
 </body>
 </html>

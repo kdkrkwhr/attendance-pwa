@@ -1,4 +1,4 @@
-const CACHE_NAME = 'attendance-pwa-v57';
+const CACHE_NAME = 'attendance-pwa-v58';
 
 const PRECACHE_ASSETS = [
   './',
@@ -12,6 +12,7 @@ const PRECACHE_ASSETS = [
   './js/hermes-chat.js',
   './js/user-location.js',
   './js/weather-brief.js',
+  './js/news-brief.js',
   './js/commute-time.js',
   './data/dmc_restaurants.json',
   './vendor/leaflet/leaflet.css',
@@ -35,6 +36,7 @@ function shouldNetworkFirst(request) {
   const path = url.pathname;
   if (/\.(js|css|html)$/.test(path)) return true;
   if (/\/data\/weather\//.test(path)) return true;
+  if (/\/data\/news\//.test(path)) return true;
   if (path.endsWith('/attendance-pwa') || path.endsWith('/attendance-pwa/')) return true;
 
   return false;
