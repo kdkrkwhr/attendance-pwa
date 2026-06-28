@@ -2011,14 +2011,14 @@ body {
 .user-face-pin-head {
   position: absolute;
   left: 50%;
-  top: 8px;
-  width: 34px;
-  height: 34px;
-  margin-left: -17px;
+  top: 6px;
+  width: 38px;
+  height: 38px;
+  margin-left: -19px;
   border-radius: 50%;
   background: linear-gradient(180deg, #ffe8c8 0%, #ffd3a5 100%);
   border: 3px solid #fff;
-  box-shadow: inset 0 -4px 0 rgba(251, 146, 60, 0.18);
+  box-shadow: inset 0 -4px 0 rgba(251, 146, 60, 0.18), 0 0 0 2px rgba(22, 163, 74, 0.35);
 }
 
 .user-face-pin-hair {

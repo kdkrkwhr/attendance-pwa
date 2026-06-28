@@ -14,7 +14,7 @@ function getHermesChatConfig() {
   const apiKey = (settings.hermesApiKey || '').trim();
   const model = (settings.hermesModel || cfg.defaultModel || 'hermes-agent').trim();
   const timeoutMs = Number(cfg.requestTimeoutMs);
-  const requestTimeoutMs = Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : 300_000;
+  const requestTimeoutMs = Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : 600_000;
   return {
     baseUrl,
     apiKey,
@@ -79,6 +79,10 @@ function formatChatTime(iso) {
 }
 
 function renderHermesChat() {
+  renderHermesChatFrom(loadChatMessages());
+}
+
+function renderHermesChatFrom(messages) {
   const listEl = document.getElementById('chatMessages');
   const emptyEl = document.getElementById('chatEmpty');
   const setupEl = document.getElementById('chatSetup');
@@ -86,9 +90,7 @@ function renderHermesChat() {
 
   const configured = isHermesConfigured();
   if (setupEl) setupEl.classList.toggle('hidden', configured);
-  if (emptyEl) emptyEl.classList.toggle('hidden', !configured || loadChatMessages().length > 0);
-
-  const messages = loadChatMessages();
+  if (emptyEl) emptyEl.classList.toggle('hidden', !configured || messages.length > 0);
   if (!configured) {
     listEl.innerHTML = '';
     return;
@@ -132,6 +134,64 @@ function setChatBusy(busy) {
   if (form) form.classList.toggle('is-busy', busy);
   if (input) input.disabled = busy;
   if (btn) btn.disabled = busy;
+}
+
+let chatElapsedTimer = null;
+
+function startChatElapsedTimer() {
+  stopChatElapsedTimer();
+  const start = Date.now();
+  chatElapsedTimer = setInterval(() => {
+    const sec = Math.floor((Date.now() - start) / 1000);
+    const m = Math.floor(sec / 60);
+    const s = String(sec % 60).padStart(2, '0');
+    setChatStatus(`응답 생성 중… ${m}:${s}`, 'info');
+  }, 1000);
+}
+
+function stopChatElapsedTimer() {
+  if (chatElapsedTimer) {
+    clearInterval(chatElapsedTimer);
+    chatElapsedTimer = null;
+  }
+}
+
+function parseSseChatDelta(line) {
+  if (!line.startsWith('data:')) return null;
+  const payload = line.slice(5).trim();
+  if (!payload || payload === '[DONE]') return null;
+  try {
+    const json = JSON.parse(payload);
+    return json?.choices?.[0]?.delta?.content
+      || json?.choices?.[0]?.message?.content
+      || '';
+  } catch {
+    return null;
+  }
+}
+
+async function readStreamingChatReply(res, onPartial) {
+  if (!res.body) throw new Error('스트리밍 응답 본문이 없습니다.');
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let fullText = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+    for (const line of lines) {
+      const delta = parseSseChatDelta(line.trim());
+      if (!delta) continue;
+      fullText += delta;
+      onPartial(fullText);
+    }
+  }
+
+  return fullText.trim();
 }
 
 function setHermesTestStatus(text, kind) {
@@ -212,12 +272,18 @@ async function sendHermesChatMessage(userText) {
   saveChatMessages(messages);
   renderHermesChat();
   setChatBusy(true);
-  setChatStatus('응답 생성 중…', 'info');
+  startChatElapsedTimer();
 
   const apiMessages = [
     { role: 'system', content: systemPrompt },
     ...messages.map(({ role, content }) => ({ role, content })),
   ];
+
+  const requestBody = {
+    model,
+    messages: apiMessages,
+    stream: true,
+  };
 
   try {
     const res = await fetchWithTimeout(`${baseUrl}/chat/completions`, {
@@ -226,26 +292,50 @@ async function sendHermesChatMessage(userText) {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model,
-        messages: apiMessages,
-        stream: false,
-      }),
+      body: JSON.stringify(requestBody),
     }, requestTimeoutMs);
 
-    const data = await res.json().catch(() => ({}));
     if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
       const errMsg = data?.error?.message || data?.message || `HTTP ${res.status}`;
       throw new Error(errMsg);
     }
 
-    const reply = data?.choices?.[0]?.message?.content?.trim() || '(빈 응답)';
-    messages.push({ role: 'assistant', content: reply, at: new Date().toISOString() });
-    saveChatMessages(messages);
+    const contentType = res.headers.get('content-type') || '';
+    let reply = '';
+
+    if (contentType.includes('text/event-stream') && res.body) {
+      messages.push({ role: 'assistant', content: '…', at: new Date().toISOString() });
+      reply = await readStreamingChatReply(res, (partial) => {
+        messages[messages.length - 1].content = partial || '…';
+        renderHermesChatFrom(messages);
+      });
+    } else {
+      const data = await res.json().catch(() => ({}));
+      reply = data?.choices?.[0]?.message?.content?.trim() || '';
+      messages.push({ role: 'assistant', content: reply || '(빈 응답)', at: new Date().toISOString() });
+      saveChatMessages(messages);
+    }
+
+    reply = reply || '(빈 응답)';
+    if (contentType.includes('text/event-stream') && res.body) {
+      messages[messages.length - 1] = { role: 'assistant', content: reply, at: new Date().toISOString() };
+      saveChatMessages(messages);
+    }
     setChatStatus('', '');
   } catch (e) {
-    setChatStatus(`전송 실패: ${e.message || e}`, 'error');
+    const last = messages[messages.length - 1];
+    if (last?.role === 'assistant' && (!last.content || last.content === '…')) {
+      messages.pop();
+      saveChatMessages(messages);
+    }
+    const isAbort = e?.name === 'AbortError' || /시간 초과|timeout/i.test(String(e.message));
+    const hint = isAbort
+      ? ' 터널·프록시 idle 타임아웃(약 100~300초)일 수 있어요. 화면 켜두고 다시 시도해 보세요.'
+      : '';
+    setChatStatus(`전송 실패: ${e.message || e}${hint}`, 'error');
   } finally {
+    stopChatElapsedTimer();
     setChatBusy(false);
     renderHermesChat();
   }

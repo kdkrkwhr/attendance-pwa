@@ -35,7 +35,7 @@ window.APP_CONFIG = {
   hermesChat: {
     defaultModel: 'hermes-agent',
     /** chat/completions 대기(ms). Hermes·도구 호출이 길면 더 늘리세요 */
-    requestTimeoutMs: 300_000,
+    requestTimeoutMs: 600_000,
     /** 로컬 개발 시에만 자동 채움 (hostname localhost/127.0.0.1) */
     devDefaults: {
       baseUrl: 'http://127.0.0.1:8642/v1',
