@@ -3425,3 +3425,58 @@ body {
   }
 }
 
+/* ── 맛집 지도 비 효과 ── */
+.lunch-map-rain {
+  position: absolute;
+  inset: 0;
+  z-index: 400;
+  pointer-events: none;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(71, 85, 105, 0.08) 0%, rgba(51, 65, 85, 0.18) 100%);
+}
+
+.lunch-map-rain.hidden {
+  display: none;
+}
+
+.lunch-map-rain::before,
+.lunch-map-rain::after {
+  content: '';
+  position: absolute;
+  top: -110%;
+  left: -10%;
+  width: 120%;
+  height: 220%;
+  background-image: repeating-linear-gradient(
+    108deg,
+    transparent 0,
+    transparent 12px,
+    rgba(186, 210, 240, 0.45) 12px,
+    rgba(186, 210, 240, 0.45) 13px,
+    transparent 13px,
+    transparent 26px
+  );
+  animation: lunch-rain-fall 0.52s linear infinite;
+}
+
+.lunch-map-rain::after {
+  left: -35%;
+  width: 140%;
+  opacity: 0.55;
+  animation-duration: 0.78s;
+  animation-delay: -0.25s;
+}
+
+@keyframes lunch-rain-fall {
+  from { transform: translateY(0); }
+  to { transform: translateY(45%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lunch-map-rain::before,
+  .lunch-map-rain::after {
+    animation: none;
+    opacity: 0.35;
+  }
+}
+

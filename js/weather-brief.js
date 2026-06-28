@@ -1,6 +1,21 @@
 /**
  * 오늘 탭 — 회사 근처 날씨 (data/weather/YYYY-MM-DD.json, cron 06:00 갱신)
  */
+function isRainyPeriod(period) {
+  if (!period) return false;
+  const pty = String(period.pty || '');
+  if (pty && pty !== '없음' && /비|소나기|눈|진눈|빗/i.test(pty)) return true;
+  return false;
+}
+
+function shouldShowMapRain(data) {
+  if (!data) return false;
+  if (isRainyPeriod(getWeatherPeriodNow(data))) return true;
+  const sum = String(data.summary || '');
+  if (!/비|소나기|우산|강수|빗/.test(sum)) return false;
+  return (data.periods || []).some(isRainyPeriod);
+}
+
 function weatherEmojiFromPeriod(period) {
   if (!period) return '🌤';
   const pty = String(period.pty || '');

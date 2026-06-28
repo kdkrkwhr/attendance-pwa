@@ -384,6 +384,14 @@ function renderLunchWeatherChip(data, period) {
   chip.classList.remove('hidden');
 }
 
+function updateLunchMapRainEffect(data) {
+  const el = document.getElementById('lunchMapRain');
+  if (!el) return;
+  const show = typeof shouldShowMapRain === 'function' && shouldShowMapRain(data);
+  el.classList.toggle('hidden', !show);
+  el.setAttribute('aria-hidden', show ? 'false' : 'true');
+}
+
 function renderLunchWeatherMarker(data) {
   if (!lunchMapInstance || !data) return;
   if (lunchWeatherMarker) {
@@ -413,6 +421,7 @@ async function initLunchMapWeather() {
     const period = getWeatherPeriodNow(lunchWeatherData);
     renderLunchWeatherChip(lunchWeatherData, period);
     renderLunchWeatherMarker(lunchWeatherData);
+    updateLunchMapRainEffect(lunchWeatherData);
   } catch (err) {
     console.warn('lunch weather:', err);
   }
