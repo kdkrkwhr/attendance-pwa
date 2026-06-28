@@ -12,7 +12,31 @@ function getHermesChatConfig() {
   const baseUrl = (settings.hermesBaseUrl || cfg.defaultBaseUrl || '').trim().replace(/\/$/, '');
   const apiKey = (settings.hermesApiKey || '').trim();
   const model = (settings.hermesModel || cfg.defaultModel || 'hermes-agent').trim();
-  return { baseUrl, apiKey, model, systemPrompt: cfg.systemPrompt || HERMES_SYSTEM_PROMPT };
+  const timeoutMs = Number(cfg.requestTimeoutMs);
+  const requestTimeoutMs = Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : 300_000;
+  return {
+    baseUrl,
+    apiKey,
+    model,
+    requestTimeoutMs,
+    systemPrompt: cfg.systemPrompt || HERMES_SYSTEM_PROMPT,
+  };
+}
+
+async function fetchWithTimeout(url, options = {}, timeoutMs) {
+  const ms = timeoutMs ?? getHermesChatConfig().requestTimeoutMs;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } catch (e) {
+    if (e?.name === 'AbortError') {
+      throw new Error(`응답 시간 초과 (${Math.round(ms / 1000)}초). Hermes가 아직 처리 중일 수 있어요.`);
+    }
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 function isHermesConfigured() {
@@ -146,15 +170,16 @@ async function testHermesConnection() {
 
   setHermesTestStatus('연결 확인 중…', '');
   const root = baseUrl.replace(/\/v1\/?$/, '');
+  const { requestTimeoutMs } = getHermesChatConfig();
   try {
-    const healthRes = await fetch(`${root}/health`, { method: 'GET', cache: 'no-store' });
+    const healthRes = await fetchWithTimeout(`${root}/health`, { method: 'GET', cache: 'no-store' }, 30_000);
     if (!healthRes.ok) throw new Error(`health HTTP ${healthRes.status}`);
 
-    const modelsRes = await fetch(`${baseUrl}/models`, {
+    const modelsRes = await fetchWithTimeout(`${baseUrl}/models`, {
       method: 'GET',
       headers: { Authorization: `Bearer ${apiKey}` },
       cache: 'no-store',
-    });
+    }, 30_000);
     if (!modelsRes.ok) throw new Error(`인증 실패 (HTTP ${modelsRes.status}). API 키를 확인하세요.`);
 
     setChatStatus('Hermes 연결 성공', 'ok');
@@ -174,7 +199,7 @@ async function sendHermesChatMessage(userText) {
   const text = (userText || '').trim();
   if (!text) return;
 
-  const { baseUrl, apiKey, model, systemPrompt } = getHermesChatConfig();
+  const { baseUrl, apiKey, model, systemPrompt, requestTimeoutMs } = getHermesChatConfig();
   if (!baseUrl || !apiKey) {
     setChatStatus('설정에서 Hermes API 주소와 키를 입력해 주세요.', 'error');
     return;
@@ -194,7 +219,7 @@ async function sendHermesChatMessage(userText) {
   ];
 
   try {
-    const res = await fetch(`${baseUrl}/chat/completions`, {
+    const res = await fetchWithTimeout(`${baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -205,7 +230,7 @@ async function sendHermesChatMessage(userText) {
         messages: apiMessages,
         stream: false,
       }),
-    });
+    }, requestTimeoutMs);
 
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
