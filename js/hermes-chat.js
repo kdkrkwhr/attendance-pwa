@@ -31,7 +31,7 @@ function sanitizeChatMessages(list) {
   return list
     .map((m) => {
       if (!m || typeof m !== 'object') return null;
-      const role = m.role === 'assistant' ? 'assistant' : 'user';
+      const role = String(m.role || '').toLowerCase() === 'assistant' ? 'assistant' : 'user';
       const content = role === 'assistant' ? normalizeChatReply(m.content) : String(m.content || '').trim();
       if (!content) return null;
       return { role, content, at: m.at || new Date().toISOString() };
@@ -211,7 +211,7 @@ function renderHermesChatFrom(messages) {
 
   listEl.innerHTML = messages
     .map((m) => {
-      const role = m.role === 'assistant' ? 'assistant' : 'user';
+      const role = String(m.role || '').toLowerCase() === 'assistant' ? 'assistant' : 'user';
       const body = escapeHtml(m.content || '').replace(/\n/g, '<br>');
       const time = formatChatTime(m.at);
       return `<div class="chat-bubble chat-bubble-${role}" role="article">
@@ -465,7 +465,7 @@ async function sendHermesChatMessage(userText) {
   const userMsg = { role: 'user', content: text, at: new Date().toISOString() };
   messages.push(userMsg);
   saveChatMessages(messages);
-  appendChatToSheet(userMsg);
+  await appendChatToSheet(userMsg);
   renderHermesChat();
   setChatBusy(true);
   startChatElapsedTimer();
@@ -492,9 +492,10 @@ async function sendHermesChatMessage(userText) {
       },
     });
 
-    messages[messages.length - 1] = { role: 'assistant', content: reply, at: new Date().toISOString() };
+    const assistantMsg = { role: 'assistant', content: reply, at: new Date().toISOString() };
+    messages[messages.length - 1] = assistantMsg;
     saveChatMessages(messages);
-    appendChatToSheet(messages[messages.length - 1]);
+    await appendChatToSheet(assistantMsg);
     setChatStatus('', '');
   } catch (e) {
     const last = messages[messages.length - 1];

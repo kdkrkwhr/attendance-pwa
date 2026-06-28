@@ -56,13 +56,19 @@ async function parseSheetResponse(res) {
   }
 }
 
-/** ponytail: GAS POST redirect lacks CORS headers — no-cors fire-and-forget */
+/** ponytail: GAS lacks CORS on POST — sendBeacon survives tab close; keepalive fetch fallback */
 async function postToSheet(url, body) {
+  const payload = JSON.stringify(body);
+  const blob = new Blob([payload], { type: 'text/plain;charset=utf-8' });
+  if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
+    if (navigator.sendBeacon(url, blob)) return;
+  }
   await fetch(url, {
     method: 'POST',
     mode: 'no-cors',
+    keepalive: true,
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(body),
+    body: payload,
   });
 }
 
