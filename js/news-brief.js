@@ -7,37 +7,10 @@ let newsCache = null;
 let newsMarket = localStorage.getItem(NEWS_MARKET_KEY) || 'kr';
 let newsCategory = localStorage.getItem(NEWS_CATEGORY_KEY) || 'stock';
 
-function todayNewsKey() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
-function newsDataUrls() {
-  const date = todayNewsKey();
-  const v = window.APP_VERSION || '';
-  const q = v ? `?v=${encodeURIComponent(v)}` : '';
-  return [
-    `./data/news/${date}.json${q}`,
-    `./data/news/latest.json${q}`,
-  ];
-}
-
 async function loadTodayNews() {
   if (newsCache) return newsCache;
-  for (const url of newsDataUrls()) {
-    try {
-      const res = await fetch(url, { cache: 'no-store' });
-      if (!res.ok) continue;
-      const data = await res.json();
-      if (data?.date === todayNewsKey() || url.includes('latest.json')) {
-        newsCache = data;
-        return data;
-      }
-    } catch {
-      /* try next */
-    }
-  }
-  return null;
+  newsCache = await loadDailyJson('news');
+  return newsCache;
 }
 
 function activeNewsKey() {

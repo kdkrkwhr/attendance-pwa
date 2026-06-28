@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '67';
+const APP_BUILD = '68';
 const APP_VERSION_KEY = 'attendance-app-version';
 
 const DEFAULT_SETTINGS = {
@@ -741,17 +741,6 @@ async function handleInstall() {
 
 // ── 유틸 ──────────────────────────────────────────
 
-function todayKey() {
-  return formatDateKey(new Date());
-}
-
-function formatDateKey(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
 function formatTime(date) {
   const h = date.getHours();
   const m = String(date.getMinutes()).padStart(2, '0');
@@ -813,12 +802,8 @@ function calcNetWorkMinutes(checkInISO, checkOutISO) {
   return Math.max(0, calcWorkedMinutes(checkInISO, checkOutISO) - LUNCH_MINUTES);
 }
 
-function getDisplayName() {
-  return (loadSettings().userName || '').trim();
-}
-
 function getUserName() {
-  return getDisplayName() || '사원';
+  return (loadSettings().userName || '').trim() || '사원';
 }
 
 function getWeekStartKey(baseDate = new Date()) {
@@ -946,14 +931,6 @@ async function loadTeamWeek() {
   } catch {
     box.classList.add('hidden');
   }
-}
-
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
 }
 
 // ── 저장소 ──────────────────────────────────────────

@@ -169,14 +169,6 @@ async function syncChatFromSheet(force = false) {
   return chatSyncInFlight;
 }
 
-function escapeHtml(text) {
-  return String(text)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
 function formatChatTime(iso) {
   if (!iso) return '';
   try {
@@ -288,44 +280,6 @@ function stopChatKeepalive() {
     clearInterval(chatKeepaliveTimer);
     chatKeepaliveTimer = null;
   }
-}
-
-function parseSseChatDelta(line) {
-  if (!line.startsWith('data:')) return null;
-  const payload = line.slice(5).trim();
-  if (!payload || payload === '[DONE]') return null;
-  try {
-    const json = JSON.parse(payload);
-    return json?.choices?.[0]?.delta?.content
-      || json?.choices?.[0]?.message?.content
-      || '';
-  } catch {
-    return null;
-  }
-}
-
-async function readStreamingChatReply(res, onPartial) {
-  if (!res.body) throw new Error('스트리밍 응답 본문이 없습니다.');
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-  let fullText = '';
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split('\n');
-    buffer = lines.pop() || '';
-    for (const line of lines) {
-      const delta = parseSseChatDelta(line.trim());
-      if (!delta) continue;
-      fullText += delta;
-      onPartial(fullText);
-    }
-  }
-
-  return fullText.trim();
 }
 
 function setHermesTestStatus(text, kind) {
@@ -579,12 +533,9 @@ function handleChatGoSettings() {
 }
 
 function consumeChatDeepLink() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('tab') === 'chat') {
-    if (typeof switchTab === 'function') switchTab('chat');
-  }
+  consumeTabDeepLink('chat');
 
-  const url = (params.get('hermes_url') || '').trim();
+  const params = new URLSearchParams(window.location.search);
   const key = (params.get('hermes_key') || '').trim();
   if (!url && !key) return;
   if (typeof loadSettings !== 'function' || typeof saveSettings !== 'function') return;

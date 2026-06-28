@@ -101,17 +101,7 @@ function fixLeafletIconPaths() {
   });
 }
 
-function createEmojiIcon(emoji, className) {
-  return L.divIcon({
-    className: `lunch-map-pin ${className}`,
-    html: `<span class="lunch-map-pin-emoji">${emoji}</span>`,
-    iconSize: [32, 32],
-    iconAnchor: [16, 28],
-    popupAnchor: [0, -24],
-  });
-}
-
-const PLACE_CAT_EMOJI = [
+function fixLeafletIconPaths() {
   [/국밥|찌개|탕|국수|면|라멘|우동|쌀국수|분식|김밥|떡볶/i, '🍜'],
   [/한식|정식|백반|고기|구이|삼겹|갈비|족발|보쌈/i, '🍱'],
   [/일식|초밥|돈까스/i, '🍣'],
@@ -731,12 +721,7 @@ function renderLunchList(data) {
   if (!listEl) return;
 
   populateCategoryFilter(data.places);
-
-  const filterEl = document.getElementById('lunchCategoryFilter');
-  const selected = filterEl?.value || 'all';
-  const filtered = selected === 'all'
-    ? data.places
-    : data.places.filter((p) => p.category === selected);
+  const filtered = getFilteredLunchPlaces();
 
   listEl.innerHTML = filtered.map((place) => {
     const rating = formatRatingLabel(place.rating, place.ratingSource);
@@ -1008,13 +993,5 @@ function checkLunchRouletteNotify() {
 }
 
 function consumeLunchDeepLink() {
-  const params = new URLSearchParams(window.location.search);
-  const tab = params.get('tab');
-  if (tab === 'lunch' && typeof switchTab === 'function') {
-    switchTab('lunch');
-    params.delete('tab');
-    const qs = params.toString();
-    const cleanUrl = `${window.location.pathname}${qs ? `?${qs}` : ''}${window.location.hash}`;
-    history.replaceState({}, '', cleanUrl);
-  }
+  consumeTabDeepLink('lunch');
 }

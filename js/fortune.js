@@ -457,13 +457,5 @@ function checkFortuneNotify() {
 }
 
 function consumeFunDeepLink() {
-  const params = new URLSearchParams(window.location.search);
-  const tab = params.get('tab');
-  if (tab === 'fun' && typeof switchTab === 'function') {
-    switchTab('fun');
-    params.delete('tab');
-    const qs = params.toString();
-    const cleanUrl = `${window.location.pathname}${qs ? `?${qs}` : ''}${window.location.hash}`;
-    history.replaceState({}, '', cleanUrl);
-  }
+  consumeTabDeepLink('fun');
 }

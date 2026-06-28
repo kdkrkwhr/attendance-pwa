@@ -1,10 +1,11 @@
-const CACHE_NAME = 'attendance-pwa-v67';
+const CACHE_NAME = 'attendance-pwa-v68';
 
 const PRECACHE_ASSETS = [
   './',
   './index.html',
   './config.js',
   './css/style.css',
+  './js/util.js',
   './js/app.js',
   './js/fortune.js',
   './js/saju.js',

@@ -47,36 +47,8 @@ function formatWeatherTempLabel(data, period) {
   return '';
 }
 
-function todayWeatherKey() {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
-
-function weatherDataUrls() {
-  const date = todayWeatherKey();
-  const v = window.APP_VERSION || '';
-  const q = v ? `?v=${encodeURIComponent(v)}` : '';
-  return [
-    `./data/weather/${date}.json${q}`,
-    `./data/weather/latest.json${q}`,
-  ];
-}
-
 async function loadTodayWeather() {
-  for (const url of weatherDataUrls()) {
-    try {
-      const res = await fetch(url, { cache: 'no-store' });
-      if (!res.ok) continue;
-      const data = await res.json();
-      if (data?.date === todayWeatherKey() || url.includes('latest.json')) return data;
-    } catch {
-      /* try next */
-    }
-  }
-  return null;
+  return loadDailyJson('weather');
 }
 
 function renderWeatherBrief(data) {
