@@ -2,7 +2,7 @@
  * Hermes OpenAI-compatible API 채팅 (설정 탭에서 URL·키 입력)
  */
 const HERMES_CHAT_KEY = 'attendance-hermes-chat';
-const CHAT_SHEET_LIMIT = 100;
+const CHAT_SHEET_LIMIT = 50;
 const CHAT_SYNC_COOLDOWN_MS = 30_000;
 let chatLastSyncAt = 0;
 let chatSyncInFlight = null;
@@ -96,6 +96,21 @@ function saveChatMessages(messages) {
   localStorage.setItem(HERMES_CHAT_KEY, JSON.stringify(trimmed));
 }
 
+function chatMessageKey(m) {
+  return `${m.at || ''}|${m.role}|${m.content}`;
+}
+
+/** ponytail: merge remote+local; never let empty sheet response wipe local cache */
+function mergeChatMessages(local, remote) {
+  const map = new Map();
+  [...local, ...remote].forEach((m) => {
+    if (m?.content) map.set(chatMessageKey(m), m);
+  });
+  return [...map.values()]
+    .sort((a, b) => String(a.at).localeCompare(String(b.at)))
+    .slice(-CHAT_SHEET_LIMIT);
+}
+
 function getChatSheetConfig() {
   const settings = typeof loadSettings === 'function' ? loadSettings() : {};
   const url = normalizeSheetUrl(settings.sheetUrl || '');
@@ -144,9 +159,10 @@ async function syncChatFromSheet(force = false) {
       const data = await parseSheetResponse(res);
       if (data.ok && Array.isArray(data.messages)) {
         const sanitized = sanitizeChatMessages(data.messages);
-        saveChatMessages(sanitized);
+        const merged = mergeChatMessages(loadChatMessages(), sanitized);
+        saveChatMessages(merged);
         chatLastSyncAt = Date.now();
-        return sanitized;
+        return merged;
       }
     } catch {
       /* fall back to local */
@@ -187,8 +203,8 @@ function renderHermesChatFrom(messages) {
 
   const configured = isHermesConfigured();
   if (setupEl) setupEl.classList.toggle('hidden', configured);
-  if (emptyEl) emptyEl.classList.toggle('hidden', !configured || messages.length > 0);
-  if (!configured) {
+  if (emptyEl) emptyEl.classList.toggle('hidden', messages.length > 0 || !configured);
+  if (!configured && messages.length === 0) {
     listEl.innerHTML = '';
     return;
   }

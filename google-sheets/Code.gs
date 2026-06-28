@@ -144,7 +144,7 @@ function handleChatGet_(params) {
     messages.push({
       role: String(role),
       content: String(content),
-      at: String(at || ''),
+      at: at instanceof Date ? at.toISOString() : String(at || ''),
     });
   }
 
