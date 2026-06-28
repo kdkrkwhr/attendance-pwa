@@ -2,6 +2,7 @@
  * Fun 탭 — 오늘의 한마디 + 오늘의 운세 (하루 1회)
  */
 const FORTUNE_STORAGE_KEY = 'attendance-fortune';
+const FUN_REVEAL_KEY = 'attendance-fun-reveal';
 const FORTUNE_NOTIFY_HOUR = 10;
 
 const FORTUNE_GRADES = {
@@ -324,12 +325,43 @@ function getFortuneTip(record, kind) {
   return record.cautionTip || record.avoid || '';
 }
 
+function loadFunReveal() {
+  try {
+    const data = JSON.parse(localStorage.getItem(FUN_REVEAL_KEY) || '{}');
+    if (data.dayKey !== todayKey()) return {};
+    return data;
+  } catch {
+    return {};
+  }
+}
+
+function isFunRevealed(type) {
+  return Boolean(loadFunReveal()[type]);
+}
+
+function markFunRevealed(type) {
+  const data = loadFunReveal();
+  data.dayKey = todayKey();
+  data[type] = true;
+  localStorage.setItem(FUN_REVEAL_KEY, JSON.stringify(data));
+}
+
+function handleRevealQuote() {
+  markFunRevealed('quote');
+  renderDailyQuote();
+}
+
 function renderDailyQuote() {
   const quoteEl = document.getElementById('dailyQuoteText');
   const tagEl = document.getElementById('dailyQuoteTag');
+  const idleEl = document.getElementById('quoteIdle');
+  const contentEl = document.getElementById('quoteContent');
   if (!quoteEl) return;
 
-  if (getBirthISOForDaily()) ensureTodayFortune();
+  const revealed = isFunRevealed('quote');
+  idleEl?.classList.toggle('hidden', revealed);
+  contentEl?.classList.toggle('hidden', !revealed);
+  if (!revealed) return;
 
   const record = loadTodayFortune();
   const quote = record?.quoteText
@@ -337,11 +369,13 @@ function renderDailyQuote() {
     : getTodayQuote();
 
   quoteEl.textContent = `「${quote.text}」`;
-  if (tagEl) tagEl.textContent = quote.tag ? `#${quote.tag}` : '';
+  if (tagEl) {
+    tagEl.textContent = quote.tag ? `#${quote.tag}` : '';
+    tagEl.classList.toggle('hidden', !quote.tag);
+  }
 }
 
 function renderFortune() {
-  if (getBirthISOForDaily()) ensureTodayFortune();
   renderDailyQuote();
 
   const idleEl = document.getElementById('fortuneIdle');
@@ -396,6 +430,7 @@ function handleDrawFortune() {
   setTimeout(() => {
     card?.classList.remove('fortune-shake');
     drawTodayFortune();
+    markFunRevealed('fortune');
     renderFortune();
   }, 450);
 }

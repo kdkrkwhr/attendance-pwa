@@ -172,12 +172,22 @@ function buildTodaySaju(birthISO) {
 
 function renderSaju() {
   const emptyEl = document.getElementById('sajuEmpty');
+  const idleEl = document.getElementById('sajuIdle');
   const contentEl = document.getElementById('sajuContent');
   if (!emptyEl || !contentEl) return;
 
   const birthISO = getBirthDateFromSettings();
   if (!birthISO || !parseISODate(birthISO)) {
     emptyEl.classList.remove('hidden');
+    idleEl?.classList.add('hidden');
+    contentEl.classList.add('hidden');
+    return;
+  }
+
+  const revealed = typeof isFunRevealed === 'function' && isFunRevealed('saju');
+  if (!revealed) {
+    emptyEl.classList.add('hidden');
+    idleEl?.classList.remove('hidden');
     contentEl.classList.add('hidden');
     return;
   }
@@ -185,11 +195,13 @@ function renderSaju() {
   const saju = buildTodaySaju(birthISO);
   if (!saju) {
     emptyEl.classList.remove('hidden');
+    idleEl?.classList.add('hidden');
     contentEl.classList.add('hidden');
     return;
   }
 
   emptyEl.classList.add('hidden');
+  idleEl?.classList.add('hidden');
   contentEl.classList.remove('hidden');
 
   const dayEl = document.getElementById('sajuDayPillar');
@@ -203,6 +215,11 @@ function renderSaju() {
   if (messageEl) messageEl.textContent = `「${saju.message}」`;
   if (starsEl) starsEl.textContent = saju.stars;
   if (workEl) workEl.textContent = saju.workLabel;
+}
+
+function handleRevealSaju() {
+  if (typeof markFunRevealed === 'function') markFunRevealed('saju');
+  renderSaju();
 }
 
 function handleSajuGoSettings() {

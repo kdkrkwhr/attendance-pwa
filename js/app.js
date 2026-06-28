@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '55';
+const APP_BUILD = '56';
 const APP_VERSION_KEY = 'attendance-app-version';
 
 const DEFAULT_SETTINGS = {
@@ -1654,6 +1654,8 @@ function init() {
   document.getElementById('btnWifiCheckIn')?.addEventListener('click', handleWifiCheckIn);
   document.getElementById('btnWifiDismiss')?.addEventListener('click', handleWifiDismiss);
   document.getElementById('btnDrawFortune')?.addEventListener('click', handleDrawFortune);
+  document.getElementById('btnRevealQuote')?.addEventListener('click', handleRevealQuote);
+  document.getElementById('btnRevealSaju')?.addEventListener('click', handleRevealSaju);
   document.getElementById('btnSajuGoSettings')?.addEventListener('click', handleSajuGoSettings);
 
   document.querySelectorAll('.tab-btn').forEach((btn) => {

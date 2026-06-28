@@ -1449,6 +1449,44 @@ body {
   margin-bottom: 1rem;
 }
 
+.fun-reveal-idle {
+  text-align: center;
+  padding: 0.5rem 0 0.25rem;
+}
+
+.fun-reveal-idle-emoji {
+  font-size: 2.5rem;
+  line-height: 1;
+  margin-bottom: 0.75rem;
+}
+
+.fun-reveal-idle-text {
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.btn-fun-reveal {
+  display: inline-block;
+  width: auto;
+  min-width: 11rem;
+  padding: 0.875rem 1.5rem;
+  border: none;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35);
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.btn-fun-reveal:active {
+  transform: scale(0.97);
+}
+
 .btn-fortune {
   display: inline-block;
   width: auto;

@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=55">
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=55">
+  <link rel="stylesheet" href="css/style.css?v=56">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=56">
   <script>
     (function () {
       try {
@@ -162,21 +162,33 @@
         <section class="card quote-card" id="quoteCard">
           <div class="quote-card-header">
             <span class="quote-card-badge">💬 오늘의 한마디</span>
-            <span class="quote-card-tag" id="dailyQuoteTag"></span>
+            <span class="quote-card-tag hidden" id="dailyQuoteTag"></span>
           </div>
-          <blockquote class="daily-quote" id="dailyQuoteText">오늘의 한마디를 불러오는 중…</blockquote>
+          <div id="quoteIdle" class="fun-reveal-idle">
+            <p class="fun-reveal-idle-text">오늘의 한마디가 기다리고 있어요</p>
+            <button type="button" class="btn btn-fun-reveal" id="btnRevealQuote">한마디 보기 💬</button>
+          </div>
+          <div id="quoteContent" class="hidden">
+            <blockquote class="daily-quote" id="dailyQuoteText"></blockquote>
+          </div>
         </section>
 
         <section class="card saju-card" id="sajuCard">
           <div class="saju-card-header">
             <span class="saju-card-badge">🌙 오늘의 사주</span>
-            <span class="saju-card-hint">매일 자동</span>
+            <span class="saju-card-hint">탭해서 확인</span>
           </div>
 
           <div id="sajuEmpty" class="saju-empty">
             <p class="saju-empty-emoji">🎂</p>
             <p class="saju-empty-text">생년월일을 입력하면<br>오늘의 일진과 띠 궁합을 보여드려요</p>
             <button type="button" class="btn btn-saju-settings" id="btnSajuGoSettings">설정에서 생년월일 입력</button>
+          </div>
+
+          <div id="sajuIdle" class="fun-reveal-idle hidden">
+            <p class="fun-reveal-idle-emoji">🌙</p>
+            <p class="fun-reveal-idle-text">오늘의 일진과 띠 궁합은…?</p>
+            <button type="button" class="btn btn-fun-reveal" id="btnRevealSaju">사주 보기 ✨</button>
           </div>
 
           <div id="sajuContent" class="saju-content hidden">
@@ -459,7 +471,7 @@
             <li>오늘 탭 — 회사(DMC) 근처 날씨 AI 요약 (매일 06:00 자동 갱신)</li>
             <li>맛집 지도 — 📍 내 위치(얼굴 마커), 첫 진입 시 내 위치 기준 줌</li>
             <li>맛집 지도 — 회사 날씨 칩·지도 마커</li>
-            <li>Fun 탭 — 오늘 날짜·한마디·사주·운세</li>
+            <li>Fun 탭 — 한마디·사주·운세는 탭해서 확인 (하루 1회)</li>
             <li>AI 채팅 — Google 시트에 대화 저장·복원 (최대 100개, 설정 이름 필요)</li>
             <li>AI 채팅 — 최대 10분 대기, 처리 중 터널 keepalive</li>
             <li>퇴근길 — 집 주소 설정 시 대중교통·자차 소요 (Hermes/ODsay)</li>
@@ -498,15 +510,15 @@
     </nav>
   </div>
 
-  <script src="config.js?v=55"></script>
-  <script src="vendor/leaflet/leaflet.js?v=55"></script>
-  <script src="js/fortune.js?v=55"></script>
-  <script src="js/saju.js?v=55"></script>
-  <script src="js/lunch-map.js?v=55"></script>
-  <script src="js/user-location.js?v=55"></script>
-  <script src="js/weather-brief.js?v=55"></script>
-  <script src="js/hermes-chat.js?v=55"></script>
-  <script src="js/commute-time.js?v=55"></script>
-  <script src="js/app.js?v=55"></script>
+  <script src="config.js?v=56"></script>
+  <script src="vendor/leaflet/leaflet.js?v=56"></script>
+  <script src="js/fortune.js?v=56"></script>
+  <script src="js/saju.js?v=56"></script>
+  <script src="js/lunch-map.js?v=56"></script>
+  <script src="js/user-location.js?v=56"></script>
+  <script src="js/weather-brief.js?v=56"></script>
+  <script src="js/hermes-chat.js?v=56"></script>
+  <script src="js/commute-time.js?v=56"></script>
+  <script src="js/app.js?v=56"></script>
 </body>
 </html>
