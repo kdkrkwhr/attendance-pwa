@@ -1897,20 +1897,140 @@ body {
   display: none;
 }
 
-.lunch-map-pin-user {
+.lunch-map-pin-emoji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  font-size: 1.35rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+}
+
+.lunch-map-pin-place-wrap {
   background: transparent;
   border: none;
 }
 
-.lunch-map-pin-dot {
-  display: block;
-  width: 16px;
-  height: 16px;
-  margin: 4px;
-  background: #16a34a;
-  border: 3px solid #fff;
+.place-pin {
+  --pin-hue: 24;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 48px;
+  pointer-events: none;
+}
+
+.place-pin-glow {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  margin-left: -20px;
   border-radius: 50%;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  background: hsla(var(--pin-hue), 90%, 58%, 0.35);
+  animation: place-pin-glow 2.4s ease-out infinite;
+}
+
+@keyframes place-pin-glow {
+  0% { transform: scale(0.65); opacity: 0.85; }
+  100% { transform: scale(1.55); opacity: 0; }
+}
+
+.place-pin-head {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: linear-gradient(145deg, hsl(var(--pin-hue), 95%, 62%), hsl(var(--pin-hue), 85%, 48%));
+  border: 3px solid #fff;
+  box-shadow: 0 6px 16px hsla(var(--pin-hue), 80%, 40%, 0.55);
+}
+
+.place-pin-emoji {
+  display: block;
+  transform: rotate(45deg);
+  font-size: 1.35rem;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+.place-pin-stem {
+  position: relative;
+  z-index: 1;
+  width: 4px;
+  height: 8px;
+  margin-top: -2px;
+  border-radius: 0 0 4px 4px;
+  background: hsl(var(--pin-hue), 70%, 42%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.lunch-map-pin-user-wrap {
+  background: transparent;
+  border: none;
+}
+
+.user-pin {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 96px;
+  pointer-events: none;
+}
+
+.user-pin-ring {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  width: 36px;
+  height: 36px;
+  margin-left: -18px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.25);
+  animation: user-pin-pulse 2s ease-out infinite;
+}
+
+@keyframes user-pin-pulse {
+  0% { transform: scale(0.6); opacity: 0.9; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+.user-pin-dot {
+  position: relative;
+  z-index: 2;
+  width: 18px;
+  height: 18px;
+  background: #10b981;
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.55);
+}
+
+.user-pin-label {
+  position: relative;
+  z-index: 2;
+  margin-top: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  color: white;
+  background: #059669;
+  border-radius: 999px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.45);
+}
+
+.lunch-map-popup-user strong {
+  color: #059669;
 }
 
 .lunch-btn-office {

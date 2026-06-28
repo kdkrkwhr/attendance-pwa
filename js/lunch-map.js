@@ -106,6 +106,46 @@ function createEmojiIcon(emoji, className) {
   });
 }
 
+const PLACE_CAT_EMOJI = [
+  [/국밥|찌개|탕|국수|면|라멘|우동|쌀국수|분식|김밥|떡볶/i, '🍜'],
+  [/한식|정식|백반|고기|구이|삼겹|갈비|족발|보쌈/i, '🍱'],
+  [/일식|초밥|돈까스/i, '🍣'],
+  [/중식|짜장|짬뽕|마라/i, '🥟'],
+  [/양식|피자|파스타|버거|스테이크/i, '🍕'],
+  [/치킨|닭/i, '🍗'],
+];
+
+function getPlaceEmoji(category) {
+  const cat = String(category || '');
+  for (const [re, emoji] of PLACE_CAT_EMOJI) {
+    if (re.test(cat)) return emoji;
+  }
+  return '🍽️';
+}
+
+function escapePinLabel(text) {
+  return String(text || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}
+
+function createPlacePinIcon(place) {
+  const emoji = getPlaceEmoji(place.category);
+  const hue = Math.abs([...String(place.id)].reduce((a, c) => a + c.charCodeAt(0), 0)) % 360;
+  const label = escapePinLabel(place.name);
+  return L.divIcon({
+    className: 'lunch-map-pin-place-wrap',
+    html: `
+      <div class="place-pin" style="--pin-hue:${hue}" role="img" aria-label="${label}">
+        <span class="place-pin-glow" aria-hidden="true"></span>
+        <span class="place-pin-head"><span class="place-pin-emoji">${emoji}</span></span>
+        <span class="place-pin-stem" aria-hidden="true"></span>
+      </div>
+    `,
+    iconSize: [48, 58],
+    iconAnchor: [24, 52],
+    popupAnchor: [0, -48],
+  });
+}
+
 function getOfficeShortName(name) {
   const n = String(name || 'DMC첨단산업센터');
   const idx = n.indexOf('(');
@@ -114,11 +154,17 @@ function getOfficeShortName(name) {
 
 function createUserLocationIcon() {
   return L.divIcon({
-    className: 'lunch-map-pin lunch-map-pin-user',
-    html: '<span class="lunch-map-pin-dot" aria-hidden="true"></span>',
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
-    popupAnchor: [0, -12],
+    className: 'lunch-map-pin-user-wrap',
+    html: `
+      <div class="user-pin" role="img" aria-label="내 위치">
+        <span class="user-pin-ring" aria-hidden="true"></span>
+        <span class="user-pin-dot" aria-hidden="true"></span>
+        <span class="user-pin-label">내 위치</span>
+      </div>
+    `,
+    iconSize: [96, 68],
+    iconAnchor: [48, 50],
+    popupAnchor: [0, -44],
   });
 }
 
@@ -508,7 +554,8 @@ function renderLunchMapMarkers(data) {
     const lat = place.displayLat ?? place.lat;
     const lng = place.displayLng ?? place.lng;
     const marker = L.marker([lat, lng], {
-      icon: createEmojiIcon('🍽️', 'lunch-map-pin-place'),
+      icon: createPlacePinIcon(place),
+      zIndexOffset: 500,
     }).addTo(lunchMapInstance);
     marker.placeId = place.id;
     marker.bindPopup(buildPopupHtml(place));
