@@ -777,6 +777,24 @@ body {
   text-align: center;
 }
 
+.feature-notes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.feature-notes li {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.feature-notes li:last-child {
+  border-bottom: none;
+}
+
 .sync-status {
   font-size: 0.8125rem;
   color: var(--text-muted);

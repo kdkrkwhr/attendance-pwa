@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=53">
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=53">
+  <link rel="stylesheet" href="css/style.css?v=54">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=54">
   <script>
     (function () {
       try {
@@ -419,7 +419,7 @@
 
         <section class="card">
           <h2 class="card-title">Hermes AI 채팅</h2>
-          <p class="field-hint">PC에서 <code>hermes gateway</code> 실행 후, 외부(휴대폰·GitHub Pages)에서는 ngrok·Cloudflare Tunnel 등 <strong>HTTPS</strong> 주소가 필요합니다. API 키는 <code>~/.hermes/.env</code>의 <code>API_SERVER_KEY</code>와 동일하게 입력하세요. 휴대폰 최초 설정: <code>?tab=chat&amp;hermes_url=…&amp;hermes_key=…</code> 링크로 한 번에 넣을 수 있어요.</p>
+          <p class="field-hint">PC에서 <code>hermes gateway</code> 실행 후, 외부(휴대폰·GitHub Pages)에서는 ngrok·Cloudflare Tunnel 등 <strong>HTTPS</strong> 주소가 필요합니다. API 키는 <code>~/.hermes/.env</code>의 <code>API_SERVER_KEY</code>와 동일하게 입력하세요. 응답 대기는 최대 10분이며, 처리 중 터널 keepalive를 보냅니다. 휴대폰 최초 설정: <code>?tab=chat&amp;hermes_url=…&amp;hermes_key=…</code> 링크로 한 번에 넣을 수 있어요.</p>
           <div class="setting-field">
             <label for="hermesBaseUrl">API 주소</label>
             <input type="url" id="hermesBaseUrl" class="text-input" placeholder="https://xxxx.ngrok-free.app/v1" inputmode="url" autocomplete="off">
@@ -452,6 +452,20 @@
           <button type="button" class="btn btn-ghost" id="btnClearCache">캐시 지우고 새로고침</button>
           <p class="field-hint app-version" id="appVersion"></p>
         </section>
+
+        <section class="card card-compact" id="featureNotesCard">
+          <h2 class="card-title">기능 안내</h2>
+          <ul class="feature-notes" id="featureNotesList">
+            <li>오늘 탭 — 회사(DMC) 근처 날씨 AI 요약 (매일 06:00 자동 갱신)</li>
+            <li>맛집 지도 — 📍 내 위치(얼굴 마커), 첫 진입 시 내 위치 기준 줌</li>
+            <li>맛집 지도 — 회사 날씨 칩·지도 마커</li>
+            <li>Fun 탭 — 오늘 날짜·한마디·사주·운세</li>
+            <li>AI 채팅 — 최대 10분 대기, 처리 중 터널 keepalive</li>
+            <li>퇴근길 — 집 주소 설정 시 대중교통·자차 소요 (Hermes/ODsay)</li>
+            <li>점심 룰렛 — 11:20 알림 (설정에서 끄기 가능)</li>
+            <li>2시간마다 Hermes가 PWA 자동 점검·배포 (변경 없으면 조용히 스킵)</li>
+          </ul>
+        </section>
       </div>
     </main>
 
@@ -483,15 +497,15 @@
     </nav>
   </div>
 
-  <script src="config.js?v=53"></script>
-  <script src="vendor/leaflet/leaflet.js?v=53"></script>
-  <script src="js/fortune.js?v=53"></script>
-  <script src="js/saju.js?v=53"></script>
-  <script src="js/lunch-map.js?v=53"></script>
-  <script src="js/user-location.js?v=53"></script>
-  <script src="js/weather-brief.js?v=53"></script>
-  <script src="js/hermes-chat.js?v=53"></script>
-  <script src="js/commute-time.js?v=53"></script>
-  <script src="js/app.js?v=53"></script>
+  <script src="config.js?v=54"></script>
+  <script src="vendor/leaflet/leaflet.js?v=54"></script>
+  <script src="js/fortune.js?v=54"></script>
+  <script src="js/saju.js?v=54"></script>
+  <script src="js/lunch-map.js?v=54"></script>
+  <script src="js/user-location.js?v=54"></script>
+  <script src="js/weather-brief.js?v=54"></script>
+  <script src="js/hermes-chat.js?v=54"></script>
+  <script src="js/commute-time.js?v=54"></script>
+  <script src="js/app.js?v=54"></script>
 </body>
 </html>

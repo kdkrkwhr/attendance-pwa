@@ -137,6 +137,7 @@ function setChatBusy(busy) {
 }
 
 let chatElapsedTimer = null;
+let chatKeepaliveTimer = null;
 
 function startChatElapsedTimer() {
   stopChatElapsedTimer();
@@ -153,6 +154,24 @@ function stopChatElapsedTimer() {
   if (chatElapsedTimer) {
     clearInterval(chatElapsedTimer);
     chatElapsedTimer = null;
+  }
+}
+
+/** ponytail: ngrok/CF idle cut ~100–300s; 45s health ping during long chat */
+function startChatKeepalive() {
+  stopChatKeepalive();
+  const { baseUrl } = getHermesChatConfig();
+  if (!baseUrl) return;
+  const root = baseUrl.replace(/\/v1\/?$/, '');
+  chatKeepaliveTimer = setInterval(() => {
+    fetch(`${root}/health`, { method: 'GET', cache: 'no-store' }).catch(() => {});
+  }, 45_000);
+}
+
+function stopChatKeepalive() {
+  if (chatKeepaliveTimer) {
+    clearInterval(chatKeepaliveTimer);
+    chatKeepaliveTimer = null;
   }
 }
 
@@ -273,6 +292,7 @@ async function sendHermesChatMessage(userText) {
   renderHermesChat();
   setChatBusy(true);
   startChatElapsedTimer();
+  startChatKeepalive();
 
   const apiMessages = [
     { role: 'system', content: systemPrompt },
@@ -336,6 +356,7 @@ async function sendHermesChatMessage(userText) {
     setChatStatus(`전송 실패: ${e.message || e}${hint}`, 'error');
   } finally {
     stopChatElapsedTimer();
+    stopChatKeepalive();
     setChatBusy(false);
     renderHermesChat();
   }
