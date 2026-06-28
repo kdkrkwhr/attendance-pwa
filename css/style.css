@@ -2957,6 +2957,72 @@ body {
   color: #2563eb;
 }
 
+/* ── 회사 날씨 (weather-brief) ── */
+.weather-brief-card {
+  margin: 0 0 1rem;
+  padding: 0.875rem 1rem;
+  border-radius: var(--radius, 12px);
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.08), rgba(59, 130, 246, 0.06));
+  border: 1px solid var(--border);
+}
+
+.weather-brief-card.hidden {
+  display: none;
+}
+
+.weather-brief-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.weather-brief-badge {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #0284c7;
+}
+
+.weather-brief-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted, #64748b);
+}
+
+.weather-brief-summary {
+  margin: 0 0 0.5rem;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.weather-brief-periods {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.5rem;
+}
+
+.weather-brief-periods.hidden {
+  display: none;
+}
+
+.weather-brief-periods li {
+  font-size: 0.6875rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--border);
+  color: var(--text-muted, #64748b);
+}
+
+[data-theme="dark"] .weather-brief-periods li {
+  background: rgba(15, 23, 42, 0.45);
+}
+
 /* ── 퇴근길 (commute-time) ── */
 .commute-card {
   margin: 1rem 0 1.25rem;
