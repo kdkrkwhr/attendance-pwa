@@ -3432,7 +3432,7 @@ body {
   z-index: 400;
   pointer-events: none;
   overflow: hidden;
-  background: linear-gradient(180deg, rgba(71, 85, 105, 0.08) 0%, rgba(51, 65, 85, 0.18) 100%);
+  background: linear-gradient(180deg, rgba(100, 116, 139, 0.1) 0%, rgba(51, 65, 85, 0.22) 100%);
 }
 
 .lunch-map-rain.hidden {
@@ -3443,40 +3443,51 @@ body {
 .lunch-map-rain::after {
   content: '';
   position: absolute;
-  top: -110%;
-  left: -10%;
-  width: 120%;
-  height: 220%;
+  top: -120%;
+  left: -15%;
+  width: 130%;
+  height: 240%;
+  opacity: 0.85;
   background-image: repeating-linear-gradient(
-    108deg,
+    -18deg,
     transparent 0,
-    transparent 12px,
-    rgba(186, 210, 240, 0.45) 12px,
-    rgba(186, 210, 240, 0.45) 13px,
-    transparent 13px,
-    transparent 26px
+    transparent 5px,
+    rgba(186, 214, 248, 0.55) 5px,
+    rgba(186, 214, 248, 0.12) 6px,
+    transparent 6px,
+    transparent 14px
   );
-  animation: lunch-rain-fall 0.52s linear infinite;
+  animation: lunch-rain-fall 0.58s linear infinite;
+  will-change: transform;
 }
 
 .lunch-map-rain::after {
-  left: -35%;
-  width: 140%;
-  opacity: 0.55;
-  animation-duration: 0.78s;
-  animation-delay: -0.25s;
+  left: -40%;
+  width: 160%;
+  opacity: 0.45;
+  background-image: repeating-linear-gradient(
+    -22deg,
+    transparent 0,
+    transparent 8px,
+    rgba(210, 228, 252, 0.4) 8px,
+    rgba(210, 228, 252, 0.08) 9px,
+    transparent 9px,
+    transparent 20px
+  );
+  animation-duration: 0.92s;
+  animation-delay: -0.35s;
 }
 
 @keyframes lunch-rain-fall {
-  from { transform: translateY(0); }
-  to { transform: translateY(45%); }
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-3%, 55%, 0); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .lunch-map-rain::before,
   .lunch-map-rain::after {
     animation: none;
-    opacity: 0.35;
+    opacity: 0.3;
   }
 }
 
