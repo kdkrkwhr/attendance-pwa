@@ -11,6 +11,32 @@ const HERMES_SYSTEM_PROMPT =
   '사용자가 명시적으로 요청하지 않으면 터미널·파일 조작 등 도구는 사용하지 마세요. ' +
   '내 위치는 맛집 탭 지도에 표시되므로, 위치 문의 시 좌표를 채팅에 적지 말고 맛집 탭 📍 내 위치를 안내하세요.';
 
+const CHAT_EMPTY_MARKERS = new Set(['(빈 응답)', '(empty)', '(응답 없음)', '（응답 없음）', '…']);
+const CHAT_EMPTY_FALLBACK =
+  '응답을 받지 못했어요. 앱을 새로고침하거나 잠시 후 다시 보내 보세요.';
+
+function normalizeChatReply(text) {
+  const t = String(text || '').trim();
+  if (!t || CHAT_EMPTY_MARKERS.has(t)) return CHAT_EMPTY_FALLBACK;
+  if (/^operation interrupted/i.test(t)) {
+    return '연결이 끊겼어요. Hermes가 아직 처리 중일 수 있어요. 잠시 후 다시 시도해 주세요.';
+  }
+  return t;
+}
+
+function sanitizeChatMessages(list) {
+  if (!Array.isArray(list)) return [];
+  return list
+    .map((m) => {
+      if (!m || typeof m !== 'object') return null;
+      const role = m.role === 'assistant' ? 'assistant' : 'user';
+      const content = role === 'assistant' ? normalizeChatReply(m.content) : String(m.content || '').trim();
+      if (!content) return null;
+      return { role, content, at: m.at || new Date().toISOString() };
+    })
+    .filter(Boolean);
+}
+
 function getHermesChatConfig() {
   const settings = typeof loadSettings === 'function' ? loadSettings() : {};
   const cfg = window.APP_CONFIG?.hermesChat || {};
@@ -53,7 +79,11 @@ function loadChatMessages() {
   try {
     const raw = localStorage.getItem(HERMES_CHAT_KEY);
     const list = raw ? JSON.parse(raw) : [];
-    return Array.isArray(list) ? list : [];
+    const sanitized = sanitizeChatMessages(Array.isArray(list) ? list : []);
+    if (sanitized.length !== (Array.isArray(list) ? list.length : 0)) {
+      saveChatMessages(sanitized);
+    }
+    return sanitized;
   } catch {
     return [];
   }
@@ -121,9 +151,10 @@ async function syncChatFromSheet(force = false) {
       const res = await fetch(`${url}?${qs}`, { mode: 'cors', cache: 'no-store' });
       const data = await res.json();
       if (data.ok && Array.isArray(data.messages)) {
-        saveChatMessages(data.messages);
+        const sanitized = sanitizeChatMessages(data.messages);
+        saveChatMessages(sanitized);
         chatLastSyncAt = Date.now();
-        return data.messages;
+        return sanitized;
       }
     } catch {
       /* fall back to local */
@@ -399,6 +430,7 @@ async function sendHermesChatMessage(userText) {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
+      cache: 'no-store',
       body: JSON.stringify(requestBody),
     }, requestTimeoutMs);
 
@@ -408,9 +440,9 @@ async function sendHermesChatMessage(userText) {
       throw new Error(errMsg);
     }
 
-    const reply = (data?.choices?.[0]?.message?.content || '').trim()
-      || (data?.error?.message || '').trim()
-      || '응답을 받지 못했어요. Hermes gateway가 켜져 있는지 확인해 주세요.';
+    const rawReply = (data?.choices?.[0]?.message?.content || '').trim()
+      || (data?.error?.message || '').trim();
+    const reply = normalizeChatReply(rawReply);
 
     messages[messages.length - 1] = { role: 'assistant', content: reply, at: new Date().toISOString() };
     saveChatMessages(messages);
