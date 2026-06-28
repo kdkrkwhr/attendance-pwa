@@ -382,13 +382,17 @@ async function sendHermesChatMessage(userText) {
     ...messages.map(({ role, content }) => ({ role, content })),
   ];
 
+  // ponytail: stream:false — ACP/cursor backends emit text only at end; SSE idle ~30s drops tunnel clients before answer arrives
   const requestBody = {
     model,
     messages: apiMessages,
-    stream: true,
+    stream: false,
   };
 
   try {
+    messages.push({ role: 'assistant', content: '…', at: new Date().toISOString() });
+    renderHermesChatFrom(messages);
+
     const res = await fetchWithTimeout(`${baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -398,35 +402,19 @@ async function sendHermesChatMessage(userText) {
       body: JSON.stringify(requestBody),
     }, requestTimeoutMs);
 
+    const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
       const errMsg = data?.error?.message || data?.message || `HTTP ${res.status}`;
       throw new Error(errMsg);
     }
 
-    const contentType = res.headers.get('content-type') || '';
-    let reply = '';
+    const reply = (data?.choices?.[0]?.message?.content || '').trim()
+      || (data?.error?.message || '').trim()
+      || '응답을 받지 못했어요. Hermes gateway가 켜져 있는지 확인해 주세요.';
 
-    if (contentType.includes('text/event-stream') && res.body) {
-      messages.push({ role: 'assistant', content: '…', at: new Date().toISOString() });
-      reply = await readStreamingChatReply(res, (partial) => {
-        messages[messages.length - 1].content = partial || '…';
-        renderHermesChatFrom(messages);
-      });
-    } else {
-      const data = await res.json().catch(() => ({}));
-      reply = data?.choices?.[0]?.message?.content?.trim() || '';
-      messages.push({ role: 'assistant', content: reply || '(빈 응답)', at: new Date().toISOString() });
-      saveChatMessages(messages);
-      appendChatToSheet(messages[messages.length - 1]);
-    }
-
-    reply = reply || '(빈 응답)';
-    if (contentType.includes('text/event-stream') && res.body) {
-      messages[messages.length - 1] = { role: 'assistant', content: reply, at: new Date().toISOString() };
-      saveChatMessages(messages);
-      appendChatToSheet(messages[messages.length - 1]);
-    }
+    messages[messages.length - 1] = { role: 'assistant', content: reply, at: new Date().toISOString() };
+    saveChatMessages(messages);
+    appendChatToSheet(messages[messages.length - 1]);
     setChatStatus('', '');
   } catch (e) {
     const last = messages[messages.length - 1];
