@@ -49,8 +49,8 @@ async function parseSheetResponse(res) {
   try {
     return JSON.parse(text);
   } catch {
-    if (/accounts\.google\.com|Sign in|로그인/i.test(text)) {
-      throw new Error('GAS 액세스 "모든 사용자"로 재배포 필요');
+    if (/accounts\.google\.com|ServiceLogin|Sign in|로그인/i.test(text)) {
+      throw new Error('GAS가 로그인 요구 중 — "Google계정 사용자" 말고 "모든 사용자(익명)"로 재배포');
     }
     throw new Error('시트 응답 오류 (URL·배포 확인)');
   }

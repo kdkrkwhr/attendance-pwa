@@ -896,6 +896,24 @@ function setSyncStatus(msg, type) {
   el.className = 'sync-status' + (type ? ` ${type}` : '');
 }
 
+async function testSheetConnection() {
+  const url = normalizeSheetUrl(loadSettings().sheetUrl || '');
+  if (!url) {
+    setSyncStatus('URL을 먼저 입력하세요.', 'err');
+    return;
+  }
+  setSyncStatus('연결 테스트 중…', '');
+  try {
+    const res = await fetch(`${url}?action=chat&name=test&limit=1`, { mode: 'cors' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await parseSheetResponse(res);
+    if (!data.ok) throw new Error(data.error || '응답 오류');
+    setSyncStatus('시트 연결 OK — AI채팅·출퇴근 저장 가능', 'ok');
+  } catch (e) {
+    setSyncStatus(`연결 실패: ${e.message}`, 'err');
+  }
+}
+
 async function loadTeamWeek() {
   const settings = loadSettings();
   const url = (settings.sheetUrl || '').trim();
@@ -1634,6 +1652,7 @@ function init() {
   document.getElementById('btnResetToday').addEventListener('click', handleResetToday);
   document.getElementById('btnExport').addEventListener('click', handleExport);
   document.getElementById('btnSyncSheet').addEventListener('click', syncWeekToSheet);
+  document.getElementById('btnTestSheet')?.addEventListener('click', testSheetConnection);
   document.getElementById('btnNotifyPermission').addEventListener('click', requestNotificationPermission);
   document.getElementById('btnClearCache')?.addEventListener('click', hardRefreshApp);
   document.getElementById('btnWifiApply')?.addEventListener('click', handleWifiApply);
