@@ -33,28 +33,19 @@ async function loadTodayWeather() {
   return null;
 }
 
-function formatWeatherPeriod(p) {
-  const parts = [p.time, p.sky];
-  if (p.temp != null) parts.push(`${p.temp}°C`);
-  if (p.pop != null && p.pop > 0) parts.push(`강수 ${p.pop}%`);
-  if (p.pty && p.pty !== '없음') parts.push(p.pty);
-  return parts.join(' · ');
-}
-
 function renderWeatherBrief(data) {
   const card = document.getElementById('weatherBriefCard');
   const summaryEl = document.getElementById('weatherBriefSummary');
   const metaEl = document.getElementById('weatherBriefMeta');
-  const periodsEl = document.getElementById('weatherBriefPeriods');
   if (!card) return;
 
-  if (!data) {
+  if (!data?.summary) {
     card.classList.add('hidden');
     return;
   }
 
   card.classList.remove('hidden');
-  if (summaryEl) summaryEl.textContent = data.summary || '—';
+  if (summaryEl) summaryEl.textContent = data.summary;
 
   const hi = data.highlights || {};
   const range = hi.tempMin != null && hi.tempMax != null
@@ -66,12 +57,6 @@ function renderWeatherBrief(data) {
     : '';
   if (metaEl) {
     metaEl.textContent = [loc, range, gen ? `${gen} 갱신` : ''].filter(Boolean).join(' · ');
-  }
-
-  if (periodsEl) {
-    const periods = Array.isArray(data.periods) ? data.periods.slice(0, 6) : [];
-    periodsEl.innerHTML = periods.map((p) => `<li>${formatWeatherPeriod(p)}</li>`).join('');
-    periodsEl.classList.toggle('hidden', !periods.length);
   }
 }
 
