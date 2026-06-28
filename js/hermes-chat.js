@@ -536,6 +536,7 @@ function consumeChatDeepLink() {
   consumeTabDeepLink('chat');
 
   const params = new URLSearchParams(window.location.search);
+  const url = (params.get('hermes_url') || '').trim();
   const key = (params.get('hermes_key') || '').trim();
   if (!url && !key) return;
   if (typeof loadSettings !== 'function' || typeof saveSettings !== 'function') return;
