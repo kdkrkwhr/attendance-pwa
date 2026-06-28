@@ -1680,9 +1680,12 @@ function init() {
     if (document.visibilityState === 'visible') {
       refreshNetworkGuard().then(() => render());
       if (typeof refreshHermesChatFromSheet === 'function' && document.querySelector('.app.is-chat-tab')) {
-        refreshHermesChatFromSheet(true);
+        refreshHermesChatFromSheet(true).finally(() => {
+          if (typeof resumePendingHermesRun === 'function') resumePendingHermesRun();
+        });
       } else if (typeof syncChatFromSheet === 'function') {
         syncChatFromSheet(true);
+        if (typeof resumePendingHermesRun === 'function') resumePendingHermesRun();
       }
     }
   });

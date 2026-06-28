@@ -2,10 +2,13 @@
  * Hermes OpenAI-compatible API 채팅 (설정 탭에서 URL·키 입력)
  */
 const HERMES_CHAT_KEY = 'attendance-hermes-chat';
+const PENDING_RUN_KEY = 'attendance-hermes-pending-run';
+const PENDING_RUN_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 const CHAT_SHEET_LIMIT = 50;
 const CHAT_SYNC_COOLDOWN_MS = 30_000;
 let chatLastSyncAt = 0;
 let chatSyncInFlight = null;
+let chatReplyInFlight = false;
 const HERMES_SYSTEM_PROMPT =
   '당신은 출퇴근 PWA 안의 간단한 AI 도우미입니다. 한국어로 짧고 명확하게 답하세요. ' +
   '사용자가 명시적으로 요청하지 않으면 터미널·파일 조작 등 도구는 사용하지 마세요. ' +
@@ -118,20 +121,55 @@ function getChatSheetConfig() {
   return { url, name, ready: Boolean(url && name && name !== '사원') };
 }
 
-async function appendChatToSheet(msg) {
+function savePendingRun(data) {
+  localStorage.setItem(PENDING_RUN_KEY, JSON.stringify({ ...data, savedAt: Date.now() }));
+}
+
+function loadPendingRun() {
+  try {
+    const raw = localStorage.getItem(PENDING_RUN_KEY);
+    if (!raw) return null;
+    const pending = JSON.parse(raw);
+    if (!pending?.runId) return null;
+    if (Date.now() - (pending.savedAt || 0) > PENDING_RUN_MAX_AGE_MS) {
+      clearPendingRun();
+      return null;
+    }
+    return pending;
+  } catch {
+    return null;
+  }
+}
+
+function clearPendingRun() {
+  localStorage.removeItem(PENDING_RUN_KEY);
+}
+
+/** ponytail: sendBeacon fire-and-forget — never block UI on sheet POST */
+function appendChatToSheet(msg) {
   const { url, name, ready } = getChatSheetConfig();
   if (!ready || !msg?.content) return;
-  try {
-    await postToSheet(url, {
-      action: 'chat',
-      name,
-      role: msg.role,
-      content: msg.content,
-      at: msg.at || new Date().toISOString(),
-    });
-  } catch {
-    /* ponytail: local cache still holds the message */
+  void postToSheet(url, {
+    action: 'chat',
+    name,
+    role: msg.role,
+    content: msg.content,
+    at: msg.at || new Date().toISOString(),
+  }).catch(() => {});
+}
+
+function applyAssistantReply(reply) {
+  const messages = loadChatMessages();
+  const assistantMsg = { role: 'assistant', content: reply, at: new Date().toISOString() };
+  const last = messages[messages.length - 1];
+  if (last?.role === 'assistant' && (!last.content || last.content === '…')) {
+    messages[messages.length - 1] = assistantMsg;
+  } else {
+    messages.push(assistantMsg);
   }
+  saveChatMessages(messages);
+  appendChatToSheet(assistantMsg);
+  renderHermesChat();
 }
 
 async function clearChatOnSheet() {
@@ -247,6 +285,11 @@ function setChatBusy(busy) {
   if (form) form.classList.toggle('is-busy', busy);
   if (input) input.disabled = busy;
   if (btn) btn.disabled = busy;
+}
+
+function setChatReplyInFlight(busy) {
+  chatReplyInFlight = busy;
+  setChatBusy(busy);
 }
 
 let chatElapsedTimer = null;
@@ -451,13 +494,133 @@ async function testHermesConnection() {
   }
 }
 
-async function sendHermesChatMessage(userText) {
+async function fetchHermesCompletionsReply({ baseUrl, apiKey, model, systemPrompt, userText, history, requestTimeoutMs }) {
+  const apiMessages = [
+    { role: 'system', content: systemPrompt },
+    ...trimChatHistory(history).map(({ role, content }) => ({ role, content })),
+  ];
+  const res = await fetchWithTimeout(`${baseUrl}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    cache: 'no-store',
+    body: JSON.stringify({ model, messages: apiMessages, stream: false }),
+  }, requestTimeoutMs);
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const errMsg = data?.error?.message || data?.message || `HTTP ${res.status}`;
+    throw new Error(errMsg);
+  }
+
+  const rawReply = (data?.choices?.[0]?.message?.content || '').trim()
+    || (data?.error?.message || '').trim();
+  return normalizeChatReply(rawReply);
+}
+
+async function runHermesReplyInBackground(userText) {
+  const { baseUrl, apiKey, model, systemPrompt, requestTimeoutMs } = getHermesChatConfig();
+
+  const messages = loadChatMessages();
+  messages.push({ role: 'assistant', content: '…', at: new Date().toISOString() });
+  saveChatMessages(messages);
+  renderHermesChatFrom(messages);
+
+  setChatReplyInFlight(true);
+  setChatStatus('응답 생성 중… 나가도 시트에 저장됨', 'info');
+  startChatElapsedTimer();
+  startChatKeepalive();
+
+  const onPartial = (partial) => {
+    const cur = loadChatMessages();
+    const last = cur[cur.length - 1];
+    if (last?.role === 'assistant') {
+      last.content = partial;
+      saveChatMessages(cur);
+      renderHermesChatFrom(cur);
+    }
+  };
+
+  try {
+    const history = messages.slice(0, -1);
+    const runId = await startHermesRun({ baseUrl, apiKey, model, systemPrompt, userText, history });
+    let reply;
+    if (runId) {
+      savePendingRun({ runId, userText });
+      reply = await pollHermesRun({ baseUrl, apiKey, runId, timeoutMs: requestTimeoutMs, onPartial });
+      clearPendingRun();
+    } else {
+      reply = await fetchHermesCompletionsReply({
+        baseUrl, apiKey, model, systemPrompt, userText, history, requestTimeoutMs,
+      });
+    }
+    applyAssistantReply(reply);
+    setChatStatus('', '');
+  } catch (e) {
+    const cur = loadChatMessages();
+    const last = cur[cur.length - 1];
+    if (last?.role === 'assistant' && (!last.content || last.content === '…')) {
+      cur.pop();
+      saveChatMessages(cur);
+    }
+    const isAbort = e?.name === 'AbortError' || /시간 초과|timeout/i.test(String(e.message));
+    const hint = isAbort
+      ? ' 앱 다시 열면 시트·채팅에서 확인해 보세요.'
+      : '';
+    setChatStatus(`전송 실패: ${e.message || e}${hint}`, 'error');
+  } finally {
+    setChatReplyInFlight(false);
+    stopChatElapsedTimer();
+    stopChatKeepalive();
+    renderHermesChat();
+  }
+}
+
+/** ponytail: resume /v1/runs after tab close — Hermes keeps run_id until TTL */
+async function resumePendingHermesRun() {
+  const pending = loadPendingRun();
+  if (!pending?.runId || chatReplyInFlight) return;
+
+  const { baseUrl, apiKey, requestTimeoutMs } = getHermesChatConfig();
+  if (!baseUrl || !apiKey) return;
+
+  setChatReplyInFlight(true);
+  setChatStatus('이전 요청 응답 확인 중…', 'info');
+  startChatKeepalive();
+
+  try {
+    const reply = await pollHermesRun({
+      baseUrl,
+      apiKey,
+      runId: pending.runId,
+      timeoutMs: Math.min(requestTimeoutMs, 120_000),
+    });
+    clearPendingRun();
+    applyAssistantReply(reply);
+    setChatStatus('응답 저장됨', 'ok');
+    setTimeout(() => setChatStatus('', ''), 2500);
+  } catch (e) {
+    if (/failed|cancelled|not found|404/i.test(String(e.message))) clearPendingRun();
+  } finally {
+    setChatReplyInFlight(false);
+    stopChatKeepalive();
+  }
+}
+
+function sendHermesChatMessage(userText) {
   const text = (userText || '').trim();
   if (!text) return;
 
-  const { baseUrl, apiKey, model, systemPrompt, requestTimeoutMs } = getHermesChatConfig();
+  const { baseUrl, apiKey } = getHermesChatConfig();
   if (!baseUrl || !apiKey) {
     setChatStatus('설정에서 Hermes API 주소와 키를 입력해 주세요.', 'error');
+    return;
+  }
+
+  if (chatReplyInFlight) {
+    setChatStatus('이전 응답 생성 중… 잠시만', 'error');
     return;
   }
 
@@ -465,55 +628,10 @@ async function sendHermesChatMessage(userText) {
   const userMsg = { role: 'user', content: text, at: new Date().toISOString() };
   messages.push(userMsg);
   saveChatMessages(messages);
-  await appendChatToSheet(userMsg);
+  appendChatToSheet(userMsg);
   renderHermesChat();
-  setChatBusy(true);
-  startChatElapsedTimer();
-  startChatKeepalive();
 
-  try {
-    messages.push({ role: 'assistant', content: '…', at: new Date().toISOString() });
-    renderHermesChatFrom(messages);
-
-    const reply = await requestHermesChatReply({
-      baseUrl,
-      apiKey,
-      model,
-      systemPrompt,
-      userText: text,
-      history: messages.slice(0, -1),
-      requestTimeoutMs,
-      onPartial: (partial) => {
-        const last = messages[messages.length - 1];
-        if (last?.role === 'assistant') {
-          last.content = partial;
-          renderHermesChatFrom(messages);
-        }
-      },
-    });
-
-    const assistantMsg = { role: 'assistant', content: reply, at: new Date().toISOString() };
-    messages[messages.length - 1] = assistantMsg;
-    saveChatMessages(messages);
-    await appendChatToSheet(assistantMsg);
-    setChatStatus('', '');
-  } catch (e) {
-    const last = messages[messages.length - 1];
-    if (last?.role === 'assistant' && (!last.content || last.content === '…')) {
-      messages.pop();
-      saveChatMessages(messages);
-    }
-    const isAbort = e?.name === 'AbortError' || /시간 초과|timeout/i.test(String(e.message));
-    const hint = isAbort
-      ? ' 터널·프록시 idle 타임아웃(약 100~300초)일 수 있어요. 화면 켜두고 다시 시도해 보세요.'
-      : '';
-    setChatStatus(`전송 실패: ${e.message || e}${hint}`, 'error');
-  } finally {
-    stopChatElapsedTimer();
-    stopChatKeepalive();
-    setChatBusy(false);
-    renderHermesChat();
-  }
+  void runHermesReplyInBackground(text);
 }
 
 function handleChatSubmit(e) {
@@ -622,7 +740,7 @@ function initHermesChat() {
   document.getElementById('btnChatGoSettings')?.addEventListener('click', handleChatGoSettings);
   document.getElementById('btnHermesTest')?.addEventListener('click', testHermesConnection);
 
-  refreshHermesChatFromSheet(true);
+  refreshHermesChatFromSheet(true).finally(() => resumePendingHermesRun());
 
   const input = document.getElementById('chatInput');
   if (input) {
