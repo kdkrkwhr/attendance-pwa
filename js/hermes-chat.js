@@ -107,17 +107,12 @@ async function appendChatToSheet(msg) {
   const { url, name, ready } = getChatSheetConfig();
   if (!ready || !msg?.content) return;
   try {
-    await fetch(url, {
-      method: 'POST',
-      mode: 'cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        action: 'chat',
-        name,
-        role: msg.role,
-        content: msg.content,
-        at: msg.at || new Date().toISOString(),
-      }),
+    await postToSheet(url, {
+      action: 'chat',
+      name,
+      role: msg.role,
+      content: msg.content,
+      at: msg.at || new Date().toISOString(),
     });
   } catch {
     /* ponytail: local cache still holds the message */
@@ -128,12 +123,7 @@ async function clearChatOnSheet() {
   const { url, name, ready } = getChatSheetConfig();
   if (!ready) return;
   try {
-    await fetch(url, {
-      method: 'POST',
-      mode: 'cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'chatClear', name }),
-    });
+    await postToSheet(url, { action: 'chatClear', name });
   } catch {
     /* ignore */
   }

@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '71';
+const APP_BUILD = '73';
 const APP_VERSION_KEY = 'attendance-app-version';
 
 const DEFAULT_SETTINGS = {
@@ -845,14 +845,8 @@ async function syncRecordToSheet(dateKey, record) {
   const name = getUserName();
   if (!url || !name) return { ok: false, skipped: true };
 
-  const res = await fetch(url, {
-    method: 'POST',
-    mode: 'cors',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(recordToSyncRow(dateKey, record)),
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return parseSheetResponse(res);
+  await postToSheet(url, recordToSyncRow(dateKey, record));
+  return { ok: true };
 }
 
 async function syncWeekToSheet() {

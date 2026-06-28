@@ -56,6 +56,16 @@ async function parseSheetResponse(res) {
   }
 }
 
+/** ponytail: GAS POST redirect lacks CORS headers — no-cors fire-and-forget */
+async function postToSheet(url, body) {
+  await fetch(url, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(body),
+  });
+}
+
 function consumeTabDeepLink(tab) {
   const params = new URLSearchParams(window.location.search);
   if (params.get('tab') !== tab) return;
