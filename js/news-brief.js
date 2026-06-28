@@ -1,9 +1,11 @@
 /**
- * News 탭 — 국내·미국 주식 뉴스 (data/news/YYYY-MM-DD.json, cron 07:00 갱신)
+ * News 탭 — 주식(국내·미국)·전체 뉴스 (data/news/YYYY-MM-DD.json, cron 07:00 갱신)
  */
 const NEWS_MARKET_KEY = 'attendance-news-market';
+const NEWS_CATEGORY_KEY = 'attendance-news-category';
 let newsCache = null;
 let newsMarket = localStorage.getItem(NEWS_MARKET_KEY) || 'kr';
+let newsCategory = localStorage.getItem(NEWS_CATEGORY_KEY) || 'stock';
 
 function todayNewsKey() {
   const d = new Date();
@@ -38,10 +40,14 @@ async function loadTodayNews() {
   return null;
 }
 
-function pickMarketData(data, market) {
-  if (data?.markets?.[market]) return data.markets[market];
-  // ponytail: legacy flat JSON → 국내 탭에만 표시
-  if (market === 'kr' && (data?.summary || data?.items?.length)) {
+function activeNewsKey() {
+  return newsCategory === 'all' ? 'all' : newsMarket;
+}
+
+function pickMarketData(data, key) {
+  if (data?.markets?.[key]) return data.markets[key];
+  // ponytail: legacy flat JSON → 전체 탭에만 표시
+  if (key === 'all' && (data?.summary || data?.items?.length)) {
     return { summary: data.summary, items: data.items || [] };
   }
   return null;
@@ -58,8 +64,18 @@ function renderNewsDate() {
   });
 }
 
+function syncNewsCategoryToggle() {
+  document.querySelectorAll('[data-category]').forEach((btn) => {
+    const active = btn.dataset.category === newsCategory;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+  const stockToggle = document.getElementById('newsStockToggle');
+  if (stockToggle) stockToggle.classList.toggle('hidden', newsCategory !== 'stock');
+}
+
 function syncNewsMarketToggle() {
-  document.querySelectorAll('.news-market-btn').forEach((btn) => {
+  document.querySelectorAll('[data-market]').forEach((btn) => {
     const active = btn.dataset.market === newsMarket;
     btn.classList.toggle('active', active);
     btn.setAttribute('aria-selected', active ? 'true' : 'false');
@@ -75,10 +91,12 @@ function renderNewsBrief(data) {
   const listEl = document.getElementById('newsList');
   const listTitle = document.getElementById('newsListTitle');
 
-  const marketData = data ? pickMarketData(data, newsMarket) : null;
+  const key = activeNewsKey();
+  const marketData = data ? pickMarketData(data, key) : null;
 
   if (listTitle) {
-    listTitle.textContent = newsMarket === 'us' ? '미국 주식 기사' : '국내 주식 기사';
+    const titles = { kr: '국내 주식 기사', us: '미국 주식 기사', all: '주요 뉴스' };
+    listTitle.textContent = titles[key] || '뉴스';
   }
 
   if (!marketData?.summary && !(marketData?.items?.length)) {
@@ -114,8 +132,22 @@ function renderNewsBrief(data) {
   }).join('');
 }
 
-function bindNewsMarketToggle() {
-  document.querySelectorAll('.news-market-btn').forEach((btn) => {
+function bindNewsToggles() {
+  document.querySelectorAll('[data-category]').forEach((btn) => {
+    if (btn.dataset.bound) return;
+    btn.dataset.bound = '1';
+    btn.addEventListener('click', async () => {
+      const next = btn.dataset.category;
+      if (!next || next === newsCategory) return;
+      newsCategory = next;
+      localStorage.setItem(NEWS_CATEGORY_KEY, newsCategory);
+      syncNewsCategoryToggle();
+      const data = await loadTodayNews();
+      renderNewsBrief(data);
+    });
+  });
+
+  document.querySelectorAll('[data-market]').forEach((btn) => {
     if (btn.dataset.bound) return;
     btn.dataset.bound = '1';
     btn.addEventListener('click', async () => {
@@ -132,7 +164,8 @@ function bindNewsMarketToggle() {
 
 async function initNewsBrief() {
   renderNewsDate();
-  bindNewsMarketToggle();
+  bindNewsToggles();
+  syncNewsCategoryToggle();
   syncNewsMarketToggle();
   const data = await loadTodayNews();
   renderNewsBrief(data);

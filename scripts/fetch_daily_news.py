@@ -15,6 +15,7 @@ OUT_DIR = ROOT / "data" / "news"
 PROXY = "https://k-skill-proxy.nomadamas.org"
 QUERIES_KR = ("국내주식", "코스피", "코스닥", "증시", "한국 증시")
 QUERIES_US = ("미국주식", "나스닥", "S&P500", "다우존스", "미국 증시")
+QUERIES_ALL = ("주요뉴스", "경제", "IT", "정치", "국제")
 DISPLAY = 8
 
 
@@ -88,8 +89,10 @@ def build_market(items: list[dict], summary_override: str | None, empty_msg: str
 def build_payload(
     kr_items: list[dict],
     us_items: list[dict],
+    all_items: list[dict],
     kr_summary: str | None = None,
     us_summary: str | None = None,
+    all_summary: str | None = None,
 ) -> dict:
     now = kst_now()
     return {
@@ -98,6 +101,7 @@ def build_payload(
         "markets": {
             "kr": build_market(kr_items, kr_summary, "오늘 국내 주식 뉴스를 불러오지 못했습니다."),
             "us": build_market(us_items, us_summary, "오늘 미국 주식 뉴스를 불러오지 못했습니다."),
+            "all": build_market(all_items, all_summary, "오늘 주요 뉴스를 불러오지 못했습니다."),
         },
     }
 
@@ -105,9 +109,11 @@ def build_payload(
 def main() -> int:
     kr_summary = sys.argv[1] if len(sys.argv) > 1 else None
     us_summary = sys.argv[2] if len(sys.argv) > 2 else None
+    all_summary = sys.argv[3] if len(sys.argv) > 3 else None
     kr_items = collect_items(QUERIES_KR)
     us_items = collect_items(QUERIES_US)
-    payload = build_payload(kr_items, us_items, kr_summary, us_summary)
+    all_items = collect_items(QUERIES_ALL)
+    payload = build_payload(kr_items, us_items, all_items, kr_summary, us_summary, all_summary)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUT_DIR / f"{payload['date']}.json"
     text = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"

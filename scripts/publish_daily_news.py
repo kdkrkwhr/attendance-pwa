@@ -24,6 +24,8 @@ def main() -> int:
         fetch_cmd.append(sys.argv[1])
     if len(sys.argv) > 2:
         fetch_cmd.append(sys.argv[2])
+    if len(sys.argv) > 3:
+        fetch_cmd.append(sys.argv[3])
     run(fetch_cmd)
 
     date = kst_today()

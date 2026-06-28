@@ -3112,6 +3112,10 @@ body {
   border: 1px solid var(--border);
 }
 
+.news-stock-toggle {
+  margin-top: 0.5rem;
+}
+
 .news-market-btn {
   border: none;
   background: transparent;

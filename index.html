@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=60">
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=60">
+  <link rel="stylesheet" href="css/style.css?v=61">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=61">
   <script>
     (function () {
       try {
@@ -142,7 +142,11 @@
           <p class="news-hero-emoji">📈</p>
           <h2 class="news-hero-title">News</h2>
           <p class="news-hero-date" id="newsTodayDate"></p>
-          <div class="news-market-toggle" role="tablist" aria-label="주식 시장 선택">
+          <div class="news-market-toggle" role="tablist" aria-label="뉴스 종류 선택">
+            <button type="button" class="news-market-btn active" data-category="stock" role="tab" aria-selected="true">📈 주식</button>
+            <button type="button" class="news-market-btn" data-category="all" role="tab" aria-selected="false">📰 전체</button>
+          </div>
+          <div class="news-market-toggle news-stock-toggle" id="newsStockToggle" role="tablist" aria-label="주식 시장 선택">
             <button type="button" class="news-market-btn active" data-market="kr" role="tab" aria-selected="true">🇰🇷 국내</button>
             <button type="button" class="news-market-btn" data-market="us" role="tab" aria-selected="false">🇺🇸 미국</button>
           </div>
@@ -491,7 +495,7 @@
             <li>AI 채팅 — runs API 폴링으로 터널 끊김·빈 응답 방지 (v60)</li>
             <li>퇴근길 — 집 주소 설정 시 대중교통·자차 소요 (Hermes/ODsay)</li>
             <li>점심 룰렛 — 11:20 알림 (설정에서 끄기 가능)</li>
-            <li>News 탭 — 국내·미국 주식 뉴스 전환 + AI 요약 (매일 07:00 갱신)</li>
+            <li>News 탭 — 주식(국내·미국)·전체 뉴스 전환 + AI 요약 (매일 07:00 갱신)</li>
             <li>2시간마다 Hermes가 PWA 자동 점검·배포 (변경 없으면 조용히 스킵)</li>
           </ul>
         </section>
@@ -526,16 +530,16 @@
     </nav>
   </div>
 
-  <script src="config.js?v=60"></script>
-  <script src="vendor/leaflet/leaflet.js?v=60"></script>
-  <script src="js/fortune.js?v=60"></script>
-  <script src="js/saju.js?v=60"></script>
-  <script src="js/lunch-map.js?v=60"></script>
-  <script src="js/user-location.js?v=60"></script>
-  <script src="js/weather-brief.js?v=60"></script>
-  <script src="js/news-brief.js?v=60"></script>
-  <script src="js/hermes-chat.js?v=60"></script>
-  <script src="js/commute-time.js?v=60"></script>
-  <script src="js/app.js?v=60"></script>
+  <script src="config.js?v=61"></script>
+  <script src="vendor/leaflet/leaflet.js?v=61"></script>
+  <script src="js/fortune.js?v=61"></script>
+  <script src="js/saju.js?v=61"></script>
+  <script src="js/lunch-map.js?v=61"></script>
+  <script src="js/user-location.js?v=61"></script>
+  <script src="js/weather-brief.js?v=61"></script>
+  <script src="js/news-brief.js?v=61"></script>
+  <script src="js/hermes-chat.js?v=61"></script>
+  <script src="js/commute-time.js?v=61"></script>
+  <script src="js/app.js?v=61"></script>
 </body>
 </html>
