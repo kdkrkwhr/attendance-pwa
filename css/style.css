@@ -2671,18 +2671,7 @@ body {
   }
 }
 
-/* ── Hermes AI 채팅 (노랑 테마 — 채팅 탭만) ── */
-.chat-tab-panel {
-  --chat-bg: #fff8dc;
-  --chat-surface: #fffef0;
-  --chat-border: #f0d878;
-  --chat-user-bg: #f5b800;
-  --chat-user-text: #1c1917;
-  --chat-assistant-bg: #fffbeb;
-  --chat-input-bg: #ffffff;
-  --chat-accent: #ca8a04;
-}
-
+/* ── Hermes AI 채팅 ── */
 .app.is-chat-tab {
   padding: 0;
   max-width: none;
@@ -2721,7 +2710,7 @@ body {
   overflow: hidden;
   padding: max(0.75rem, env(safe-area-inset-top)) 0.75rem 0;
   padding-bottom: var(--chat-kb-offset, 0px);
-  background: var(--chat-bg);
+  background: var(--bg);
 }
 
 .chat-stage .chat-setup.card {
@@ -2729,8 +2718,7 @@ body {
   padding: 0.875rem 1rem;
   flex-shrink: 0;
   box-shadow: none;
-  border: 1px solid var(--chat-border);
-  background: var(--chat-surface);
+  border: 1px solid var(--border);
 }
 
 .chat-topbar {
@@ -2881,18 +2869,18 @@ body {
 
 .chat-bubble-user {
   align-self: flex-end;
-  background: var(--chat-user-bg);
-  color: var(--chat-user-text);
+  background: var(--primary);
+  color: #fff;
   border-bottom-right-radius: 0.25rem;
 }
 
 .chat-bubble-assistant {
   align-self: flex-start;
-  background: var(--chat-assistant-bg);
+  background: var(--card);
   color: var(--text);
-  border: 1px solid var(--chat-border);
+  border: 1px solid var(--border);
   border-bottom-left-radius: 0.25rem;
-  box-shadow: 0 1px 2px rgba(180, 140, 20, 0.12);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .chat-bubble-text {
@@ -2911,8 +2899,8 @@ body {
 .chat-footer {
   flex-shrink: 0;
   padding: 0.5rem 0 max(0.25rem, env(safe-area-inset-bottom));
-  background: var(--chat-bg);
-  border-top: 1px solid var(--chat-border);
+  background: var(--bg);
+  border-top: 1px solid var(--border);
   position: relative;
   z-index: 2;
 }
@@ -2959,17 +2947,17 @@ body {
   max-height: 7rem;
   resize: none;
   padding: 0.625rem 0.75rem;
-  border: 1px solid var(--chat-border);
+  border: 1px solid var(--border);
   border-radius: 1.25rem;
   font-family: inherit;
   font-size: 1rem;
   line-height: 1.4;
-  background: var(--chat-input-bg);
+  background: var(--card);
   color: var(--text);
 }
 
 .chat-input:focus {
-  outline: 2px solid var(--chat-accent);
+  outline: 2px solid var(--primary);
   outline-offset: 1px;
 }
 
@@ -2999,44 +2987,30 @@ body {
   white-space: nowrap;
 }
 
-.chat-form .btn-primary,
-.chat-send-btn {
-  background: var(--chat-user-bg);
-  color: var(--chat-user-text);
-  border-color: var(--chat-accent);
-}
-
-.chat-form .btn-primary:hover,
-.chat-send-btn:hover {
-  background: #e0a800;
-}
-
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .chat-tab-panel {
-    --chat-bg: #2a2618;
-    --chat-surface: #352f1a;
-    --chat-border: #6b5a2a;
-    --chat-user-bg: #eab308;
-    --chat-user-text: #1c1917;
-    --chat-assistant-bg: #3d3520;
-    --chat-input-bg: #2f2818;
-    --chat-accent: #facc15;
+  :root:not([data-theme="light"]) .chat-bubble-assistant {
+    background: #1e293b;
+    border-color: #334155;
+  }
+
+  :root:not([data-theme="light"]) .chat-input {
+    background: #0f172a;
+    border-color: #334155;
   }
 }
 
-[data-theme="dark"] .chat-tab-panel {
-  --chat-bg: #2a2618;
-  --chat-surface: #352f1a;
-  --chat-border: #6b5a2a;
-  --chat-user-bg: #eab308;
-  --chat-user-text: #1c1917;
-  --chat-assistant-bg: #3d3520;
-  --chat-input-bg: #2f2818;
-  --chat-accent: #facc15;
+[data-theme="dark"] .chat-bubble-assistant {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .chat-input {
+  background: #0f172a;
+  border-color: #334155;
 }
 
 .tab-btn[data-tab="chat"].active {
-  color: var(--chat-accent, #ca8a04);
+  color: #2563eb;
 }
 
 /* ── 회사 날씨 (weather-brief) ── */
