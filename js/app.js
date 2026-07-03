@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '85';
+const APP_BUILD = '86';
 const APP_VERSION_KEY = 'attendance-app-version';
 
 const DEFAULT_SETTINGS = {
@@ -1149,6 +1149,30 @@ function renderFunDate() {
   if (el) el.textContent = formatTodayLabel();
 }
 
+// 이번 주 출근 현황 점: 평일 5칸, 출근 기록 있으면 채움, 오늘 칸은 테두리 표시
+function renderWeekStrip() {
+  const dotsEl = document.getElementById('weekStripDots');
+  const textEl = document.getElementById('weekStripText');
+  if (!dotsEl || !textEl) return;
+
+  const records = loadRecords();
+  const weekdays = getWeekDates().filter((d) => d.getDay() !== 0 && d.getDay() !== 6);
+  const todayK = todayKey();
+
+  let done = 0;
+  dotsEl.innerHTML = weekdays.map((date) => {
+    const key = formatDateKey(date);
+    const checked = !!records[key]?.checkIn;
+    if (checked) done += 1;
+    const cls = ['week-strip-dot'];
+    if (checked) cls.push('done');
+    if (key === todayK) cls.push('today');
+    return `<span class="${cls.join(' ')}" title="${DAY_NAMES[date.getDay()]}요일${checked ? ' 출근' : ''}"></span>`;
+  }).join('');
+
+  textEl.textContent = `이번 주 ${done}/${weekdays.length}일 출근`;
+}
+
 function renderToday() {
   const record = getTodayRecord();
   const now = new Date();
@@ -1169,6 +1193,8 @@ function renderToday() {
     streakBadge.textContent = isBest ? `🏆 ${streak}일 연속 (최고 기록)` : `🔥 ${streak}일 연속`;
     streakBadge.classList.toggle('hidden', streak < 2);
   }
+
+  renderWeekStrip();
 
   todayCard?.classList.toggle('card-field-work', fieldWork);
   fieldBadge?.classList.toggle('hidden', !fieldWork);
