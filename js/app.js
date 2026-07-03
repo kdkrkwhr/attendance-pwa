@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '89';
+const APP_BUILD = '90';
 const APP_VERSION_KEY = 'attendance-app-version';
 
 const DEFAULT_SETTINGS = {
@@ -272,7 +272,6 @@ async function completeCheckOut(record, fieldMemo = '') {
   if (settings.sheetUrl) {
     syncRecordToSheet(todayKey(), getTodayRecord()).then((r) => {
       if (r.ok) setSyncStatus('팀 시트에 퇴근 저장됨', 'ok');
-      loadTeamWeek();
     }).catch(() => {});
   }
 }
@@ -808,10 +807,6 @@ function getUserName() {
   return (loadSettings().userName || '').trim() || '사원';
 }
 
-function getWeekStartKey(baseDate = new Date()) {
-  return formatDateKey(getWeekDates(baseDate)[0]);
-}
-
 function getWeekRecords() {
   const records = loadRecords();
   const weekDates = getWeekDates();
@@ -879,7 +874,6 @@ async function syncWeekToSheet() {
       if (!result.ok) throw new Error(result.error || '저장 실패');
     }
     setSyncStatus(`${name}님 이번 주 ${keys.length}건 저장 완료`, 'ok');
-    await loadTeamWeek();
   } catch (e) {
     setSyncStatus(`저장 실패: ${e.message}`, 'err');
   }
@@ -907,45 +901,6 @@ async function testSheetConnection() {
     setSyncStatus('시트 연결 OK — AI채팅·출퇴근 저장 가능', 'ok');
   } catch (e) {
     setSyncStatus(`연결 실패: ${e.message}`, 'err');
-  }
-}
-
-async function loadTeamWeek() {
-  const settings = loadSettings();
-  const url = (settings.sheetUrl || '').trim();
-  const box = document.getElementById('teamWeekBox');
-  const list = document.getElementById('teamWeekList');
-  if (!url || !box || !list) return;
-
-  try {
-    const weekStart = getWeekStartKey();
-    const res = await fetch(`${url}?weekStart=${weekStart}`, { mode: 'cors' });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await parseSheetResponse(res);
-    if (!data.ok || !data.records?.length) {
-      box.classList.add('hidden');
-      return;
-    }
-
-    const byName = {};
-    data.records.forEach((r) => {
-      if (!byName[r.name]) byName[r.name] = { days: 0, hours: 0 };
-      byName[r.name].days += 1;
-      if (r.netHours != null && !Number.isNaN(r.netHours)) {
-        byName[r.name].hours += Number(r.netHours);
-      }
-    });
-
-    list.innerHTML = Object.entries(byName)
-      .sort(([a], [b]) => a.localeCompare(b, 'ko'))
-      .map(([name, info]) => `
-        <li class="team-item">
-          <span class="name">${escapeHtml(name)}</span>
-          <span class="detail">${info.days}일 · ${info.hours.toFixed(1)}h</span>
-        </li>`).join('');
-    box.classList.remove('hidden');
-  } catch {
-    box.classList.add('hidden');
   }
 }
 
@@ -1304,64 +1259,6 @@ function renderToday() {
   btnOut.classList.remove('hidden');
   renderProgress(record);
   if (typeof renderCommuteCard === 'function') renderCommuteCard();
-}
-
-function renderWeek() {
-  const records = loadRecords();
-  const weekDates = getWeekDates();
-  const list = document.getElementById('weekList');
-  const summary = document.getElementById('weekSummary');
-  const weekTitle = document.getElementById('weekTitle');
-  const name = getUserName();
-
-  if (weekTitle) {
-    weekTitle.textContent = name ? `${name}님 이번 주` : '이번 주';
-  }
-
-  let totalWorkMinutes = 0;
-  let workDays = 0;
-
-  list.innerHTML = weekDates.map((date) => {
-    const key = formatDateKey(date);
-    const record = records[key];
-    const isToday = key === todayKey();
-    const dayLabel = `${DAY_NAMES[date.getDay()]} ${date.getMonth() + 1}/${date.getDate()}`;
-
-    if (!record || !record.checkIn) {
-      const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-      return `<li class="week-item ${isToday ? 'today' : ''} ${isWeekend ? 'off' : ''}">
-        <span class="day">${dayLabel}</span>
-        <span class="times">—</span>
-        <span class="hours">—</span>
-      </li>`;
-    }
-
-    const checkIn = formatTimeShort(parseISO(record.checkIn));
-    let timesText = `${checkIn} ~`;
-    let hoursText = '—';
-
-    if (record.checkOut) {
-      const checkOut = formatTimeShort(parseISO(record.checkOut));
-      const netWork = calcNetWorkMinutes(record.checkIn, record.checkOut);
-      totalWorkMinutes += netWork;
-      workDays++;
-      timesText = `${checkIn} ~ ${checkOut}`;
-      hoursText = `${(netWork / 60).toFixed(1)}h`;
-    } else if (isToday) {
-      const leave = formatTimeShort(calcLeaveTime(record.checkIn));
-      timesText = `${checkIn} ~ ${leave}`;
-      hoursText = '진행';
-    }
-
-    return `<li class="week-item ${isToday ? 'today' : ''} ${record.fieldWork ? 'field-work' : ''}">
-      <span class="day">${dayLabel}${record.fieldWork ? '<span class="week-field-tag">외근</span>' : ''}</span>
-      <span class="times">${timesText}${record.fieldMemo ? `<span class="week-memo">${escapeHtml(record.fieldMemo)}</span>` : ''}</span>
-      <span class="hours">${hoursText}</span>
-    </li>`;
-  }).join('');
-
-  const totalH = (totalWorkMinutes / 60).toFixed(1);
-  summary.textContent = workDays > 0 ? `누적 ${totalH}시간 (${workDays}일)` : '';
 }
 
 function renderSettings() {
@@ -1767,6 +1664,12 @@ function init() {
   document.getElementById('btnWifiCheckIn')?.addEventListener('click', handleWifiCheckIn);
   document.getElementById('btnWifiDismiss')?.addEventListener('click', handleWifiDismiss);
   document.getElementById('btnDrawFortune')?.addEventListener('click', handleDrawFortune);
+  document.getElementById('btnCoinFlip')?.addEventListener('click', () => {
+    if (typeof flipCoin === 'function') flipCoin();
+  });
+  document.getElementById('btnCoinAgain')?.addEventListener('click', () => {
+    if (typeof resetCoin === 'function') resetCoin();
+  });
   document.getElementById('btnRevealQuote')?.addEventListener('click', handleRevealQuote);
   document.getElementById('btnRevealSaju')?.addEventListener('click', handleRevealSaju);
   document.getElementById('btnSajuGoSettings')?.addEventListener('click', handleSajuGoSettings);

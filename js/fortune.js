@@ -583,3 +583,30 @@ function renderLuckyNumber() {
   numberEl.textContent = lucky.number;
   if (hintEl) hintEl.textContent = lucky.hint;
 }
+
+/** 동전 던지기 — 고민될 때 쓰는 미니게임 (하루 제한 없이 반복 가능) */
+function flipCoin() {
+  const idleEl = document.getElementById('coinIdle');
+  const resultEl = document.getElementById('coinResult');
+  const faceEl = document.getElementById('coinResultFace');
+  const textEl = document.getElementById('coinResultText');
+  const btn = document.getElementById('btnCoinFlip');
+  if (!idleEl || !resultEl) return;
+
+  btn?.setAttribute('disabled', 'true');
+  idleEl.classList.add('coin-flipping');
+  setTimeout(() => {
+    const isHeads = Math.random() < 0.5;
+    faceEl.textContent = isHeads ? '🙂' : '🌙';
+    textEl.textContent = isHeads ? '앞면 — Yes' : '뒷면 — No';
+    idleEl.classList.remove('coin-flipping');
+    idleEl.classList.add('hidden');
+    resultEl.classList.remove('hidden');
+    btn?.removeAttribute('disabled');
+  }, 500);
+}
+
+function resetCoin() {
+  document.getElementById('coinResult')?.classList.add('hidden');
+  document.getElementById('coinIdle')?.classList.remove('hidden');
+}

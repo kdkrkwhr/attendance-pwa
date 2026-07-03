@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=89">
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=89">
+  <link rel="stylesheet" href="css/style.css?v=90">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=90">
   <script>
     (function () {
       try {
@@ -296,6 +296,23 @@
           </div>
         </section>
 
+        <section class="card coin-card" id="coinCard">
+          <div class="coin-card-header">
+            <span class="coin-card-badge">🪙 동전 던지기</span>
+            <span class="coin-card-hint">고민될 때</span>
+          </div>
+          <div id="coinIdle" class="fun-reveal-idle">
+            <p class="fun-reveal-idle-emoji">🪙</p>
+            <p class="fun-reveal-idle-text">Yes or No, 동전에게 물어보세요</p>
+            <button type="button" class="btn btn-fun-reveal" id="btnCoinFlip">동전 던지기</button>
+          </div>
+          <div id="coinResult" class="coin-result hidden">
+            <p class="coin-result-face" id="coinResultFace">🙂</p>
+            <p class="coin-result-text" id="coinResultText">앞면 — Yes</p>
+            <button type="button" class="btn btn-ghost btn-sm" id="btnCoinAgain">다시 던지기</button>
+          </div>
+        </section>
+
         <section class="card fun-coming">
           <h3 class="fun-coming-title">곧 올 기능 👀</h3>
           <ul class="fun-coming-list">
@@ -537,6 +554,7 @@
           <li>오늘 탭 — 이번 달 출근일수·평균 순근무 시간 요약 표시 (v87)</li>
           <li>Fun 탭 — 오늘의 색: 날짜마다 바뀌는 컬러 카드 추가 (v88)</li>
           <li>Fun 탭 — 오늘의 행운 숫자: 날짜마다 바뀌는 럭키 넘버 카드 추가 (v89)</li>
+          <li>Fun 탭 — 동전 던지기 미니게임 추가, 다크모드 행운 숫자 카드 배경 깨지던 버그 수정 (v90)</li>
           </ul>
         </section>
       </div>
@@ -570,17 +588,17 @@
     </nav>
   </div>
 
-  <script src="config.js?v=89"></script>
-  <script src="vendor/leaflet/leaflet.js?v=89"></script>
-  <script src="js/util.js?v=89"></script>
-  <script src="js/fortune.js?v=89"></script>
-  <script src="js/saju.js?v=89"></script>
-  <script src="js/lunch-map.js?v=89"></script>
-  <script src="js/user-location.js?v=89"></script>
-  <script src="js/weather-brief.js?v=89"></script>
-  <script src="js/news-brief.js?v=89"></script>
-  <script src="js/hermes-chat.js?v=89"></script>
-  <script src="js/commute-time.js?v=89"></script>
-  <script src="js/app.js?v=89"></script>
+  <script src="config.js?v=90"></script>
+  <script src="vendor/leaflet/leaflet.js?v=90"></script>
+  <script src="js/util.js?v=90"></script>
+  <script src="js/fortune.js?v=90"></script>
+  <script src="js/saju.js?v=90"></script>
+  <script src="js/lunch-map.js?v=90"></script>
+  <script src="js/user-location.js?v=90"></script>
+  <script src="js/weather-brief.js?v=90"></script>
+  <script src="js/news-brief.js?v=90"></script>
+  <script src="js/hermes-chat.js?v=90"></script>
+  <script src="js/commute-time.js?v=90"></script>
+  <script src="js/app.js?v=90"></script>
 </body>
 </html>
