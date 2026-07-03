@@ -1544,6 +1544,15 @@ body {
   color: var(--fortune-accent, #8b5cf6);
 }
 
+.fortune-category {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(139, 92, 246, 0.12);
+  color: var(--fortune-accent, #8b5cf6);
+}
+
 .fortune-score-block {
   margin: 0 auto 1rem;
   padding: 0.875rem 1rem;

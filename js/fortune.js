@@ -33,18 +33,36 @@ const SAJU_RELATION_QUOTE_TAGS = {
 };
 
 const SAJU_STAR_SCORE_RANGE = {
-  5: { min: 93, max: 100 },
-  4: { min: 87, max: 95 },
-  3: { min: 83, max: 90 },
-  2: { min: 80, max: 87 },
+  5: { min: 82, max: 100 },
+  4: { min: 64, max: 88 },
+  3: { min: 48, max: 74 },
+  2: { min: 32, max: 58 },
 };
 
-/** 등급별 행운 점수 구간 (전체 평균 ~90점대) */
+/** 등급별 행운 점수 구간 */
 const GRADE_SCORE_RANGE = {
-  great: { min: 93, max: 100 },
-  good: { min: 87, max: 95 },
-  normal: { min: 83, max: 90 },
-  chill: { min: 80, max: 87 },
+  great: { min: 82, max: 100 },
+  good: { min: 62, max: 86 },
+  normal: { min: 45, max: 72 },
+  chill: { min: 28, max: 55 },
+};
+
+const FORTUNE_CATEGORIES = {
+  work: { label: '업무운', emoji: '💼' },
+  money: { label: '재물운', emoji: '💰' },
+  love: { label: '인연운', emoji: '💫' },
+  health: { label: '건강운', emoji: '🌿' },
+  creative: { label: '창의운', emoji: '🎨' },
+  rest: { label: '휴식운', emoji: '🛋️' },
+  luck: { label: '행운', emoji: '🍀' },
+  learn: { label: '학습운', emoji: '📚' },
+};
+
+const SCORE_MSG_POOL = {
+  high: ['오늘은 최고의 날! ✨', '운이 폭발하는 날이에요', '뭐든 잘 풀릴 기운이 가득해요'],
+  midHigh: ['기분 좋은 하루 예감이에요', '조금만 신경 쓰면 대박이에요', '운이 따르는 편이에요'],
+  mid: ['무난한 하루예요', '평범이 최고의 날이에요', '특별할 필요 없어요'],
+  low: ['차분히 가도 충분해요', '쉬어가도 괜찮은 날이에요', '무리하지 말고 천천히 가요'],
 };
 
 const DAILY_QUOTES = [
@@ -91,7 +109,7 @@ const DAILY_QUOTES = [
 ];
 
 const FORTUNES = [
-  { grade: 'great', text: '오늘은 아이디어가 샘솟는 날! 회의에서 한마디가 통할 거예요.', luckyTip: '회의 전에 메모 한 줄만 준비해 보기', cautionTip: '「글쎄요…」처럼 애매하게 넘기지 않기' },
+  { grade: 'great', category: 'work', text: '오늘은 아이디어가 샘솟는 날! 회의에서 한마디가 통할 거예요.', luckyTip: '회의 전에 메모 한 줄만 준비해 보기', cautionTip: '「글쎄요…」처럼 애매하게 넘기지 않기' },
   { grade: 'great', text: '동료가 도와줄 운이 가득해요. 협업이 술술 풀립니다.', luckyTip: '막히면 바로 옆자리에게 가볍게 물어보기', cautionTip: '혼자 오래 끙끙대며 시간 쓰지 않기' },
   { grade: 'good', text: '점심 메뉴 고민 끝! 우연히 맛집을 발견할지도.', luckyTip: '평소 안 가본 메뉴 하나 골라보기', cautionTip: '매일 같은 메뉴만 고집하기' },
   { grade: 'good', text: '오후에 집중력이 올라가요. 어려운 일은 2시 이후에!', luckyTip: '오후에 이어폰 끼고 깊게 몰입하기', cautionTip: '알림을 켜 둔 채로 집중하려 하기' },
@@ -131,6 +149,30 @@ const FORTUNES = [
   { grade: 'chill', text: '점심 후 10분 낮잠은 금지지만, 눈 감고 쉬기는 OK.', luckyTip: '눈 감고 1분만 숨 고르기', cautionTip: '졸린데 무리해서 버티기' },
   { grade: 'normal', text: '차가운 물 한 모금이 오후의 시작을 상쾌하게.', luckyTip: '물 한 잔 먼저 마시기', cautionTip: '탄산음료만 마시기' },
   { grade: 'good', text: '오늘은 「일단 해보기」가 통하는 날입니다.', luckyTip: '망설이던 일 「일단 시작」하기', cautionTip: '시작 전에 너무 오래 고민하기' },
+  { grade: 'great', category: 'money', text: '지갑·통장 정리하면 작은 보너스 운이 숨어 있어요.', luckyTip: '쓸데없는 구독 하나만 끊어 보기', cautionTip: '충동으로 장바구니부터 채우기' },
+  { grade: 'great', category: 'love', text: '오랜만에 연락 온 사람이 좋은 소식을 가져올 수 있어요.', luckyTip: '먼저 안부 한 줄 보내 보기', cautionTip: '답장을 너무 늦게 하기' },
+  { grade: 'great', category: 'health', text: '컨디션이 올라가는 날! 가벼운 운동을 시작하기 딱 좋아요.', luckyTip: '계단 한 층만 더 오르기', cautionTip: '밤늦게까지 스크린만 보기' },
+  { grade: 'great', category: 'creative', text: '머릿속 그림이 선명해요. 그림·글·음악 뭐든 시도해 보세요.', luckyTip: '5분만 낙서·메모라도 해보기', cautionTip: '완성될 때까지 시작 안 하기' },
+  { grade: 'great', category: 'luck', text: '우연한 할인·쿠폰·이벤트에 걸릴 확률이 높아요.', luckyTip: '평소 안 쓰는 앱 알림 한번 확인하기', cautionTip: '「나한텐 안 온다」며 무시하기' },
+  { grade: 'great', category: 'learn', text: '새로운 걸 배우면 머리에 딱 붙는 날이에요.', luckyTip: '유튜브 튜토리얼 10분만 보기', cautionTip: '너무 어려운 것부터 파고들기' },
+  { grade: 'good', category: 'money', text: '점심·간식에서 의외로 만족스러운 가성비를 만날 수 있어요.', luckyTip: '단골 말고 새 가게 한번 가보기', cautionTip: '배고프다며 비싼 것만 고르기' },
+  { grade: 'good', category: 'love', text: '엘리베이터·복도에서 반가운 얼굴을 만날 수 있어요.', luckyTip: '먼저 밝게 인사하기', cautionTip: '이어폰 끼고 눈 피하기' },
+  { grade: 'good', category: 'health', text: '수면의 질이 좋아지는 날. 오늘 밤 푹 잘 수 있어요.', luckyTip: '자기 30분 전 폰 멀리 두기', cautionTip: '늦게까지 카페인 마시기' },
+  { grade: 'good', category: 'creative', text: '남들이 못 본 해결책이 떠오를 수 있어요.', luckyTip: '문제를 종이에 그림으로 그려보기', cautionTip: '남의 답안만 베끼기' },
+  { grade: 'good', category: 'luck', text: '길에서 주운 작은 행운(쿠폰·동전·칭찬)이 기분을 올려줘요.', luckyTip: '지나치던 작은 것에도 눈 두기', cautionTip: '운이 없다고 중얼거리기' },
+  { grade: 'good', category: 'learn', text: '남이 설명해 주는 것보다 직접보면 금방 익혀요.', luckyTip: '매뉴얼 대신 손으로 한번 눌러보기', cautionTip: '이해 안 되는데 넘어가기' },
+  { grade: 'normal', category: 'money', text: '큰돈은 아니어도 지출이 생각보다 적게 나갈 수 있어요.', luckyTip: '영수증 한번 확인해 보기', cautionTip: '「별로 안 썼겠지」하고 안 보기' },
+  { grade: 'normal', category: 'love', text: '가족·친구에게 짧은 연락이 관계를 따뜻하게 해줘요.', luckyTip: '카톡 이모티콘 하나만 보내기', cautionTip: '바쁘다며 연락 미루기' },
+  { grade: 'normal', category: 'health', text: '목·어깨가 뻐근할 수 있어요. 스트레칭이 답이에요.', luckyTip: '1시간마다 고개 돌리기', cautionTip: '통증 참고 같은 자세 유지하기' },
+  { grade: 'normal', category: 'creative', text: '평소와 다른 루트·메뉴·음악이 영감을 줄 수 있어요.', luckyTip: '출퇴근길 한 정거장 걸어보기', cautionTip: '매일 똑같은 패턴만 반복하기' },
+  { grade: 'normal', category: 'luck', text: '기대 안 했는데 괜찮은 일이 하나쯤 생길 수 있어요.', luckyTip: '작은 변화에도 「오」 하고 반응하기', cautionTip: '별일 없다며 하루를 깔아버리기' },
+  { grade: 'normal', category: 'rest', text: '오늘은 속도를 줄여도 일은 따라와요.', luckyTip: '점심 후 3분만 눈 감기', cautionTip: '쉬는 시간까지 일로 채우기' },
+  { grade: 'chill', category: 'rest', text: '아무것도 안 해도 되는 날이에요. 쉬는 것도 실력입니다.', luckyTip: '「오늘은 여기까지」 선언하기', cautionTip: '쉬었다는 죄책감까지 끌어안기' },
+  { grade: 'chill', category: 'health', text: '몸이 쉬라고 신호를 보내는 중이에요. 무리 금지.', luckyTip: '물 자주 마시고 일찍 눕기', cautionTip: '졸린데 억지로 버티기' },
+  { grade: 'chill', category: 'money', text: '큰 지출·계약은 내일로 미루는 게 이득이에요.', luckyTip: '장바구니에만 담고 하루 뒤 결정하기', cautionTip: '지금 당장 결제하기' },
+  { grade: 'chill', category: 'love', text: '오늘은 혼자만의 시간이 더 편할 수 있어요.', luckyTip: '좋아하는 음악이나 영상 한 편', cautionTip: '억지로 약속 잡기' },
+  { grade: 'chill', category: 'luck', text: '운이 낮은 날엔 욕심 부리지 않는 게 최고의 전략이에요.', luckyTip: '할 일 목록에서 하나 빼기', cautionTip: '모든 걸 오늘 끝내려 하기' },
+  { grade: 'chill', category: 'creative', text: '만들기보다 감상하기 좋은 날. 영화·책·음악이 답이에요.', luckyTip: '평소 안 보던 장르 하나 골라보기', cautionTip: '결과물을 꼭 내야 한다고 압박하기' },
 ];
 
 function hashFortuneSeed(str) {
@@ -172,7 +214,7 @@ function buildSajuDailyBundle(birthISO) {
   const fortunePool = FORTUNES.map((f, i) => i).filter((i) => FORTUNES[i].grade === grade);
   const fortuneIndex = pickFromPool(
     fortunePool.length ? fortunePool : FORTUNES.map((_, i) => i),
-    hashFortuneSeed(`${todayKey()}:${birthISO}:fortune`),
+    hashFortuneSeed(`${todayKey()}:${birthISO}:fortune:${saju.dayElement || ''}:${saju.relation}`),
   );
 
   const quoteTags = SAJU_RELATION_QUOTE_TAGS[saju.relation] || SAJU_RELATION_QUOTE_TAGS.neutral;
@@ -260,6 +302,7 @@ function saveTodayFortune(fortuneIndex) {
     quoteTag: quote.tag,
     luckScore,
     sajuLinked: Boolean(bundle),
+    category: fortune.category,
     ...fortune,
   };
   localStorage.setItem(FORTUNE_STORAGE_KEY, JSON.stringify(record));
@@ -271,7 +314,7 @@ function pickFortuneIndex() {
   if (bundle) return bundle.fortuneIndex;
 
   const name = getFortuneUserName();
-  const seed = hashFortuneSeed(`${todayKey()}:${name || '사원'}`);
+  const seed = hashFortuneSeed(`${todayKey()}:${name || '사원'}:${new Date().getDay()}`);
   return seed % FORTUNES.length;
 }
 
@@ -291,15 +334,17 @@ function getLuckScore(record) {
 }
 
 function getLuckScoreMessage(score, grade) {
-  if (grade === 'great') return '오늘은 최고의 날! ✨';
-  if (grade === 'good') return '운이 좋은 편이에요';
-  if (grade === 'normal') return '무난한 하루예요';
-  if (grade === 'chill') return '차분히 가도 충분해요';
-  if (score >= 97) return '오늘은 최고의 날! ✨';
-  if (score >= 92) return '운이 아주 좋은 날이에요';
-  if (score >= 87) return '기분 좋은 하루 예감이에요';
-  if (score >= 83) return '무난히 좋은 하루가 될 거예요';
-  return '차분히 가도 충분한 하루예요';
+  const seed = hashFortuneSeed(`${todayKey()}:msg:${score}:${grade}`);
+  let pool;
+  if (score >= 85) pool = SCORE_MSG_POOL.high;
+  else if (score >= 68) pool = SCORE_MSG_POOL.midHigh;
+  else if (score >= 50) pool = SCORE_MSG_POOL.mid;
+  else pool = SCORE_MSG_POOL.low;
+  return pool[seed % pool.length];
+}
+
+function getFortuneCategoryMeta(category) {
+  return FORTUNE_CATEGORIES[category] || null;
 }
 
 function drawTodayFortune() {
@@ -398,6 +443,7 @@ function renderFortune() {
   const meta = getFortuneGradeMeta(record.grade);
   const gradeEl = document.getElementById('fortuneGrade');
   const emojiEl = document.getElementById('fortuneEmoji');
+  const categoryEl = document.getElementById('fortuneCategory');
   const textEl = document.getElementById('fortuneText');
   const luckyEl = document.getElementById('fortuneLucky');
   const cautionEl = document.getElementById('fortuneCaution');
@@ -405,6 +451,16 @@ function renderFortune() {
 
   if (gradeEl) gradeEl.textContent = meta.label;
   if (emojiEl) emojiEl.textContent = meta.emoji;
+  const catMeta = getFortuneCategoryMeta(record.category || FORTUNES[record.index]?.category);
+  if (categoryEl) {
+    if (catMeta) {
+      categoryEl.textContent = `${catMeta.emoji} ${catMeta.label}`;
+      categoryEl.classList.remove('hidden');
+    } else {
+      categoryEl.textContent = '';
+      categoryEl.classList.add('hidden');
+    }
+  }
   if (textEl) textEl.textContent = record.text;
   if (luckyEl) luckyEl.textContent = getFortuneTip(record, 'lucky');
   if (cautionEl) cautionEl.textContent = getFortuneTip(record, 'caution');
