@@ -1451,6 +1451,104 @@ body {
   margin: 0 0 1rem;
 }
 
+/* ── 가위바위보 ── */
+
+.rps-card {
+  border-top: 4px solid #2563eb;
+  background: linear-gradient(165deg, #eff6ff 0%, var(--card) 50%);
+  margin-bottom: 0.875rem;
+}
+
+.rps-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.rps-card-badge {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #1d4ed8;
+}
+
+.rps-card-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: #dbeafe;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+}
+
+.rps-idle {
+  text-align: center;
+  padding: 0.5rem 0 0.25rem;
+}
+
+.rps-choices {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.btn-rps {
+  width: 3.25rem;
+  height: 3.25rem;
+  border: none;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  background: #dbeafe;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s;
+}
+
+.btn-rps:active {
+  transform: scale(0.92);
+  background: #bfdbfe;
+}
+
+.rps-result {
+  text-align: center;
+  padding: 0.5rem 0 0.25rem;
+}
+
+.rps-result-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.rps-result-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.rps-result-emoji {
+  font-size: 2.25rem;
+  line-height: 1;
+}
+
+.rps-result-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.rps-result-vs {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.rps-result-text {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  margin: 0 0 1rem;
+}
+
 /* ── 오늘의 사주 ── */
 
 .saju-card {
@@ -1995,6 +2093,24 @@ body {
       color: #fef08a;
     }
 
+    .rps-card {
+      background: linear-gradient(165deg, #1e3a8a 0%, var(--card) 50%);
+    }
+
+    .rps-card-hint {
+      background: #1e40af;
+      color: #bfdbfe;
+    }
+
+    .btn-rps {
+      background: #1e40af;
+      color: #bfdbfe;
+    }
+
+    .btn-rps:active {
+      background: #1d4ed8;
+    }
+
     .saju-card {
       background: linear-gradient(165deg, #1e1b4b 0%, var(--card) 50%);
     }
@@ -2082,6 +2198,24 @@ body {
   .coin-card-hint {
     background: #713f12;
     color: #fef08a;
+  }
+
+  .rps-card {
+    background: linear-gradient(165deg, #1e3a8a 0%, var(--card) 50%);
+  }
+
+  .rps-card-hint {
+    background: #1e40af;
+    color: #bfdbfe;
+  }
+
+  .btn-rps {
+    background: #1e40af;
+    color: #bfdbfe;
+  }
+
+  .btn-rps:active {
+    background: #1d4ed8;
   }
 
   .saju-card {

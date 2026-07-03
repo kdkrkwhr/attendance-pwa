@@ -610,3 +610,37 @@ function resetCoin() {
   document.getElementById('coinResult')?.classList.add('hidden');
   document.getElementById('coinIdle')?.classList.remove('hidden');
 }
+
+/** 가위바위보 vs AI — 하루 제한 없이 반복 가능 */
+const RPS_EMOJI = { rock: '✊', scissors: '✌️', paper: '✋' };
+const RPS_LABEL = { rock: '바위', scissors: '가위', paper: '보' };
+const RPS_BEATS = { rock: 'scissors', scissors: 'paper', paper: 'rock' };
+
+function playRps(myMove) {
+  if (!RPS_EMOJI[myMove]) return;
+  const idleEl = document.getElementById('rpsIdle');
+  const resultEl = document.getElementById('rpsResult');
+  const meEmojiEl = document.getElementById('rpsMeEmoji');
+  const aiEmojiEl = document.getElementById('rpsAiEmoji');
+  const textEl = document.getElementById('rpsResultText');
+  if (!idleEl || !resultEl) return;
+
+  const moves = Object.keys(RPS_EMOJI);
+  const aiMove = moves[Math.floor(Math.random() * moves.length)];
+  if (meEmojiEl) meEmojiEl.textContent = RPS_EMOJI[myMove];
+  if (aiEmojiEl) aiEmojiEl.textContent = RPS_EMOJI[aiMove];
+
+  let outcome;
+  if (myMove === aiMove) outcome = `비김 — 둘 다 ${RPS_LABEL[myMove]}`;
+  else if (RPS_BEATS[myMove] === aiMove) outcome = `승리! ${RPS_LABEL[myMove]}가 ${RPS_LABEL[aiMove]}를 이겼어요`;
+  else outcome = `패배... ${RPS_LABEL[aiMove]}한테 졌어요`;
+  if (textEl) textEl.textContent = outcome;
+
+  idleEl.classList.add('hidden');
+  resultEl.classList.remove('hidden');
+}
+
+function resetRps() {
+  document.getElementById('rpsResult')?.classList.add('hidden');
+  document.getElementById('rpsIdle')?.classList.remove('hidden');
+}

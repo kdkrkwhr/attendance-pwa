@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=90">
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=90">
+  <link rel="stylesheet" href="css/style.css?v=91">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=91">
   <script>
     (function () {
       try {
@@ -313,6 +313,36 @@
           </div>
         </section>
 
+        <section class="card rps-card" id="rpsCard">
+          <div class="rps-card-header">
+            <span class="rps-card-badge">✊ 가위바위보</span>
+            <span class="rps-card-hint">vs AI</span>
+          </div>
+          <div id="rpsIdle" class="rps-idle">
+            <p class="fun-reveal-idle-text">AI랑 한판 붙어보세요</p>
+            <div class="rps-choices">
+              <button type="button" class="btn-rps" data-rps="rock" aria-label="바위">✊</button>
+              <button type="button" class="btn-rps" data-rps="scissors" aria-label="가위">✌️</button>
+              <button type="button" class="btn-rps" data-rps="paper" aria-label="보">✋</button>
+            </div>
+          </div>
+          <div id="rpsResult" class="rps-result hidden">
+            <div class="rps-result-row">
+              <div class="rps-result-side">
+                <span class="rps-result-emoji" id="rpsMeEmoji">✊</span>
+                <span class="rps-result-label">나</span>
+              </div>
+              <span class="rps-result-vs">VS</span>
+              <div class="rps-result-side">
+                <span class="rps-result-emoji" id="rpsAiEmoji">✋</span>
+                <span class="rps-result-label">AI</span>
+              </div>
+            </div>
+            <p class="rps-result-text" id="rpsResultText"></p>
+            <button type="button" class="btn btn-ghost btn-sm" id="btnRpsAgain">다시하기</button>
+          </div>
+        </section>
+
         <section class="card fun-coming">
           <h3 class="fun-coming-title">곧 올 기능 👀</h3>
           <ul class="fun-coming-list">
@@ -555,6 +585,7 @@
           <li>Fun 탭 — 오늘의 색: 날짜마다 바뀌는 컬러 카드 추가 (v88)</li>
           <li>Fun 탭 — 오늘의 행운 숫자: 날짜마다 바뀌는 럭키 넘버 카드 추가 (v89)</li>
           <li>Fun 탭 — 동전 던지기 미니게임 추가, 다크모드 행운 숫자 카드 배경 깨지던 버그 수정 (v90)</li>
+          <li>Fun 탭 — 가위바위보 vs AI 미니게임 추가 (v91)</li>
           </ul>
         </section>
       </div>
@@ -588,17 +619,17 @@
     </nav>
   </div>
 
-  <script src="config.js?v=90"></script>
-  <script src="vendor/leaflet/leaflet.js?v=90"></script>
-  <script src="js/util.js?v=90"></script>
-  <script src="js/fortune.js?v=90"></script>
-  <script src="js/saju.js?v=90"></script>
-  <script src="js/lunch-map.js?v=90"></script>
-  <script src="js/user-location.js?v=90"></script>
-  <script src="js/weather-brief.js?v=90"></script>
-  <script src="js/news-brief.js?v=90"></script>
-  <script src="js/hermes-chat.js?v=90"></script>
-  <script src="js/commute-time.js?v=90"></script>
-  <script src="js/app.js?v=90"></script>
+  <script src="config.js?v=91"></script>
+  <script src="vendor/leaflet/leaflet.js?v=91"></script>
+  <script src="js/util.js?v=91"></script>
+  <script src="js/fortune.js?v=91"></script>
+  <script src="js/saju.js?v=91"></script>
+  <script src="js/lunch-map.js?v=91"></script>
+  <script src="js/user-location.js?v=91"></script>
+  <script src="js/weather-brief.js?v=91"></script>
+  <script src="js/news-brief.js?v=91"></script>
+  <script src="js/hermes-chat.js?v=91"></script>
+  <script src="js/commute-time.js?v=91"></script>
+  <script src="js/app.js?v=91"></script>
 </body>
 </html>

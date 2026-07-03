@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '90';
+const APP_BUILD = '91';
 const APP_VERSION_KEY = 'attendance-app-version';
 
 const DEFAULT_SETTINGS = {
@@ -1669,6 +1669,14 @@ function init() {
   });
   document.getElementById('btnCoinAgain')?.addEventListener('click', () => {
     if (typeof resetCoin === 'function') resetCoin();
+  });
+  document.querySelectorAll('.btn-rps').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      if (typeof playRps === 'function') playRps(btn.dataset.rps);
+    });
+  });
+  document.getElementById('btnRpsAgain')?.addEventListener('click', () => {
+    if (typeof resetRps === 'function') resetRps();
   });
   document.getElementById('btnRevealQuote')?.addEventListener('click', handleRevealQuote);
   document.getElementById('btnRevealSaju')?.addEventListener('click', handleRevealSaju);
