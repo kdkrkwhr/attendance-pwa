@@ -11,12 +11,12 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>출퇴근 체크</title>
+  <title>출퇴�?체크</title>
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=81">
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=81">
+  <link rel="stylesheet" href="css/style.css?v=82">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=82">
   <script>
     (function () {
       try {
@@ -29,42 +29,42 @@
 <body class="notranslate">
   <div class="app" translate="no">
     <header class="header">
-      <h1>출퇴근 체크</h1>
-      <p class="network-banner" id="networkStatus">네트워크 확인 중…</p>
+      <h1>출퇴�?체크</h1>
+      <p class="network-banner" id="networkStatus">?�트?�크 ?�인 중�?/p>
     </header>
 
     <main class="main-content">
-      <!-- 오늘 -->
+      <!-- ?�늘 -->
       <div class="tab-panel active" id="tabToday" data-tab-panel="today">
         <section class="card card-today" id="todayCard">
           <div class="date-row">
             <span class="date" id="todayDate"></span>
             <div class="date-badges">
-              <span class="badge badge-field hidden" id="fieldWorkBadge">외근</span>
-              <span class="badge" id="statusBadge">미출근</span>
+              <span class="badge badge-field hidden" id="fieldWorkBadge">?�근</span>
+              <span class="badge" id="statusBadge">미출�?/span>
             </div>
           </div>
 
           <div class="field-work-row">
             <label class="field-work-toggle" for="fieldWorkToggle">
               <input type="checkbox" id="fieldWorkToggle">
-              <span>오늘 외근</span>
+              <span>?�늘 ?�근</span>
             </label>
-            <span class="field-work-hint">외근 시 회사 Wi-Fi 없이 출퇴근 · 복귀 후 메모 작성</span>
+            <span class="field-work-hint">?�근 ???�사 Wi-Fi ?�이 출퇴�?· 복�? ??메모 ?�성</span>
           </div>
 
           <div class="field-memo hidden" id="fieldMemoBox">
-            <p class="field-memo-title">외근 메모 (복귀 후)</p>
-            <p class="field-memo-desc">방문처·업무 내용을 적고 퇴근해 주세요.</p>
-            <textarea id="fieldMemoInput" class="field-memo-input" rows="3" maxlength="200" placeholder="예: A사 미팅, 강남"></textarea>
+            <p class="field-memo-title">?�근 메모 (복�? ??</p>
+            <p class="field-memo-desc">방문처·업�??�용???�고 ?�근??주세??</p>
+            <textarea id="fieldMemoInput" class="field-memo-input" rows="3" maxlength="200" placeholder="?? A??미팅, 강남"></textarea>
             <div class="field-memo-actions">
-              <button type="button" class="btn btn-primary btn-sm" id="btnFieldCheckOut">퇴근 완료</button>
+              <button type="button" class="btn btn-primary btn-sm" id="btnFieldCheckOut">?�근 ?�료</button>
               <button type="button" class="btn btn-ghost btn-sm" id="btnFieldMemoCancel">취소</button>
             </div>
           </div>
 
           <div class="field-memo-display hidden" id="fieldMemoDisplay">
-            <p class="field-memo-label">외근 메모</p>
+            <p class="field-memo-label">?�근 메모</p>
             <p class="field-memo-text" id="fieldMemoText"></p>
           </div>
 
@@ -72,15 +72,15 @@
             <p class="wifi-suggest-title" id="checkInSuggestTitle">출근 추정</p>
             <p class="wifi-suggest-text" id="wifiSuggestText"></p>
             <div class="wifi-suggest-actions">
-              <button type="button" class="btn btn-primary btn-sm" id="btnWifiApply">시각 적용</button>
-              <button type="button" class="btn btn-secondary btn-sm" id="btnWifiCheckIn">출근 등록</button>
-              <button type="button" class="btn btn-ghost btn-sm" id="btnWifiDismiss">닫기</button>
+              <button type="button" class="btn btn-primary btn-sm" id="btnWifiApply">?�각 ?�용</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnWifiCheckIn">출근 ?�록</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="btnWifiDismiss">?�기</button>
             </div>
           </div>
 
-          <section class="weather-brief-card hidden" id="weatherBriefCard" aria-label="회사 근처 날씨">
+          <section class="weather-brief-card hidden" id="weatherBriefCard" aria-label="?�사 근처 ?�씨">
             <div class="weather-brief-header">
-              <span class="weather-brief-badge">🌤 회사 날씨</span>
+              <span class="weather-brief-badge">?�� ?�사 ?�씨</span>
               <span class="weather-brief-meta" id="weatherBriefMeta"></span>
             </div>
             <p class="weather-brief-summary" id="weatherBriefSummary"></p>
@@ -88,8 +88,8 @@
 
           <div class="progress-section" id="progressSection">
             <div class="progress-header">
-              <span class="progress-label" id="progressLabel">남은 시간</span>
-              <span class="progress-value" id="progressValue">—</span>
+              <span class="progress-label" id="progressLabel">?��? ?�간</span>
+              <span class="progress-value" id="progressValue">??/span>
             </div>
             <div class="progress-track">
               <div class="progress-fill" id="progressFill"></div>
@@ -100,38 +100,38 @@
           <div class="time-panel" id="timeDisplay">
             <div class="time-row">
               <span class="time-label">출근</span>
-              <input type="time" id="checkInInput" class="time-input" aria-label="출근 시각">
+              <input type="time" id="checkInInput" class="time-input" aria-label="출근 ?�각">
             </div>
             <div class="time-row time-row-leave">
-              <span class="time-label">퇴근 가능</span>
-              <span class="leave-value" id="leaveTime">—</span>
+              <span class="time-label">?�근 가??/span>
+              <span class="leave-value" id="leaveTime">??/span>
             </div>
           </div>
 
-          <section class="commute-card hidden" id="commuteCard" aria-label="집까지 예상 소요">
+          <section class="commute-card hidden" id="commuteCard" aria-label="집까지 ?�상 ?�요">
             <div class="commute-card-header">
-              <span class="commute-card-badge">🏠 퇴근길</span>
-              <button type="button" class="btn btn-ghost btn-sm" id="btnCommuteRefresh">새로고침</button>
+              <span class="commute-card-badge">?�� ?�근�?/span>
+              <button type="button" class="btn btn-ghost btn-sm" id="btnCommuteRefresh">?�로고침</button>
             </div>
-            <p class="commute-route" id="commuteRoute">회사 → 집</p>
+            <p class="commute-route" id="commuteRoute">?�사 ??�?/p>
             <div class="commute-times">
-              <p class="commute-line" id="commuteTransit">🚌 —</p>
-              <p class="commute-line" id="commuteCar">🚗 —</p>
+              <p class="commute-line" id="commuteTransit">?�� ??/p>
+              <p class="commute-line" id="commuteCar">?�� ??/p>
             </div>
             <p class="commute-arrival" id="commuteArrival"></p>
             <p class="commute-meta" id="commuteMeta"></p>
-            <a class="commute-map-link hidden" id="commuteMapLink" href="#" target="_blank" rel="noopener noreferrer">카카오맵에서 보기</a>
+            <a class="commute-map-link hidden" id="commuteMapLink" href="#" target="_blank" rel="noopener noreferrer">카카?�맵?�서 보기</a>
           </section>
 
           <div class="commute-setup hidden" id="commuteSetup">
-            <p class="commute-setup-text">집 주소를 설정하면 퇴근길 소요시간을 보여드려요.</p>
-            <button type="button" class="btn btn-ghost btn-sm" id="btnCommuteGoSettings">집 주소 입력</button>
+            <p class="commute-setup-text">�?주소�??�정?�면 ?�근�??�요?�간??보여?�려??</p>
+            <button type="button" class="btn btn-ghost btn-sm" id="btnCommuteGoSettings">�?주소 ?�력</button>
           </div>
 
           <div class="actions" id="mainActions">
-            <button type="button" class="btn btn-primary" id="btnCheckIn">출근 등록</button>
-            <button type="button" class="btn btn-ghost hidden" id="btnSaveCheckIn">출근 시각 저장</button>
-            <button type="button" class="btn btn-secondary hidden" id="btnCheckOut">퇴근 체크</button>
+            <button type="button" class="btn btn-primary" id="btnCheckIn">출근 ?�록</button>
+            <button type="button" class="btn btn-ghost hidden" id="btnSaveCheckIn">출근 ?�각 ?�??/button>
+            <button type="button" class="btn btn-secondary hidden" id="btnCheckOut">?�근 체크</button>
           </div>
         </section>
       </div>
@@ -139,53 +139,53 @@
       <!-- News -->
       <div class="tab-panel" id="tabNews" data-tab-panel="news">
         <section class="news-hero">
-          <p class="news-hero-emoji">📈</p>
+          <p class="news-hero-emoji">?��</p>
           <h2 class="news-hero-title">News</h2>
           <p class="news-hero-date" id="newsTodayDate"></p>
-          <div class="news-market-toggle" role="tablist" aria-label="뉴스 종류 선택">
-            <button type="button" class="news-market-btn active" data-category="stock" role="tab" aria-selected="true">📈 주식</button>
-            <button type="button" class="news-market-btn" data-category="all" role="tab" aria-selected="false">📰 전체</button>
+          <div class="news-market-toggle" role="tablist" aria-label="?�스 종류 ?�택">
+            <button type="button" class="news-market-btn active" data-category="stock" role="tab" aria-selected="true">?�� 주식</button>
+            <button type="button" class="news-market-btn" data-category="all" role="tab" aria-selected="false">?�� ?�체</button>
           </div>
-          <div class="news-market-toggle news-stock-toggle" id="newsStockToggle" role="tablist" aria-label="주식 시장 선택">
-            <button type="button" class="news-market-btn active" data-market="kr" role="tab" aria-selected="true">🇰🇷 국내</button>
-            <button type="button" class="news-market-btn" data-market="us" role="tab" aria-selected="false">🇺🇸 미국</button>
+          <div class="news-market-toggle news-stock-toggle" id="newsStockToggle" role="tablist" aria-label="주식 ?�장 ?�택">
+            <button type="button" class="news-market-btn active" data-market="kr" role="tab" aria-selected="true">?��?�� �?��</button>
+            <button type="button" class="news-market-btn" data-market="us" role="tab" aria-selected="false">?��?�� 미국</button>
           </div>
         </section>
 
-        <section class="card news-brief-card hidden" id="newsBriefCard" aria-label="오늘 뉴스 요약">
+        <section class="card news-brief-card hidden" id="newsBriefCard" aria-label="?�늘 ?�스 ?�약">
           <div class="news-brief-header">
-            <span class="news-brief-badge">📝 오늘 요약</span>
+            <span class="news-brief-badge">?�� ?�늘 ?�약</span>
             <span class="news-brief-meta" id="newsBriefMeta"></span>
           </div>
           <p class="news-brief-summary" id="newsBriefSummary"></p>
         </section>
 
         <section class="card news-list-card hidden" id="newsListCard">
-          <h2 class="card-title" id="newsListTitle">국내 주식 기사</h2>
+          <h2 class="card-title" id="newsListTitle">�?�� 주식 기사</h2>
           <ul class="news-list" id="newsList"></ul>
         </section>
 
         <section class="card news-empty hidden" id="newsEmpty">
-          <p class="news-empty-text">아직 오늘 뉴스가 없어요.<br>매일 07:00에 갱신됩니다.</p>
+          <p class="news-empty-text">?�직 ?�늘 ?�스가 ?�어??<br>매일 07:00??갱신?�니??</p>
         </section>
       </div>
 
       <!-- Fun -->
       <div class="tab-panel" id="tabFun" data-tab-panel="fun">
         <section class="fun-hero">
-          <p class="fun-hero-emoji">🎲</p>
+          <p class="fun-hero-emoji">?��</p>
           <h2 class="fun-hero-title">Fun</h2>
           <p class="fun-hero-date" id="funTodayDate"></p>
         </section>
 
         <section class="card quote-card" id="quoteCard">
           <div class="quote-card-header">
-            <span class="quote-card-badge">💬 오늘의 한마디</span>
+            <span class="quote-card-badge">?�� ?�늘???�마??/span>
             <span class="quote-card-tag hidden" id="dailyQuoteTag"></span>
           </div>
           <div id="quoteIdle" class="fun-reveal-idle">
-            <p class="fun-reveal-idle-text">오늘의 한마디가 기다리고 있어요</p>
-            <button type="button" class="btn btn-fun-reveal" id="btnRevealQuote">한마디 보기 💬</button>
+            <p class="fun-reveal-idle-text">?�늘???�마?��? 기다리고 ?�어??/p>
+            <button type="button" class="btn btn-fun-reveal" id="btnRevealQuote">?�마??보기 ?��</button>
           </div>
           <div id="quoteContent" class="hidden">
             <blockquote class="daily-quote" id="dailyQuoteText"></blockquote>
@@ -194,59 +194,59 @@
 
         <section class="card saju-card" id="sajuCard">
           <div class="saju-card-header">
-            <span class="saju-card-badge">🌙 오늘의 사주</span>
-            <span class="saju-card-hint">탭해서 확인</span>
+            <span class="saju-card-badge">?�� ?�늘???�주</span>
+            <span class="saju-card-hint">??��???�인</span>
           </div>
 
           <div id="sajuEmpty" class="saju-empty">
-            <p class="saju-empty-emoji">🎂</p>
-            <p class="saju-empty-text">생년월일을 입력하면<br>오늘의 일진과 띠 궁합을 보여드려요</p>
-            <button type="button" class="btn btn-saju-settings" id="btnSajuGoSettings">설정에서 생년월일 입력</button>
+            <p class="saju-empty-emoji">?��</p>
+            <p class="saju-empty-text">?�년?�일???�력?�면<br>?�늘???�진�???궁합??보여?�려??/p>
+            <button type="button" class="btn btn-saju-settings" id="btnSajuGoSettings">?�정?�서 ?�년?�일 ?�력</button>
           </div>
 
           <div id="sajuIdle" class="fun-reveal-idle hidden">
-            <p class="fun-reveal-idle-emoji">🌙</p>
-            <p class="fun-reveal-idle-text">오늘의 일진과 띠 궁합은…?</p>
-            <button type="button" class="btn btn-fun-reveal" id="btnRevealSaju">사주 보기 ✨</button>
+            <p class="fun-reveal-idle-emoji">?��</p>
+            <p class="fun-reveal-idle-text">?�늘???�진�???궁합?�??</p>
+            <button type="button" class="btn btn-fun-reveal" id="btnRevealSaju">?�주 보기 ??/button>
           </div>
 
           <div id="sajuContent" class="saju-content hidden">
             <div class="saju-meta-row">
-              <span class="saju-meta-item">오늘 일진: <strong id="sajuDayPillar">—</strong></span>
+              <span class="saju-meta-item">?�늘 ?�진: <strong id="sajuDayPillar">??/strong></span>
               <span class="saju-meta-divider">|</span>
-              <span class="saju-meta-item">내 띠: <strong id="sajuZodiac">—</strong></span>
+              <span class="saju-meta-item">???? <strong id="sajuZodiac">??/strong></span>
             </div>
             <p class="saju-message" id="sajuMessage"></p>
             <div class="saju-stats">
-              <span class="saju-stat">오행: <strong id="sajuStars">★★★★☆</strong></span>
+              <span class="saju-stat">?�행: <strong id="sajuStars">?�★?�★??/strong></span>
               <span class="saju-stat-divider">|</span>
-              <span class="saju-stat">일과 궁합: <strong id="sajuWorkCompat">좋음</strong></span>
+              <span class="saju-stat">?�과 궁합: <strong id="sajuWorkCompat">좋음</strong></span>
             </div>
-            <p class="saju-disclaimer">※ 재미로 보는 간단 사주예요. 음력 설날 기준 띠·년주를 사용합니다.</p>
+            <p class="saju-disclaimer">???��?�?보는 간단 ?�주?�요. ?�력 ?�날 기�? ?�·년주�? ?�용?�니??</p>
           </div>
         </section>
 
         <section class="card fortune-card" id="fortuneCard">
           <div class="fortune-card-header">
-            <span class="fortune-card-badge">오늘의 운세</span>
-            <span class="fortune-card-hint">하루 1회</span>
+            <span class="fortune-card-badge">?�늘???�세</span>
+            <span class="fortune-card-hint">?�루 1??/span>
           </div>
 
           <div id="fortuneIdle" class="fortune-idle">
-            <div class="fortune-crystal">🔮</div>
-            <p class="fortune-idle-text">오늘 당신의 운세는…?</p>
-            <button type="button" class="btn btn-fortune" id="btnDrawFortune">운세 뽑기 ✨</button>
+            <div class="fortune-crystal">?��</div>
+            <p class="fortune-idle-text">?�늘 ?�신???�세?��?</p>
+            <button type="button" class="btn btn-fortune" id="btnDrawFortune">?�세 뽑기 ??/button>
           </div>
 
           <div id="fortuneResult" class="fortune-result hidden">
             <div class="fortune-result-top">
-              <span class="fortune-emoji" id="fortuneEmoji">✨</span>
-              <span class="fortune-grade" id="fortuneGrade">길</span>
+              <span class="fortune-emoji" id="fortuneEmoji">??/span>
+              <span class="fortune-grade" id="fortuneGrade">�?/span>
               <span class="fortune-category hidden" id="fortuneCategory"></span>
             </div>
 
-            <div class="fortune-score-block" aria-label="오늘의 행운 지수">
-              <p class="fortune-score-label">행운 지수</p>
+            <div class="fortune-score-block" aria-label="?�늘???�운 지??>
+              <p class="fortune-score-label">?�운 지??/p>
               <div class="fortune-score-row">
                 <span class="fortune-score-num" id="fortuneScore">87</span>
                 <span class="fortune-score-max">/ 100</span>
@@ -259,74 +259,74 @@
 
             <p class="fortune-text" id="fortuneText"></p>
             <div class="fortune-chips">
-              <span class="fortune-chip fortune-chip-lucky">🍀 이렇게 하면 좋아요 <strong id="fortuneLucky"></strong></span>
-              <span class="fortune-chip fortune-chip-caution">💡 오늘은 이건 삼가요 <strong id="fortuneCaution"></strong></span>
+              <span class="fortune-chip fortune-chip-lucky">?? ?�렇�??�면 좋아??<strong id="fortuneLucky"></strong></span>
+              <span class="fortune-chip fortune-chip-caution">?�� ?�늘?� ?�건 ?��???<strong id="fortuneCaution"></strong></span>
             </div>
-            <p class="fortune-stamp" id="fortuneStamp">오늘 확인 완료</p>
+            <p class="fortune-stamp" id="fortuneStamp">?�늘 ?�인 ?�료</p>
           </div>
         </section>
 
         <section class="card fun-coming">
-          <h3 class="fun-coming-title">곧 올 기능 👀</h3>
+          <h3 class="fun-coming-title">�???기능 ??</h3>
           <ul class="fun-coming-list">
-            <li>팀 밈 보드</li>
+            <li>?� �?보드</li>
           </ul>
         </section>
       </div>
 
-      <!-- 맛집 (전체화면 지도 + 플로팅 패널) -->
+      <!-- 맛집 (?�체?�면 지??+ ?�로???�널) -->
       <div class="tab-panel lunch-tab-panel" id="tabLunch" data-tab-panel="lunch">
         <div class="lunch-map-stage" id="lunchMapStage">
-          <div id="lunchMap" class="lunch-map-full" role="application" aria-label="맛집 지도"></div>
+          <div id="lunchMap" class="lunch-map-full" role="application" aria-label="맛집 지??></div>
           <div id="lunchMapRain" class="lunch-map-rain hidden" aria-hidden="true"></div>
 
           <div class="lunch-float-top">
             <div class="lunch-float-title-row">
-              <span class="lunch-float-title">🍽️ DMC 맛집</span>
+              <span class="lunch-float-title">?���?DMC 맛집</span>
               <div class="lunch-float-title-actions">
-                <button type="button" class="lunch-btn-office lunch-btn-user" id="btnLunchLocation" title="내 현재 위치">📍 내 위치</button>
-                <button type="button" class="lunch-btn-office" id="btnLunchFocusOffice" title="DMC첨단산업센터">🏢 회사</button>
+                <button type="button" class="lunch-btn-office lunch-btn-user" id="btnLunchLocation" title="???�재 ?�치">?�� ???�치</button>
+                <button type="button" class="lunch-btn-office" id="btnLunchFocusOffice" title="DMC첨단?�업?�터">?�� ?�사</button>
               </div>
             </div>
             <p class="lunch-user-coords hidden" id="lunchLocationCoords"></p>
-            <div class="lunch-weather-chip hidden" id="lunchWeatherChip" aria-label="회사 근처 날씨">
-              <span class="lunch-weather-icon" id="lunchWeatherIcon" aria-hidden="true">🌤</span>
+            <div class="lunch-weather-chip hidden" id="lunchWeatherChip" aria-label="?�사 근처 ?�씨">
+              <span class="lunch-weather-icon" id="lunchWeatherIcon" aria-hidden="true">?��</span>
               <span class="lunch-weather-temp" id="lunchWeatherTemp"></span>
               <span class="lunch-weather-text" id="lunchWeatherText"></span>
             </div>
             <div class="lunch-float-bar">
-              <p class="lunch-float-desc" id="lunchMapDesc">불러오는 중…</p>
-              <select id="lunchCategoryFilter" class="lunch-map-filter" aria-label="카테고리 필터">
-                <option value="all">전체</option>
+              <p class="lunch-float-desc" id="lunchMapDesc">불러?�는 중�?/p>
+              <select id="lunchCategoryFilter" class="lunch-map-filter" aria-label="카테고리 ?�터">
+                <option value="all">?�체</option>
               </select>
             </div>
             <p class="lunch-map-status hidden" id="lunchMapStatus"></p>
-            <button type="button" class="btn btn-ghost btn-sm lunch-btn-retry hidden" id="btnLunchMapRetry">다시 불러오기</button>
+            <button type="button" class="btn btn-ghost btn-sm lunch-btn-retry hidden" id="btnLunchMapRetry">?�시 불러?�기</button>
           </div>
 
           <div class="lunch-float-bottom" id="lunchFloatBottom">
-            <div class="lunch-sheet-handle" id="lunchSheetHandle" role="button" tabindex="0" aria-controls="lunchFloatBottom" aria-expanded="true" aria-label="맛집 패널 접기"></div>
-            <p class="lunch-sheet-peek" id="lunchSheetPeek">🎰 점심 룰렛 · 주변 맛집</p>
+            <div class="lunch-sheet-handle" id="lunchSheetHandle" role="button" tabindex="0" aria-controls="lunchFloatBottom" aria-expanded="true" aria-label="맛집 ?�널 ?�기"></div>
+            <p class="lunch-sheet-peek" id="lunchSheetPeek">?�� ?�심 룰렛 · 주�? 맛집</p>
 
             <div class="lunch-roulette-block" id="lunchRouletteCard">
               <div class="lunch-roulette-header">
-                <span class="lunch-roulette-badge">🎰 점심 룰렛</span>
-                <span class="lunch-roulette-hint">필터 반영</span>
+                <span class="lunch-roulette-badge">?�� ?�심 룰렛</span>
+                <span class="lunch-roulette-hint">?�터 반영</span>
               </div>
               <div class="lunch-roulette-wheel" id="lunchRouletteWheel">
-                <p class="lunch-roulette-display" id="lunchRouletteDisplay">버튼을 눌러 오늘 점심을 정해요</p>
+                <p class="lunch-roulette-display" id="lunchRouletteDisplay">버튼???�러 ?�늘 ?�심???�해??/p>
               </div>
-              <button type="button" class="btn btn-lunch-roulette" id="btnLunchRoulette">룰렛 돌리기 🎲</button>
+              <button type="button" class="btn btn-lunch-roulette" id="btnLunchRoulette">룰렛 ?�리�??��</button>
               <div id="lunchRouletteResult" class="lunch-roulette-result hidden">
-                <p class="lunch-roulette-result-label">오늘의 점심 🎉</p>
+                <p class="lunch-roulette-result-label">?�늘???�심 ?��</p>
                 <p class="lunch-roulette-result-name" id="lunchRouletteResultName"></p>
                 <p class="lunch-roulette-result-meta" id="lunchRouletteResultMeta"></p>
-                <button type="button" class="btn btn-ghost btn-sm" id="btnLunchRouletteMap">지도에서 보기</button>
+                <button type="button" class="btn btn-ghost btn-sm" id="btnLunchRouletteMap">지?�에??보기</button>
               </div>
             </div>
 
             <div class="lunch-list-section">
-              <h3 class="lunch-list-heading">주변 맛집</h3>
+              <h3 class="lunch-list-heading">주�? 맛집</h3>
               <div class="lunch-list lunch-list-tab" id="lunchList"></div>
             </div>
             <p class="lunch-map-attribution">© OpenStreetMap</p>
@@ -339,168 +339,168 @@
         <div class="chat-stage">
           <header class="chat-topbar">
             <div class="chat-topbar-title">
-              <span class="chat-topbar-emoji" aria-hidden="true">💬</span>
+              <span class="chat-topbar-emoji" aria-hidden="true">?��</span>
               <span class="chat-topbar-text">AI 채팅</span>
             </div>
-            <button type="button" class="btn btn-ghost btn-sm" id="btnChatClear">기록 지우기</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="btnChatClear">기록 지?�기</button>
           </header>
 
           <section class="card chat-setup hidden" id="chatSetup">
-            <p class="chat-setup-title">연결 설정이 필요해요</p>
-            <p class="field-hint">설정에서 Hermes API 주소(HTTPS 터널 URL)와 API 키를 입력한 뒤, PC에서 <code>hermes gateway</code>를 실행해 주세요.</p>
-            <button type="button" class="btn btn-primary btn-sm" id="btnChatGoSettings">설정으로 이동</button>
+            <p class="chat-setup-title">?�결 ?�정???�요?�요</p>
+            <p class="field-hint">?�정?�서 Hermes API 주소(HTTPS ?�널 URL)?� API ?��? ?�력???? PC?�서 <code>hermes gateway</code>�??�행??주세??</p>
+            <button type="button" class="btn btn-primary btn-sm" id="btnChatGoSettings">?�정?�로 ?�동</button>
           </section>
 
           <div class="chat-messages-wrap">
-            <p class="chat-empty hidden" id="chatEmpty">메시지를 입력해 대화를 시작해 보세요.</p>
+            <p class="chat-empty hidden" id="chatEmpty">메시지�??�력???�?��? ?�작??보세??</p>
             <div id="chatMessages" class="chat-messages" role="log" aria-live="polite"></div>
           </div>
 
           <div class="chat-footer">
             <p class="chat-status hidden" id="chatStatus"></p>
             <form id="chatForm" class="chat-form">
-              <textarea id="chatInput" class="chat-input" rows="1" maxlength="4000" placeholder="메시지 입력…" aria-label="채팅 메시지"></textarea>
-              <button type="submit" class="btn btn-primary chat-send-btn" id="btnChatSend" aria-label="전송">전송</button>
+              <textarea id="chatInput" class="chat-input" rows="1" maxlength="4000" placeholder="메시지 ?�력?? aria-label="채팅 메시지"></textarea>
+              <button type="submit" class="btn btn-primary chat-send-btn" id="btnChatSend" aria-label="?�송">?�송</button>
             </form>
           </div>
         </div>
       </div>
 
-      <!-- 설정 -->
+      <!-- ?�정 -->
       <div class="tab-panel" id="tabSettings" data-tab-panel="settings">
         <section class="card card-install" id="installCard">
-          <h2 class="card-title">앱 설치</h2>
-          <p class="install-desc" id="installDesc">홈 화면에 추가하면 앱처럼 쓸 수 있어요.</p>
-          <button type="button" class="btn btn-primary hidden" id="btnInstall">앱 설치하기</button>
+          <h2 class="card-title">???�치</h2>
+          <p class="install-desc" id="installDesc">???�면??추�??�면 ?�처???????�어??</p>
+          <button type="button" class="btn btn-primary hidden" id="btnInstall">???�치?�기</button>
           <details class="install-guide" id="installGuide">
-            <summary>설치 방법</summary>
+            <summary>?�치 방법</summary>
             <ol class="install-steps">
-              <li>Chrome에서 <strong>공유 → 홈 화면에 추가</strong></li>
+              <li>Chrome?�서 <strong>공유 ?????�면??추�?</strong></li>
             </ol>
           </details>
         </section>
 
         <section class="card">
-          <h2 class="card-title">내 정보</h2>
+          <h2 class="card-title">???�보</h2>
           <div class="setting-field">
-            <label for="userName">이름</label>
-            <input type="text" id="userName" class="text-input" placeholder="비우면 사원" maxlength="20">
+            <label for="userName">?�름</label>
+            <input type="text" id="userName" class="text-input" placeholder="비우�??�원" maxlength="20">
           </div>
           <div class="setting-field">
-            <label for="birthDate">생년월일</label>
+            <label for="birthDate">?�년?�일</label>
             <input type="date" id="birthDate" class="text-input">
-            <p class="field-hint">Fun 탭 「오늘의 사주」에 사용해요. 이 기기에만 저장됩니다.</p>
+            <p class="field-hint">Fun ???�오?�의 ?�주?�에 ?�용?�요. ??기기?�만 ?�?�됩?�다.</p>
           </div>
         </section>
 
         <section class="card">
-          <h2 class="card-title">아침 출근 추정 (PWA)</h2>
-          <p class="field-hint">08:00~10:00 사이 앱이 켜져 있을 때 회사 네트워크(IP)로 바뀌면 출근 시각을 제안하고, 알림 권한이 있으면 출근 체크 알림을 하루 1회 보냅니다.</p>
+          <h2 class="card-title">?�침 출근 추정 (PWA)</h2>
+          <p class="field-hint">08:00~10:00 ?�이 ?�이 켜져 ?�을 ???�사 ?�트?�크(IP)�?바뀌면 출근 ?�각???�안?�고, ?�림 권한???�으�?출근 체크 ?�림???�루 1??보냅?�다.</p>
         </section>
 
         <section class="card">
-          <h2 class="card-title">Wi-Fi 자동 추정 (Android)</h2>
-          <p class="field-hint">「출퇴근 Wi-Fi」 앱이 회사 Wi-Fi 연결 시각을 PWA로 보내 출근 시각을 제안합니다. 별도 서버 없이 동작합니다.</p>
+          <h2 class="card-title">Wi-Fi ?�동 추정 (Android)</h2>
+          <p class="field-hint">?�출?�근 Wi-Fi???�이 ?�사 Wi-Fi ?�결 ?�각??PWA�?보내 출근 ?�각???�안?�니?? 별도 ?�버 ?�이 ?�작?�니??</p>
         </section>
 
         <section class="card">
-          <h2 class="card-title">화면</h2>
+          <h2 class="card-title">?�면</h2>
           <div class="setting-row">
-            <label for="themeMode">테마</label>
+            <label for="themeMode">?�마</label>
             <select id="themeMode">
-              <option value="system">시스템</option>
-              <option value="light">라이트</option>
-              <option value="dark">다크</option>
+              <option value="system">?�스??/option>
+              <option value="light">?�이??/option>
+              <option value="dark">?�크</option>
             </select>
           </div>
         </section>
 
         <section class="card">
-          <h2 class="card-title">알림</h2>
+          <h2 class="card-title">?�림</h2>
           <div class="setting-row">
-            <label for="notifyBefore">퇴근 알림</label>
+            <label for="notifyBefore">?�근 ?�림</label>
             <select id="notifyBefore">
-              <option value="30,10,0">30분 · 10분 · 정각</option>
-              <option value="30,0">30분 · 정각</option>
-              <option value="10,0">10분 · 정각</option>
-              <option value="0">정각만</option>
+              <option value="30,10,0">30�?· 10�?· ?�각</option>
+              <option value="30,0">30�?· ?�각</option>
+              <option value="10,0">10�?· ?�각</option>
+              <option value="0">?�각�?/option>
             </select>
           </div>
-          <button type="button" class="btn btn-ghost" id="btnNotifyPermission">알림 권한 허용</button>
+          <button type="button" class="btn btn-ghost" id="btnNotifyPermission">?�림 권한 ?�용</button>
           <div class="setting-row setting-row-fortune">
-            <label for="fortuneNotify">Fun 알림 — 한마디·운세 (10:00)</label>
+            <label for="fortuneNotify">Fun ?�림 ???�마?�·운??(10:00)</label>
             <input type="checkbox" id="fortuneNotify" checked>
           </div>
           <div class="setting-row setting-row-lunch">
-            <label for="lunchRouletteNotify">점심 룰렛 알림 (11:20)</label>
+            <label for="lunchRouletteNotify">?�심 룰렛 ?�림 (11:20)</label>
             <input type="checkbox" id="lunchRouletteNotify" checked>
           </div>
           <div class="setting-row">
-            <label for="commuteNotify">퇴근길 소요 알림 (퇴근 30분 전 + 퇴근 알림에 포함)</label>
+            <label for="commuteNotify">?�근�??�요 ?�림 (?�근 30�???+ ?�근 ?�림???�함)</label>
             <input type="checkbox" id="commuteNotify" checked>
           </div>
         </section>
 
         <section class="card">
-          <h2 class="card-title">집 · 퇴근길</h2>
-          <p class="field-hint">회사(DMC첨단산업센터)에서 집까지 소요시간을 commute-time 스킬로 조회합니다. 자차는 즉시, 대중교통은 Hermes(ODsay)로 가져옵니다.</p>
+          <h2 class="card-title">�?· ?�근�?/h2>
+          <p class="field-hint">?�사(DMC첨단?�업?�터)?�서 집까지 ?�요?�간??commute-time ?�킬�?조회?�니?? ?�차??즉시, ?�중교?��? Hermes(ODsay)�?가?�옵?�다.</p>
           <div class="setting-field">
-            <label for="homeAddress">집 주소</label>
-            <input type="text" id="homeAddress" class="text-input" placeholder="예: 서울 마포구 ○○동 ○○아파트" maxlength="120" autocomplete="street-address">
+            <label for="homeAddress">�?주소</label>
+            <input type="text" id="homeAddress" class="text-input" placeholder="?? ?�울 마포�??�○???�○?�파?? maxlength="120" autocomplete="street-address">
           </div>
         </section>
 
         <section class="card">
           <h2 class="card-title">Hermes AI 채팅</h2>
-          <p class="field-hint">PC에서 <code>hermes gateway</code> 실행 후, 외부(휴대폰·GitHub Pages)에서는 ngrok·Cloudflare Tunnel 등 <strong>HTTPS</strong> 주소가 필요합니다. API 키는 <code>~/.hermes/.env</code>의 <code>API_SERVER_KEY</code>와 동일하게 입력하세요. 응답 대기는 최대 10분이며, 처리 중 터널 keepalive를 보냅니다. 휴대폰 최초 설정: <code>?tab=chat&amp;hermes_url=…&amp;hermes_key=…</code> 링크로 한 번에 넣을 수 있어요.</p>
+          <p class="field-hint">PC?�서 <code>hermes gateway</code> ?�행 ?? ?��?(?��??�·GitHub Pages)?�서??ngrok·Cloudflare Tunnel ??<strong>HTTPS</strong> 주소가 ?�요?�니?? API ?�는 <code>~/.hermes/.env</code>??<code>API_SERVER_KEY</code>?� ?�일?�게 ?�력?�세?? ?�답 ?�기는 최�? 10분이�? 처리 �??�널 keepalive�?보냅?�다. ?��???최초 ?�정: <code>?tab=chat&amp;hermes_url=??amp;hermes_key=??/code> 링크�???번에 ?�을 ???�어??</p>
           <div class="setting-field">
             <label for="hermesBaseUrl">API 주소</label>
             <input type="url" id="hermesBaseUrl" class="text-input" placeholder="https://xxxx.ngrok-free.app/v1" inputmode="url" autocomplete="off">
           </div>
           <div class="setting-field">
-            <label for="hermesApiKey">API 키</label>
+            <label for="hermesApiKey">API ??/label>
             <input type="password" id="hermesApiKey" class="text-input" placeholder="API_SERVER_KEY" autocomplete="off">
           </div>
           <div class="setting-field">
-            <label for="hermesModel">모델 이름</label>
+            <label for="hermesModel">모델 ?�름</label>
             <input type="text" id="hermesModel" class="text-input" placeholder="hermes-agent" maxlength="64">
           </div>
-          <button type="button" class="btn btn-ghost" id="btnHermesTest">연결 테스트</button>
+          <button type="button" class="btn btn-ghost" id="btnHermesTest">?�결 ?�스??/button>
           <p class="sync-status" id="hermesTestStatus"></p>
         </section>
 
         <section class="card" id="teamCard">
-          <h2 class="card-title">팀 기록 (선택)</h2>
+          <h2 class="card-title">?� 기록 (?�택)</h2>
           <div class="setting-field">
-            <label for="sheetUrl">Google 시트 URL (Apps Script 웹앱)</label>
+            <label for="sheetUrl">Google ?�트 URL (Apps Script ?�앱)</label>
             <input type="text" id="sheetUrl" class="text-input" placeholder="https://script.google.com/macros/s/.../exec" inputmode="url" autocapitalize="off" spellcheck="false">
-            <p class="field-hint">URL은 입력 후 자동 저장. ID만 넣어도 exec URL로 맞춤. 「연결 테스트」로 GAS 권한 확인.</p>
+            <p class="field-hint">URL?� ?�력 ???�동 ?�?? ID�??�어??exec URL�?맞춤. ?�연�??�스?�」로 GAS 권한 ?�인.</p>
           </div>
-          <button type="button" class="btn btn-ghost" id="btnTestSheet">시트 연결 테스트</button>
-          <button type="button" class="btn btn-ghost" id="btnSyncSheet">팀 시트에 저장 (출퇴근)</button>
+          <button type="button" class="btn btn-ghost" id="btnTestSheet">?�트 ?�결 ?�스??/button>
+          <button type="button" class="btn btn-ghost" id="btnSyncSheet">?� ?�트???�??(출퇴�?</button>
           <p class="sync-status" id="syncStatus"></p>
         </section>
 
         <section class="card card-compact">
-          <button type="button" class="btn btn-ghost" id="btnExport">기록보내기 (CSV)</button>
-          <button type="button" class="btn btn-ghost btn-danger" id="btnResetToday">오늘 기록 초기화</button>
-          <button type="button" class="btn btn-ghost" id="btnClearCache">캐시 지우고 새로고침</button>
+          <button type="button" class="btn btn-ghost" id="btnExport">기록보내�?(CSV)</button>
+          <button type="button" class="btn btn-ghost btn-danger" id="btnResetToday">?�늘 기록 초기??/button>
+          <button type="button" class="btn btn-ghost" id="btnClearCache">캐시 지?�고 ?�로고침</button>
           <p class="field-hint app-version" id="appVersion"></p>
         </section>
 
         <section class="card card-compact" id="featureNotesCard">
-          <h2 class="card-title">기능 안내</h2>
+          <h2 class="card-title">기능 ?�내</h2>
           <ul class="feature-notes" id="featureNotesList">
-            <li>오늘 탭 — 회사(DMC) 근처 날씨 AI 요약 (매일 06:00 자동 갱신)</li>
-            <li>맛집 지도 — 📍 내 위치(얼굴 마커), 첫 진입 시 내 위치 기준 줌</li>
-            <li>맛집 지도 — 회사 날씨 칩·마커, 비 예보 시 지도에 비 효과</li>
-            <li>Fun 탭 — 한마디·사주·운세는 탭해서 확인 (하루 1회)</li>
-            <li>AI 채팅 — Google 시트에 대화 저장·복원 (최대 100개, 설정 이름 필요)</li>
-            <li>AI 채팅 — runs API 폴링으로 터널 끊김·빈 응답 방지 (v60)</li>
-            <li>퇴근길 — 집 주소 설정 시 대중교통·자차 소요 (Hermes/ODsay)</li>
-            <li>점심 룰렛 — 11:20 알림 (설정에서 끄기 가능)</li>
-            <li>News 탭 — 주식(국내·미국)·전체 뉴스 전환 + AI 요약 (매일 07:00 갱신)</li>
-            <li>2시간마다 Hermes가 PWA 자동 점검·배포 (변경 없으면 조용히 스킵)</li>
+            <li>?�늘 ?????�사(DMC) 근처 ?�씨 AI ?�약 (매일 06:00 ?�동 갱신)</li>
+            <li>맛집 지?????�� ???�치(?�굴 마커), �?진입 ?????�치 기�? �?/li>
+            <li>맛집 지?????�사 ?�씨 칩·마�? �??�보 ??지?�에 �??�과</li>
+            <li>Fun ?????�마?�·사주·운?�는 ??��???�인 (?�루 1??</li>
+            <li>AI 채팅 ??Google ?�트???�???�?�·복??(최�? 100�? ?�정 ?�름 ?�요)</li>
+            <li>AI 채팅 ??runs API ?�링?�로 ?�널 ?��?·�??�답 방�? (v60)</li>
+            <li>?�근�???�?주소 ?�정 ???�중교?�·자�??�요 (Hermes/ODsay)</li>
+            <li>?�심 룰렛 ??11:20 ?�림 (?�정?�서 ?�기 가??</li>
+            <li>News ????주식(�?��·미국)·?�체 ?�스 ?�환 + AI ?�약 (매일 07:00 갱신)</li>
+            <li>2?�간마다 Hermes가 PWA ?�동 ?��?·배포 (변�??�으�?조용???�킵)</li>
           </ul>
         </section>
       </div>
@@ -508,43 +508,43 @@
 
     <nav class="tab-bar" aria-label="메인 메뉴">
       <button type="button" class="tab-btn active" data-tab="today" aria-current="page">
-        <span class="tab-icon">⏱</span>
-        <span class="tab-label">오늘</span>
+        <span class="tab-icon">??/span>
+        <span class="tab-label">?�늘</span>
       </button>
       <button type="button" class="tab-btn" data-tab="news">
-        <span class="tab-icon">📰</span>
+        <span class="tab-icon">?��</span>
         <span class="tab-label">News</span>
       </button>
       <button type="button" class="tab-btn" data-tab="fun">
-        <span class="tab-icon">🎲</span>
+        <span class="tab-icon">?��</span>
         <span class="tab-label">Fun</span>
       </button>
       <button type="button" class="tab-btn" data-tab="lunch">
-        <span class="tab-icon">🍽️</span>
+        <span class="tab-icon">?���?/span>
         <span class="tab-label">맛집</span>
       </button>
       <button type="button" class="tab-btn" data-tab="chat">
-        <span class="tab-icon">💬</span>
+        <span class="tab-icon">?��</span>
         <span class="tab-label">AI</span>
       </button>
       <button type="button" class="tab-btn" data-tab="settings">
-        <span class="tab-icon">⚙️</span>
-        <span class="tab-label">설정</span>
+        <span class="tab-icon">?�️</span>
+        <span class="tab-label">?�정</span>
       </button>
     </nav>
   </div>
 
-  <script src="config.js?v=81"></script>
-  <script src="vendor/leaflet/leaflet.js?v=81"></script>
-  <script src="js/util.js?v=81"></script>
-  <script src="js/fortune.js?v=81"></script>
-  <script src="js/saju.js?v=81"></script>
-  <script src="js/lunch-map.js?v=81"></script>
-  <script src="js/user-location.js?v=81"></script>
-  <script src="js/weather-brief.js?v=81"></script>
-  <script src="js/news-brief.js?v=81"></script>
-  <script src="js/hermes-chat.js?v=81"></script>
-  <script src="js/commute-time.js?v=81"></script>
-  <script src="js/app.js?v=81"></script>
+  <script src="config.js?v=82"></script>
+  <script src="vendor/leaflet/leaflet.js?v=82"></script>
+  <script src="js/util.js?v=82"></script>
+  <script src="js/fortune.js?v=82"></script>
+  <script src="js/saju.js?v=82"></script>
+  <script src="js/lunch-map.js?v=82"></script>
+  <script src="js/user-location.js?v=82"></script>
+  <script src="js/weather-brief.js?v=82"></script>
+  <script src="js/news-brief.js?v=82"></script>
+  <script src="js/hermes-chat.js?v=82"></script>
+  <script src="js/commute-time.js?v=82"></script>
+  <script src="js/app.js?v=82"></script>
 </body>
 </html>

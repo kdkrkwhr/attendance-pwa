@@ -38,26 +38,51 @@ const DAY_ELEMENT_MESSAGES = {
     '목(木) 기운이 도는 날이에요. 새 제안·학습에 유리합니다.',
     '자라나는 기운이에요. 막힌 일을 다시 시작해 보세요.',
     '성장의 날! 배우고 시도하기 좋은 하루예요.',
+    '새싹처럼 뻗어나가는 기운. 작게 시작한 일이 커질 수 있어요.',
+    '유연한 목 기운이 도와요. 계획을 살짝 바꿔도 괜찮습니다.',
+    '뿌리내리는 힘이 강한 날. 오래 미룬 일을 다시 심어보세요.',
+    '뻗어나가려는 기운이 강해요. 새로운 사람·아이디어에 열려 있어보세요.',
+    '푸릇한 기운의 날. 산책이나 식물 근처에서 아이디어가 떠올라요.',
   ],
   fire: [
     '화(火) 기운이 활발해요. 발표·소통·아이디어 공유에 좋습니다.',
     '에너지가 올라가는 날. 적극적으로 의견 내보세요.',
     '빛나는 하루! 먼저 말 걸면 분위기가 따라옵니다.',
+    '타오르는 기운이에요. 열정 담아 밀어붙이면 통합니다.',
+    '뜨거운 하루. 미뤄둔 연락이나 제안을 먼저 꺼내보세요.',
+    '주목받는 기운이 도는 날. 발표·회의 자리를 피하지 마세요.',
+    '불꽃 같은 추진력. 오늘 시작한 일은 속도가 붙어요.',
+    '환한 기운이에요. 웃는 얼굴이 오늘의 가장 큰 무기입니다.',
   ],
   earth: [
     '토(土) 기운의 날. 차분히 정리·마무리하기 좋아요.',
     '안정감이 도는 하루. 꼼꼼한 실행이 빛을 발합니다.',
     '기반을 다지기 좋은 날. 체크리스트부터 챙겨보세요.',
+    '든든한 기운이에요. 서두르지 않아도 결과가 쌓입니다.',
+    '땅처럼 묵직한 하루. 신뢰가 필요한 일에 유리해요.',
+    '중심 잡는 기운. 흔들리는 일이 있어도 원칙대로 가면 됩니다.',
+    '다지는 날이에요. 오래된 파일·업무 정리에 손이 갑니다.',
+    '포용력이 커지는 기운. 주변 의견을 들어주면 도움이 됩니다.',
   ],
   metal: [
     '금(金) 기운이 맑아요. 결정·정리·숫자 업무에 유리합니다.',
     '단호함이 통하는 날. 우선순위를 정하면 일이 빨라져요.',
     '깔끔하게 가면 좋은 하루. 불필요한 건 과감히 덜어내세요.',
+    '날카로운 판단력이 서는 날. 애매했던 걸 지금 정리하세요.',
+    '단단한 기운이에요. 계약·숫자·마감처럼 정확함이 필요한 일에 좋아요.',
+    '군더더기를 쳐내는 기운. 할 일 목록을 반으로 줄여보세요.',
+    '차가운 만큼 명확한 날. 감정보다 기준으로 결정하세요.',
+    '빛나는 금속처럼 또렷한 하루. 핵심만 짧게 말해도 통합니다.',
   ],
   water: [
     '수(水) 기운이 흐르는 날. 유연한 대응·관계 정리에 좋아요.',
     '흐름을 타면 편한 하루. 억지보다 조율이 답이에요.',
     '생각이 맑아지는 날. 잠깐 멈추고 방향을 점검해 보세요.',
+    '깊어지는 기운이에요. 혼자 생각을 정리하기 좋은 하루입니다.',
+    '물처럼 스며드는 날. 강하게 밀어붙이기보다 스며들듯 다가가세요.',
+    '차분히 채워지는 기운. 서두르지 않아도 결국 목표에 닿아요.',
+    '적응력이 좋아지는 날. 계획이 바뀌어도 유연하게 받아들이세요.',
+    '고요한 기운이에요. 소음에서 잠깐 벗어나면 답이 보입니다.',
   ],
 };
 
@@ -135,10 +160,10 @@ function starsFromCount(count) {
   return `${'★'.repeat(n)}${'☆'.repeat(5 - n)}`;
 }
 
-function pickDayMessage(dayElement, dateKey) {
+function pickDayMessage(dayElement, dateKey, birthISO) {
   const list = DAY_ELEMENT_MESSAGES[dayElement] || DAY_ELEMENT_MESSAGES.earth;
   const seed = typeof hashFortuneSeed === 'function'
-    ? hashFortuneSeed(`${dateKey}:saju-msg`)
+    ? hashFortuneSeed(`${dateKey}:${birthISO || ''}:saju-msg:${dayElement}`)
     : dateKey.length;
   return list[seed % list.length];
 }
@@ -163,7 +188,7 @@ function buildTodaySaju(birthISO) {
     dayElement,
     relation,
     starCount: meta.stars,
-    message: pickDayMessage(dayElement, dateKey),
+    message: pickDayMessage(dayElement, dateKey, birthISO),
     stars: starsFromCount(meta.stars),
     workLabel: meta.workLabel,
     elementHint: meta.elementLabel,

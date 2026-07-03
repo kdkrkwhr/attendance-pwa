@@ -387,7 +387,10 @@ async function pollHermesRun({ baseUrl, apiKey, runId, timeoutMs, onPartial }) {
 
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      throw new Error(data?.error?.message || data?.message || `HTTP ${res.status}`);
+      const code = res.status;
+      const errMsg = data?.error?.message || data?.message || `HTTP ${code}`;
+      const hint = code === 405 ? getHermesConnectionHint(baseUrl) : '';
+      throw new Error(hint ? `${errMsg}. ${hint}` : errMsg);
     }
 
     const status = data.status;
@@ -432,7 +435,8 @@ async function requestHermesChatReply({ baseUrl, apiKey, model, systemPrompt, us
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     const errMsg = data?.error?.message || data?.message || `HTTP ${res.status}`;
-    throw new Error(errMsg);
+    const hint = res.status === 405 ? getHermesConnectionHint(baseUrl) : '';
+    throw new Error(hint ? `${errMsg}. ${hint}` : errMsg);
   }
 
   const rawReply = (data?.choices?.[0]?.message?.content || '').trim()
@@ -444,8 +448,12 @@ function getHermesConnectionHint(baseUrl) {
   const pageHttps = window.location.protocol === 'https:';
   const apiHttp = /^http:\/\//i.test(baseUrl || '');
   const apiLocal = /^(https?:\/\/)?(127\.0\.0\.1|localhost)(:\d+)?/i.test(baseUrl || '');
+  const apiGithubPages = /\.github\.io/i.test(baseUrl || '');
   const onGithubPages = /\.github\.io$/i.test(window.location.hostname);
 
+  if (apiGithubPages) {
+    return 'API 주소에 github.io 넣으면 405 뜸. PWA 주소 말고 PC cloudflared 터널 https://xxxx.trycloudflare.com/v1 로 바꿔.';
+  }
   if (pageHttps && apiHttp) {
     return 'HTTPS 페이지에서는 http:// API를 브라우저가 차단합니다(혼합 콘텐츠). API 주소를 https:// 터널 URL/v1 로 바꾸세요.';
   }
@@ -512,7 +520,8 @@ async function fetchHermesCompletionsReply({ baseUrl, apiKey, model, systemPromp
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     const errMsg = data?.error?.message || data?.message || `HTTP ${res.status}`;
-    throw new Error(errMsg);
+    const hint = res.status === 405 ? getHermesConnectionHint(baseUrl) : '';
+    throw new Error(hint ? `${errMsg}. ${hint}` : errMsg);
   }
 
   const rawReply = (data?.choices?.[0]?.message?.content || '').trim()
