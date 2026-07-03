@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '84';
+const APP_BUILD = '85';
 const APP_VERSION_KEY = 'attendance-app-version';
 
 const DEFAULT_SETTINGS = {
@@ -994,6 +994,32 @@ function calcCheckInStreak(records = loadRecords(), now = new Date()) {
   return streak;
 }
 
+// 역대 최장 연속 출근일: 기록 전체를 훑어 평일 연속(주말 skip) 최대 구간을 찾음
+function calcBestStreak(records = loadRecords()) {
+  const dates = Object.keys(records)
+    .filter((k) => records[k]?.checkIn)
+    .map((k) => parseISO(`${k}T00:00:00`))
+    .filter((d) => d.getDay() !== 0 && d.getDay() !== 6)
+    .sort((a, b) => a - b);
+
+  let best = 0;
+  let current = 0;
+  let prevKey = null;
+  for (const d of dates) {
+    const expectedPrevKey = todayKey(prevWeekday(d));
+    current = prevKey === expectedPrevKey ? current + 1 : 1;
+    best = Math.max(best, current);
+    prevKey = todayKey(d);
+  }
+  return best;
+}
+
+function prevWeekday(date) {
+  const d = new Date(date);
+  d.setDate(d.getDate() - (d.getDay() === 1 ? 3 : 1));
+  return d;
+}
+
 function saveTodayRecord(record) {
   const records = loadRecords();
   records[todayKey()] = record;
@@ -1139,7 +1165,8 @@ function renderToday() {
   const streakBadge = document.getElementById('streakBadge');
   if (streakBadge) {
     const streak = calcCheckInStreak();
-    streakBadge.textContent = `🔥 ${streak}일 연속`;
+    const isBest = streak >= 2 && streak >= calcBestStreak();
+    streakBadge.textContent = isBest ? `🏆 ${streak}일 연속 (최고 기록)` : `🔥 ${streak}일 연속`;
     streakBadge.classList.toggle('hidden', streak < 2);
   }
 
