@@ -86,6 +86,32 @@ def build_market(items: list[dict], summary_override: str | None, empty_msg: str
     }
 
 
+def load_existing_summaries(date: str) -> tuple[str | None, str | None, str | None]:
+  # ponytail: auto-refresh must not clobber cron AI summaries with naive title joins
+    path = OUT_DIR / f"{date}.json"
+    if not path.exists():
+        return None, None, None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        m = data.get("markets") or {}
+        return (
+            (m.get("kr") or {}).get("summary"),
+            (m.get("us") or {}).get("summary"),
+            (m.get("all") or {}).get("summary"),
+        )
+    except (OSError, json.JSONDecodeError):
+        return None, None, None
+
+
+def is_naive_summary(text: str | None) -> bool:
+    if not text:
+        return True
+    if " · " not in text or not text.endswith("."):
+        return False
+    parts = [p.strip() for p in text[:-1].split(" · ") if p.strip()]
+    return len(parts) >= 2 and all(len(p) <= 44 for p in parts[:4])
+
+
 def build_payload(
     kr_items: list[dict],
     us_items: list[dict],
@@ -107,9 +133,17 @@ def build_payload(
 
 
 def main() -> int:
+    date = kst_now().strftime("%Y-%m-%d")
+    prev_kr, prev_us, prev_all = load_existing_summaries(date)
     kr_summary = sys.argv[1] if len(sys.argv) > 1 else None
     us_summary = sys.argv[2] if len(sys.argv) > 2 else None
     all_summary = sys.argv[3] if len(sys.argv) > 3 else None
+    if not kr_summary and prev_kr and not is_naive_summary(prev_kr):
+        kr_summary = prev_kr
+    if not us_summary and prev_us and not is_naive_summary(prev_us):
+        us_summary = prev_us
+    if not all_summary and prev_all and not is_naive_summary(prev_all):
+        all_summary = prev_all
     kr_items = collect_items(QUERIES_KR)
     us_items = collect_items(QUERIES_US)
     all_items = collect_items(QUERIES_ALL)
