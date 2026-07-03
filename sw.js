@@ -1,4 +1,4 @@
-const CACHE_NAME = 'attendance-pwa-v82';
+const CACHE_NAME = 'attendance-pwa-v83';
 
 const PRECACHE_ASSETS = [
   './',
@@ -54,7 +54,7 @@ async function networkFirst(request) {
   } catch {
     const cached = await caches.match(request);
     if (cached) return cached;
-    return new Response('?�프?�인 ?�태?�니??', {
+    return new Response('오프라인 상태입니다.', {
       status: 503,
       headers: { 'Content-Type': 'text/plain; charset=utf-8' },
     });
