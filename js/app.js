@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '83';
+const APP_BUILD = '84';
 const APP_VERSION_KEY = 'attendance-app-version';
 
 const DEFAULT_SETTINGS = {
@@ -977,6 +977,23 @@ function getTodayRecord() {
   return loadRecords()[todayKey()] || null;
 }
 
+// 연속 출근일: 오늘부터(미출근이면 어제부터) 평일을 거슬러 올라가며 출근 기록이 끊기면 중단
+function calcCheckInStreak(records = loadRecords(), now = new Date()) {
+  const day = new Date(now);
+  if (!records[todayKey(day)]?.checkIn) day.setDate(day.getDate() - 1);
+
+  let streak = 0;
+  for (let i = 0; i < 366; i++) {
+    const dow = day.getDay();
+    if (dow !== 0 && dow !== 6) {
+      if (!records[todayKey(day)]?.checkIn) break;
+      streak += 1;
+    }
+    day.setDate(day.getDate() - 1);
+  }
+  return streak;
+}
+
 function saveTodayRecord(record) {
   const records = loadRecords();
   records[todayKey()] = record;
@@ -1118,6 +1135,13 @@ function renderToday() {
   const fieldMemoText = document.getElementById('fieldMemoText');
 
   document.getElementById('todayDate').textContent = formatTodayLabel(now);
+
+  const streakBadge = document.getElementById('streakBadge');
+  if (streakBadge) {
+    const streak = calcCheckInStreak();
+    streakBadge.textContent = `🔥 ${streak}일 연속`;
+    streakBadge.classList.toggle('hidden', streak < 2);
+  }
 
   todayCard?.classList.toggle('card-field-work', fieldWork);
   fieldBadge?.classList.toggle('hidden', !fieldWork);

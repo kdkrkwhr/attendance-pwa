@@ -511,6 +511,11 @@ body {
   color: var(--success);
 }
 
+.badge-streak {
+  background: #ffe4e6;
+  color: #be123c;
+}
+
 .time-panel {
   display: flex;
   flex-direction: column;
@@ -939,6 +944,11 @@ body {
       color: #6ee7b7;
     }
 
+    .badge-streak {
+      background: #4c0519;
+      color: #fda4af;
+    }
+
     .btn-secondary {
       background: #334155;
       color: var(--text);
@@ -1074,6 +1084,11 @@ body {
   .badge.done {
     background: #064e3b;
     color: #6ee7b7;
+  }
+
+  .badge-streak {
+    background: #4c0519;
+    color: #fda4af;
   }
 
   .btn-secondary {

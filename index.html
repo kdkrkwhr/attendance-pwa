@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=83">
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=83">
+  <link rel="stylesheet" href="css/style.css?v=84">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=84">
   <script>
     (function () {
       try {
@@ -42,6 +42,7 @@
             <div class="date-badges">
               <span class="badge badge-field hidden" id="fieldWorkBadge">외근</span>
               <span class="badge" id="statusBadge">미출근</span>
+              <span class="badge badge-streak hidden" id="streakBadge"></span>
             </div>
           </div>
 
@@ -501,6 +502,7 @@
             <li>점심 룰렛 — 11:20 알림 (설정에서 끄기 가능)</li>
             <li>News 탭 — 주식(국내·미국)·전체 뉴스 전환 + AI 요약 (매일 07:00 갱신)</li>
             <li>2시간마다 Hermes가 PWA 자동 점검·배포 (변경 없으면 조용히 스킵)</li>
+            <li>오늘 탭 — 🔥 연속 출근일 배지 (평일 기준, 하루라도 미출근하면 초기화)</li>
           </ul>
         </section>
       </div>
@@ -534,17 +536,17 @@
     </nav>
   </div>
 
-  <script src="config.js?v=83"></script>
-  <script src="vendor/leaflet/leaflet.js?v=83"></script>
-  <script src="js/util.js?v=83"></script>
-  <script src="js/fortune.js?v=83"></script>
-  <script src="js/saju.js?v=83"></script>
-  <script src="js/lunch-map.js?v=83"></script>
-  <script src="js/user-location.js?v=83"></script>
-  <script src="js/weather-brief.js?v=83"></script>
-  <script src="js/news-brief.js?v=83"></script>
-  <script src="js/hermes-chat.js?v=83"></script>
-  <script src="js/commute-time.js?v=83"></script>
-  <script src="js/app.js?v=83"></script>
+  <script src="config.js?v=84"></script>
+  <script src="vendor/leaflet/leaflet.js?v=84"></script>
+  <script src="js/util.js?v=84"></script>
+  <script src="js/fortune.js?v=84"></script>
+  <script src="js/saju.js?v=84"></script>
+  <script src="js/lunch-map.js?v=84"></script>
+  <script src="js/user-location.js?v=84"></script>
+  <script src="js/weather-brief.js?v=84"></script>
+  <script src="js/news-brief.js?v=84"></script>
+  <script src="js/hermes-chat.js?v=84"></script>
+  <script src="js/commute-time.js?v=84"></script>
+  <script src="js/app.js?v=84"></script>
 </body>
 </html>
