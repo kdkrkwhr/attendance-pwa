@@ -1299,6 +1299,59 @@ body {
   content: none;
 }
 
+/* ── 오늘의 색 ── */
+
+.color-card {
+  border-top: 4px solid #0ea5e9;
+  background: linear-gradient(165deg, #f0f9ff 0%, var(--card) 50%);
+  margin-bottom: 0.875rem;
+}
+
+.color-card-header {
+  margin-bottom: 0.75rem;
+}
+
+.color-card-badge {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0369a1;
+}
+
+.color-card-body {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.color-swatch {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+.color-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.color-name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.color-hex {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
 /* ── 오늘의 사주 ── */
 
 .saju-card {
@@ -1822,6 +1875,14 @@ body {
       color: #fbcfe8;
     }
 
+    .color-card {
+      background: linear-gradient(165deg, #0c4a6e 0%, var(--card) 50%);
+    }
+
+    .color-swatch {
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+    }
+
     .saju-card {
       background: linear-gradient(165deg, #1e1b4b 0%, var(--card) 50%);
     }
@@ -1888,6 +1949,14 @@ body {
   .quote-card-tag {
     background: #831843;
     color: #fbcfe8;
+  }
+
+  .color-card {
+    background: linear-gradient(165deg, #0c4a6e 0%, var(--card) 50%);
+  }
+
+  .color-swatch {
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
   }
 
   .saju-card {

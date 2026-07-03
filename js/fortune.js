@@ -515,3 +515,44 @@ function checkFortuneNotify() {
 function consumeFunDeepLink() {
   consumeTabDeepLink('fun');
 }
+
+/** 오늘의 색 — 날짜 시드로 매일 바뀌는 컬러 카드 */
+const COLORS_OF_DAY = [
+  { name: '체리 레드', hex: '#e11d48' },
+  { name: '선셋 오렌지', hex: '#f97316' },
+  { name: '허니 옐로', hex: '#eab308' },
+  { name: '라임 그린', hex: '#84cc16' },
+  { name: '포레스트 그린', hex: '#16a34a' },
+  { name: '세이지 그린', hex: '#4d9375' },
+  { name: '틸', hex: '#0d9488' },
+  { name: '스카이 블루', hex: '#0ea5e9' },
+  { name: '오션 블루', hex: '#2563eb' },
+  { name: '인디고', hex: '#4f46e5' },
+  { name: '라벤더', hex: '#8b5cf6' },
+  { name: '오키드', hex: '#c026d3' },
+  { name: '베리 핑크', hex: '#db2777' },
+  { name: '코랄 핑크', hex: '#fb7185' },
+  { name: '테라코타', hex: '#c2622d' },
+  { name: '머스타드', hex: '#ca8a04' },
+  { name: '민트', hex: '#2dd4bf' },
+  { name: '슬레이트 블루', hex: '#64748b' },
+  { name: '차콜', hex: '#334155' },
+  { name: '샌드 베이지', hex: '#d6b98c' },
+];
+
+function getTodayColor() {
+  const seed = hashFortuneSeed(`${todayKey()}:color`);
+  return COLORS_OF_DAY[seed % COLORS_OF_DAY.length];
+}
+
+function renderColorOfDay() {
+  const swatchEl = document.getElementById('colorSwatch');
+  const nameEl = document.getElementById('colorName');
+  const hexEl = document.getElementById('colorHex');
+  if (!swatchEl) return;
+
+  const color = getTodayColor();
+  swatchEl.style.backgroundColor = color.hex;
+  if (nameEl) nameEl.textContent = color.name;
+  if (hexEl) hexEl.textContent = color.hex.toUpperCase();
+}

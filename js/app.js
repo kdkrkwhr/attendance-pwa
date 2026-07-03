@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '87';
+const APP_BUILD = '88';
 const APP_VERSION_KEY = 'attendance-app-version';
 
 const DEFAULT_SETTINGS = {
@@ -440,6 +440,7 @@ function switchTab(tabName) {
     renderFunDate();
     if (typeof renderFortune === 'function') renderFortune();
     if (typeof renderSaju === 'function') renderSaju();
+    if (typeof renderColorOfDay === 'function') renderColorOfDay();
   }
   if (tabName === 'lunch') {
     if (typeof initLunchMap === 'function') {
@@ -1398,6 +1399,7 @@ function render() {
   renderWifiSuggestion();
   if (typeof renderFortune === 'function') renderFortune();
   if (typeof renderSaju === 'function') renderSaju();
+  if (typeof renderColorOfDay === 'function') renderColorOfDay();
   checkAndNotify();
   if (typeof checkFortuneNotify === 'function') checkFortuneNotify();
   if (typeof checkLunchRouletteNotify === 'function') checkLunchRouletteNotify();
