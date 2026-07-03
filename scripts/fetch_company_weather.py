@@ -114,7 +114,11 @@ def build_payload(raw: dict, summary_override: str | None = None) -> dict:
 
 def main() -> int:
     summary_override = sys.argv[1] if len(sys.argv) > 1 else None
-    raw = fetch_forecast()
+    try:
+        raw = fetch_forecast()
+    except Exception as exc:
+        print(f"warn: forecast fetch failed: {exc}", file=sys.stderr)
+        raw = {}
     payload = build_payload(raw, summary_override)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUT_DIR / f"{payload['date']}.json"
