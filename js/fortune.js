@@ -556,3 +556,30 @@ function renderColorOfDay() {
   if (nameEl) nameEl.textContent = color.name;
   if (hexEl) hexEl.textContent = color.hex.toUpperCase();
 }
+
+/** 오늘의 행운 숫자 — 날짜 시드로 매일 바뀌는 로또식 숫자 */
+const LUCKY_HINTS = [
+  '이 숫자와 함께 좋은 하루 보내세요',
+  '엘리베이터·주차장에서 마주치면 반가워하기',
+  '중요한 결정 앞에서 슬쩍 참고해보세요',
+  '오늘 이 숫자가 들어간 걸 발견하면 행운',
+  '커피 주문할 때 이 숫자만큼 스탬프 챙기기',
+];
+
+function getTodayLuckyNumber() {
+  const seed = hashFortuneSeed(`${todayKey()}:lucky`);
+  return {
+    number: (seed % 45) + 1,
+    hint: LUCKY_HINTS[seed % LUCKY_HINTS.length],
+  };
+}
+
+function renderLuckyNumber() {
+  const numberEl = document.getElementById('luckyNumber');
+  const hintEl = document.getElementById('luckyHint');
+  if (!numberEl) return;
+
+  const lucky = getTodayLuckyNumber();
+  numberEl.textContent = lucky.number;
+  if (hintEl) hintEl.textContent = lucky.hint;
+}
