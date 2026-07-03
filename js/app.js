@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '86';
+const APP_BUILD = '87';
 const APP_VERSION_KEY = 'attendance-app-version';
 
 const DEFAULT_SETTINGS = {
@@ -1173,6 +1173,38 @@ function renderWeekStrip() {
   textEl.textContent = `이번 주 ${done}/${weekdays.length}일 출근`;
 }
 
+// 이번 달 출근일수·평균 순근무 시간 요약
+function renderMonthSummary() {
+  const el = document.getElementById('monthSummaryText');
+  if (!el) return;
+
+  const now = new Date();
+  const records = loadRecords();
+  const prefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+  let days = 0;
+  let totalNet = 0;
+  let completed = 0;
+  for (const [key, rec] of Object.entries(records)) {
+    if (!key.startsWith(prefix) || !rec?.checkIn) continue;
+    days += 1;
+    if (rec.checkOut) {
+      totalNet += calcNetWorkMinutes(rec.checkIn, rec.checkOut);
+      completed += 1;
+    }
+  }
+
+  if (days === 0) {
+    el.textContent = '';
+    return;
+  }
+
+  const avg = completed > 0 ? (totalNet / completed / 60).toFixed(1) : null;
+  el.textContent = avg
+    ? `이번 달 ${days}일 출근 · 평균 순근무 ${avg}h`
+    : `이번 달 ${days}일 출근`;
+}
+
 function renderToday() {
   const record = getTodayRecord();
   const now = new Date();
@@ -1195,6 +1227,7 @@ function renderToday() {
   }
 
   renderWeekStrip();
+  renderMonthSummary();
 
   todayCard?.classList.toggle('card-field-work', fieldWork);
   fieldBadge?.classList.toggle('hidden', !fieldWork);
