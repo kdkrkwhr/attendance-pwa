@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=91">
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=91">
+  <link rel="stylesheet" href="css/style.css?v=92">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=92">
   <script>
     (function () {
       try {
@@ -343,6 +343,26 @@
           </div>
         </section>
 
+        <section class="card stretch-card" id="stretchCard">
+          <div class="stretch-card-header">
+            <span class="stretch-card-badge">🧘 1분 스트레칭</span>
+            <span class="stretch-card-hint" id="stretchCardHint">오늘 0회</span>
+          </div>
+          <div id="stretchIdle" class="fun-reveal-idle">
+            <p class="fun-reveal-idle-text">졸리거나 뻐근하면 60초만 몸을 풀어요</p>
+            <button type="button" class="btn btn-fun-reveal" id="btnStretchStart">시작 🧘</button>
+          </div>
+          <div id="stretchRunning" class="stretch-running hidden">
+            <p class="stretch-countdown" id="stretchCountdown">60</p>
+            <p class="stretch-tip" id="stretchTipText"></p>
+            <button type="button" class="btn btn-ghost btn-sm" id="btnStretchCancel">그만하기</button>
+          </div>
+          <div id="stretchDone" class="stretch-done hidden">
+            <p class="stretch-done-text" id="stretchDoneText">완료! 🎉</p>
+            <button type="button" class="btn btn-ghost btn-sm" id="btnStretchAgain">다시하기</button>
+          </div>
+        </section>
+
         <section class="card fun-coming">
           <h3 class="fun-coming-title">곧 올 기능 👀</h3>
           <ul class="fun-coming-list">
@@ -586,6 +606,7 @@
           <li>Fun 탭 — 오늘의 행운 숫자: 날짜마다 바뀌는 럭키 넘버 카드 추가 (v89)</li>
           <li>Fun 탭 — 동전 던지기 미니게임 추가, 다크모드 행운 숫자 카드 배경 깨지던 버그 수정 (v90)</li>
           <li>Fun 탭 — 가위바위보 vs AI 미니게임 추가 (v91)</li>
+          <li>Fun 탭 — 1분 스트레칭 타이머 위젯 추가, 오늘 완료 횟수 표시 (v92)</li>
           </ul>
         </section>
       </div>
@@ -619,17 +640,17 @@
     </nav>
   </div>
 
-  <script src="config.js?v=91"></script>
-  <script src="vendor/leaflet/leaflet.js?v=91"></script>
-  <script src="js/util.js?v=91"></script>
-  <script src="js/fortune.js?v=91"></script>
-  <script src="js/saju.js?v=91"></script>
-  <script src="js/lunch-map.js?v=91"></script>
-  <script src="js/user-location.js?v=91"></script>
-  <script src="js/weather-brief.js?v=91"></script>
-  <script src="js/news-brief.js?v=91"></script>
-  <script src="js/hermes-chat.js?v=91"></script>
-  <script src="js/commute-time.js?v=91"></script>
-  <script src="js/app.js?v=91"></script>
+  <script src="config.js?v=92"></script>
+  <script src="vendor/leaflet/leaflet.js?v=92"></script>
+  <script src="js/util.js?v=92"></script>
+  <script src="js/fortune.js?v=92"></script>
+  <script src="js/saju.js?v=92"></script>
+  <script src="js/lunch-map.js?v=92"></script>
+  <script src="js/user-location.js?v=92"></script>
+  <script src="js/weather-brief.js?v=92"></script>
+  <script src="js/news-brief.js?v=92"></script>
+  <script src="js/hermes-chat.js?v=92"></script>
+  <script src="js/commute-time.js?v=92"></script>
+  <script src="js/app.js?v=92"></script>
 </body>
 </html>

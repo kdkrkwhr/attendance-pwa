@@ -644,3 +644,88 @@ function resetRps() {
   document.getElementById('rpsResult')?.classList.add('hidden');
   document.getElementById('rpsIdle')?.classList.remove('hidden');
 }
+
+/** 1분 스트레칭 — 하루 반복 가능, 완료 횟수만 오늘 기준으로 카운트 */
+const STRETCH_STORAGE_KEY = 'attendance-stretch';
+const STRETCH_SECONDS = 60;
+const STRETCH_TIPS = [
+  '목을 좌우로 천천히 돌려보세요',
+  '양팔을 위로 뻗고 크게 숨을 쉬어보세요',
+  '어깨를 앞뒤로 크게 굴려보세요',
+  '허리를 좌우로 살짝 비틀어보세요',
+  '손목·손가락을 쭉 펴고 털어주세요',
+  '깍지 낀 손을 앞으로 뻗고 등을 늘려보세요',
+  '한쪽씩 발목을 돌려 스트레칭 해보세요',
+];
+let stretchTimerId = null;
+let stretchSecondsLeft = STRETCH_SECONDS;
+
+function loadStretchState() {
+  try {
+    const data = JSON.parse(localStorage.getItem(STRETCH_STORAGE_KEY) || 'null');
+    if (!data || data.dayKey !== todayKey()) return { dayKey: todayKey(), count: 0 };
+    return data;
+  } catch {
+    return { dayKey: todayKey(), count: 0 };
+  }
+}
+
+function bumpStretchCount() {
+  const state = loadStretchState();
+  state.count += 1;
+  localStorage.setItem(STRETCH_STORAGE_KEY, JSON.stringify(state));
+  return state.count;
+}
+
+function renderStretchHint() {
+  const hintEl = document.getElementById('stretchCardHint');
+  if (!hintEl) return;
+  hintEl.textContent = `오늘 ${loadStretchState().count}회`;
+}
+
+function startStretch() {
+  const idleEl = document.getElementById('stretchIdle');
+  const runningEl = document.getElementById('stretchRunning');
+  const doneEl = document.getElementById('stretchDone');
+  const countdownEl = document.getElementById('stretchCountdown');
+  const tipEl = document.getElementById('stretchTipText');
+  if (!idleEl || !runningEl) return;
+
+  stretchSecondsLeft = STRETCH_SECONDS;
+  if (tipEl) tipEl.textContent = STRETCH_TIPS[Math.floor(Math.random() * STRETCH_TIPS.length)];
+  if (countdownEl) countdownEl.textContent = String(stretchSecondsLeft);
+
+  idleEl.classList.add('hidden');
+  doneEl?.classList.add('hidden');
+  runningEl.classList.remove('hidden');
+
+  clearInterval(stretchTimerId);
+  stretchTimerId = setInterval(() => {
+    stretchSecondsLeft -= 1;
+    if (countdownEl) countdownEl.textContent = String(Math.max(stretchSecondsLeft, 0));
+    if (stretchSecondsLeft <= 0) finishStretch();
+  }, 1000);
+}
+
+function finishStretch() {
+  clearInterval(stretchTimerId);
+  stretchTimerId = null;
+  const count = bumpStretchCount();
+  document.getElementById('stretchRunning')?.classList.add('hidden');
+  const doneTextEl = document.getElementById('stretchDoneText');
+  if (doneTextEl) doneTextEl.textContent = `완료! 오늘 ${count}번째 스트레칭 🎉`;
+  document.getElementById('stretchDone')?.classList.remove('hidden');
+  renderStretchHint();
+}
+
+function cancelStretch() {
+  clearInterval(stretchTimerId);
+  stretchTimerId = null;
+  document.getElementById('stretchRunning')?.classList.add('hidden');
+  document.getElementById('stretchIdle')?.classList.remove('hidden');
+}
+
+function resetStretchToIdle() {
+  document.getElementById('stretchDone')?.classList.add('hidden');
+  document.getElementById('stretchIdle')?.classList.remove('hidden');
+}

@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '91';
+const APP_BUILD = '92';
 const APP_VERSION_KEY = 'attendance-app-version';
 
 const DEFAULT_SETTINGS = {
@@ -441,6 +441,7 @@ function switchTab(tabName) {
     if (typeof renderSaju === 'function') renderSaju();
     if (typeof renderColorOfDay === 'function') renderColorOfDay();
     if (typeof renderLuckyNumber === 'function') renderLuckyNumber();
+    if (typeof renderStretchHint === 'function') renderStretchHint();
   }
   if (tabName === 'lunch') {
     if (typeof initLunchMap === 'function') {
@@ -1299,6 +1300,7 @@ function render() {
   if (typeof renderSaju === 'function') renderSaju();
   if (typeof renderColorOfDay === 'function') renderColorOfDay();
   if (typeof renderLuckyNumber === 'function') renderLuckyNumber();
+  if (typeof renderStretchHint === 'function') renderStretchHint();
   checkAndNotify();
   if (typeof checkFortuneNotify === 'function') checkFortuneNotify();
   if (typeof checkLunchRouletteNotify === 'function') checkLunchRouletteNotify();
@@ -1677,6 +1679,15 @@ function init() {
   });
   document.getElementById('btnRpsAgain')?.addEventListener('click', () => {
     if (typeof resetRps === 'function') resetRps();
+  });
+  document.getElementById('btnStretchStart')?.addEventListener('click', () => {
+    if (typeof startStretch === 'function') startStretch();
+  });
+  document.getElementById('btnStretchCancel')?.addEventListener('click', () => {
+    if (typeof cancelStretch === 'function') cancelStretch();
+  });
+  document.getElementById('btnStretchAgain')?.addEventListener('click', () => {
+    if (typeof resetStretchToIdle === 'function') resetStretchToIdle();
   });
   document.getElementById('btnRevealQuote')?.addEventListener('click', handleRevealQuote);
   document.getElementById('btnRevealSaju')?.addEventListener('click', handleRevealSaju);

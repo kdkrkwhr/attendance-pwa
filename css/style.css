@@ -1549,6 +1549,60 @@ body {
   margin: 0 0 1rem;
 }
 
+/* ── 1분 스트레칭 ── */
+
+.stretch-card {
+  border-top: 4px solid #0d9488;
+  background: linear-gradient(165deg, #f0fdfa 0%, var(--card) 50%);
+  margin-bottom: 0.875rem;
+}
+
+.stretch-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.stretch-card-badge {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.stretch-card-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: #ccfbf1;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+}
+
+.stretch-running,
+.stretch-done {
+  text-align: center;
+  padding: 0.5rem 0 0.25rem;
+}
+
+.stretch-countdown {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+  margin: 0 0 0.5rem;
+  color: #0f766e;
+}
+
+.stretch-tip {
+  font-size: 0.9375rem;
+  margin: 0 0 1rem;
+}
+
+.stretch-done-text {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  margin: 0 0 1rem;
+}
+
 /* ── 오늘의 사주 ── */
 
 .saju-card {
@@ -2128,6 +2182,19 @@ body {
       color: #a5b4fc;
     }
 
+    .stretch-card {
+      background: linear-gradient(165deg, #042f2e 0%, var(--card) 50%);
+    }
+
+    .stretch-card-hint {
+      background: #115e59;
+      color: #99f6e4;
+    }
+
+    .stretch-countdown {
+      color: #2dd4bf;
+    }
+
     .fun-coming {
       background: #2e1065;
       border-color: #6b21a8;
@@ -2233,6 +2300,19 @@ body {
 
   .saju-stat strong {
     color: #a5b4fc;
+  }
+
+  .stretch-card {
+    background: linear-gradient(165deg, #042f2e 0%, var(--card) 50%);
+  }
+
+  .stretch-card-hint {
+    background: #115e59;
+    color: #99f6e4;
+  }
+
+  .stretch-countdown {
+    color: #2dd4bf;
   }
 
   .fun-coming {
