@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=92">
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=92">
+  <link rel="stylesheet" href="css/style.css?v=93">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=93">
   <script>
     (function () {
       try {
@@ -363,6 +363,32 @@
           </div>
         </section>
 
+        <section class="card balance-card" id="balanceCard">
+          <div class="balance-card-header">
+            <span class="balance-card-badge">⚖️ 밸런스 게임</span>
+            <span class="balance-card-hint">직원들 선택은?</span>
+          </div>
+          <div id="balanceIdle" class="balance-idle">
+            <p class="balance-question" id="balanceQuestion">—</p>
+            <div class="balance-choices">
+              <button type="button" class="btn-balance" id="balanceOptionA">A</button>
+              <button type="button" class="btn-balance" id="balanceOptionB">B</button>
+            </div>
+          </div>
+          <div id="balanceResult" class="balance-result hidden">
+            <p class="balance-result-text" id="balanceResultText"></p>
+            <div class="balance-bar">
+              <div class="balance-bar-fill balance-bar-a" id="balanceBarA"></div>
+              <div class="balance-bar-fill balance-bar-b" id="balanceBarB"></div>
+            </div>
+            <p class="balance-bar-labels">
+              <span id="balanceLabelA"></span>
+              <span id="balanceLabelB"></span>
+            </p>
+            <button type="button" class="btn btn-ghost btn-sm" id="btnBalanceAgain">다른 질문 보기</button>
+          </div>
+        </section>
+
         <section class="card fun-coming">
           <h3 class="fun-coming-title">곧 올 기능 👀</h3>
           <ul class="fun-coming-list">
@@ -607,6 +633,7 @@
           <li>Fun 탭 — 동전 던지기 미니게임 추가, 다크모드 행운 숫자 카드 배경 깨지던 버그 수정 (v90)</li>
           <li>Fun 탭 — 가위바위보 vs AI 미니게임 추가 (v91)</li>
           <li>Fun 탭 — 1분 스트레칭 타이머 위젯 추가, 오늘 완료 횟수 표시 (v92)</li>
+          <li>Fun 탭 — 밸런스 게임 위젯 추가, A/B 선택 후 가상 선택 비율 표시 (v93)</li>
           </ul>
         </section>
       </div>
@@ -640,17 +667,17 @@
     </nav>
   </div>
 
-  <script src="config.js?v=92"></script>
-  <script src="vendor/leaflet/leaflet.js?v=92"></script>
-  <script src="js/util.js?v=92"></script>
-  <script src="js/fortune.js?v=92"></script>
-  <script src="js/saju.js?v=92"></script>
-  <script src="js/lunch-map.js?v=92"></script>
-  <script src="js/user-location.js?v=92"></script>
-  <script src="js/weather-brief.js?v=92"></script>
-  <script src="js/news-brief.js?v=92"></script>
-  <script src="js/hermes-chat.js?v=92"></script>
-  <script src="js/commute-time.js?v=92"></script>
-  <script src="js/app.js?v=92"></script>
+  <script src="config.js?v=93"></script>
+  <script src="vendor/leaflet/leaflet.js?v=93"></script>
+  <script src="js/util.js?v=93"></script>
+  <script src="js/fortune.js?v=93"></script>
+  <script src="js/saju.js?v=93"></script>
+  <script src="js/lunch-map.js?v=93"></script>
+  <script src="js/user-location.js?v=93"></script>
+  <script src="js/weather-brief.js?v=93"></script>
+  <script src="js/news-brief.js?v=93"></script>
+  <script src="js/hermes-chat.js?v=93"></script>
+  <script src="js/commute-time.js?v=93"></script>
+  <script src="js/app.js?v=93"></script>
 </body>
 </html>

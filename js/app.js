@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '92';
+const APP_BUILD = '93';
 const APP_VERSION_KEY = 'attendance-app-version';
 
 const DEFAULT_SETTINGS = {
@@ -442,6 +442,7 @@ function switchTab(tabName) {
     if (typeof renderColorOfDay === 'function') renderColorOfDay();
     if (typeof renderLuckyNumber === 'function') renderLuckyNumber();
     if (typeof renderStretchHint === 'function') renderStretchHint();
+    if (typeof renderBalanceGame === 'function') renderBalanceGame();
   }
   if (tabName === 'lunch') {
     if (typeof initLunchMap === 'function') {
@@ -1301,6 +1302,7 @@ function render() {
   if (typeof renderColorOfDay === 'function') renderColorOfDay();
   if (typeof renderLuckyNumber === 'function') renderLuckyNumber();
   if (typeof renderStretchHint === 'function') renderStretchHint();
+  if (typeof renderBalanceGame === 'function') renderBalanceGame();
   checkAndNotify();
   if (typeof checkFortuneNotify === 'function') checkFortuneNotify();
   if (typeof checkLunchRouletteNotify === 'function') checkLunchRouletteNotify();
@@ -1688,6 +1690,15 @@ function init() {
   });
   document.getElementById('btnStretchAgain')?.addEventListener('click', () => {
     if (typeof resetStretchToIdle === 'function') resetStretchToIdle();
+  });
+  document.getElementById('balanceOptionA')?.addEventListener('click', () => {
+    if (typeof pickBalance === 'function') pickBalance('a');
+  });
+  document.getElementById('balanceOptionB')?.addEventListener('click', () => {
+    if (typeof pickBalance === 'function') pickBalance('b');
+  });
+  document.getElementById('btnBalanceAgain')?.addEventListener('click', () => {
+    if (typeof renderBalanceGame === 'function') renderBalanceGame();
   });
   document.getElementById('btnRevealQuote')?.addEventListener('click', handleRevealQuote);
   document.getElementById('btnRevealSaju')?.addEventListener('click', handleRevealSaju);

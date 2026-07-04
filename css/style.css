@@ -1603,6 +1603,106 @@ body {
   margin: 0 0 1rem;
 }
 
+/* ── 밸런스 게임 ── */
+
+.balance-card {
+  border-top: 4px solid #db2777;
+  background: linear-gradient(165deg, #fdf2f8 0%, var(--card) 50%);
+  margin-bottom: 0.875rem;
+}
+
+.balance-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.balance-card-badge {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #be185d;
+}
+
+.balance-card-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: #fce7f3;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+}
+
+.balance-question {
+  text-align: center;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem;
+}
+
+.balance-choices {
+  display: flex;
+  gap: 0.625rem;
+}
+
+.btn-balance {
+  flex: 1;
+  padding: 0.75rem 0.5rem;
+  border: none;
+  border-radius: 0.75rem;
+  background: #fce7f3;
+  color: #9d174d;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s;
+}
+
+.btn-balance:active {
+  transform: scale(0.96);
+  background: #fbcfe8;
+}
+
+.balance-result {
+  text-align: center;
+  padding: 0.25rem 0;
+}
+
+.balance-result-text {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem;
+}
+
+.balance-bar {
+  display: flex;
+  height: 0.625rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #fce7f3;
+  margin-bottom: 0.5rem;
+}
+
+.balance-bar-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.balance-bar-a {
+  background: #db2777;
+}
+
+.balance-bar-b {
+  background: #f9a8d4;
+}
+
+.balance-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: 0 0 0.75rem;
+}
+
 /* ── 오늘의 사주 ── */
 
 .saju-card {
@@ -2195,6 +2295,28 @@ body {
       color: #2dd4bf;
     }
 
+    .balance-card {
+      background: linear-gradient(165deg, #500724 0%, var(--card) 50%);
+    }
+
+    .balance-card-hint {
+      background: #831843;
+      color: #fbcfe8;
+    }
+
+    .btn-balance {
+      background: #831843;
+      color: #fbcfe8;
+    }
+
+    .btn-balance:active {
+      background: #9d174d;
+    }
+
+    .balance-bar {
+      background: #831843;
+    }
+
     .fun-coming {
       background: #2e1065;
       border-color: #6b21a8;
@@ -2313,6 +2435,28 @@ body {
 
   .stretch-countdown {
     color: #2dd4bf;
+  }
+
+  .balance-card {
+    background: linear-gradient(165deg, #500724 0%, var(--card) 50%);
+  }
+
+  .balance-card-hint {
+    background: #831843;
+    color: #fbcfe8;
+  }
+
+  .btn-balance {
+    background: #831843;
+    color: #fbcfe8;
+  }
+
+  .btn-balance:active {
+    background: #9d174d;
+  }
+
+  .balance-bar {
+    background: #831843;
   }
 
   .fun-coming {

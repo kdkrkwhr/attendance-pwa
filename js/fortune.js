@@ -729,3 +729,60 @@ function resetStretchToIdle() {
   document.getElementById('stretchDone')?.classList.add('hidden');
   document.getElementById('stretchIdle')?.classList.remove('hidden');
 }
+
+/** 밸런스 게임 — A/B 선택 후 다른 직원들 선택 비율(시드 기반 고정값) 확인 */
+const BALANCE_QUESTIONS = [
+  { a: '아이스 아메리카노', b: '따뜻한 아메리카노' },
+  { a: '재택근무', b: '사무실 출근' },
+  { a: '점심은 혼밥', b: '점심은 다 같이' },
+  { a: '민트초코', b: '민트초코 반대파' },
+  { a: '주 4일제', b: '연봉 20% 인상' },
+  { a: '아침형 인간', b: '저녁형 인간' },
+  { a: '엘리베이터', b: '계단' },
+  { a: '칼퇴', b: '야근수당' },
+  { a: '치킨은 후라이드', b: '치킨은 양념' },
+  { a: '여름 휴가', b: '겨울 휴가' },
+  { a: '회식은 저녁', b: '회식은 점심' },
+  { a: '메신저로 소통', b: '직접 찾아가서 소통' },
+];
+let balanceQIndex = null;
+
+function renderBalanceGame() {
+  const qEl = document.getElementById('balanceQuestion');
+  const aBtn = document.getElementById('balanceOptionA');
+  const bBtn = document.getElementById('balanceOptionB');
+  if (!qEl || !aBtn || !bBtn) return;
+
+  balanceQIndex = Math.floor(Math.random() * BALANCE_QUESTIONS.length);
+  const q = BALANCE_QUESTIONS[balanceQIndex];
+  qEl.textContent = `${q.a}  vs  ${q.b}`;
+  aBtn.textContent = q.a;
+  bBtn.textContent = q.b;
+
+  document.getElementById('balanceResult')?.classList.add('hidden');
+  document.getElementById('balanceIdle')?.classList.remove('hidden');
+}
+
+function pickBalance(choice) {
+  if (balanceQIndex === null) return;
+  const q = BALANCE_QUESTIONS[balanceQIndex];
+  const seed = hashFortuneSeed(`${todayKey()}:balance:${balanceQIndex}`);
+  const pctA = 30 + (seed % 41);
+  const pctB = 100 - pctA;
+
+  document.getElementById('balanceIdle')?.classList.add('hidden');
+  const textEl = document.getElementById('balanceResultText');
+  if (textEl) textEl.textContent = choice === 'a' ? `"${q.a}" 선택!` : `"${q.b}" 선택!`;
+
+  const barA = document.getElementById('balanceBarA');
+  const barB = document.getElementById('balanceBarB');
+  if (barA) barA.style.width = `${pctA}%`;
+  if (barB) barB.style.width = `${pctB}%`;
+
+  const labelA = document.getElementById('balanceLabelA');
+  const labelB = document.getElementById('balanceLabelB');
+  if (labelA) labelA.textContent = `${q.a} ${pctA}%`;
+  if (labelB) labelB.textContent = `${q.b} ${pctB}%`;
+
+  document.getElementById('balanceResult')?.classList.remove('hidden');
+}
