@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '93';
+const APP_BUILD = '94';
 const APP_VERSION_KEY = 'attendance-app-version';
 
 const DEFAULT_SETTINGS = {
@@ -443,6 +443,7 @@ function switchTab(tabName) {
     if (typeof renderLuckyNumber === 'function') renderLuckyNumber();
     if (typeof renderStretchHint === 'function') renderStretchHint();
     if (typeof renderBalanceGame === 'function') renderBalanceGame();
+    if (typeof renderTypingHint === 'function') renderTypingHint();
   }
   if (tabName === 'lunch') {
     if (typeof initLunchMap === 'function') {
@@ -1303,6 +1304,7 @@ function render() {
   if (typeof renderLuckyNumber === 'function') renderLuckyNumber();
   if (typeof renderStretchHint === 'function') renderStretchHint();
   if (typeof renderBalanceGame === 'function') renderBalanceGame();
+  if (typeof renderTypingHint === 'function') renderTypingHint();
   checkAndNotify();
   if (typeof checkFortuneNotify === 'function') checkFortuneNotify();
   if (typeof checkLunchRouletteNotify === 'function') checkLunchRouletteNotify();
@@ -1699,6 +1701,18 @@ function init() {
   });
   document.getElementById('btnBalanceAgain')?.addEventListener('click', () => {
     if (typeof renderBalanceGame === 'function') renderBalanceGame();
+  });
+  document.getElementById('btnTypingStart')?.addEventListener('click', () => {
+    if (typeof startTypingTest === 'function') startTypingTest();
+  });
+  document.getElementById('typingInput')?.addEventListener('input', (e) => {
+    if (typeof handleTypingInput === 'function') handleTypingInput(e.target.value);
+  });
+  document.getElementById('btnTypingCancel')?.addEventListener('click', () => {
+    if (typeof cancelTypingTest === 'function') cancelTypingTest();
+  });
+  document.getElementById('btnTypingAgain')?.addEventListener('click', () => {
+    if (typeof resetTypingToIdle === 'function') resetTypingToIdle();
   });
   document.getElementById('btnRevealQuote')?.addEventListener('click', handleRevealQuote);
   document.getElementById('btnRevealSaju')?.addEventListener('click', handleRevealSaju);

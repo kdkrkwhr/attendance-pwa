@@ -786,3 +786,93 @@ function pickBalance(choice) {
 
   document.getElementById('balanceResult')?.classList.remove('hidden');
 }
+
+/** 타자 속도 테스트 — 문장 따라치기, 분당 타수(CPM) 측정 */
+const TYPING_STORAGE_KEY = 'attendance-typing-best';
+const TYPING_SENTENCES = [
+  '오늘도 무사히 출근 완료했습니다',
+  '커피 한잔의 여유가 필요한 시간입니다',
+  '점심 메뉴 고민은 언제나 즐겁습니다',
+  '칼퇴를 향해 달려가는 오후입니다',
+  '월요일도 결국 지나가기 마련입니다',
+  '회의는 짧을수록 좋은 법입니다',
+  '주말이 코앞으로 다가오고 있습니다',
+  '업무 집중력은 커피에서 나옵니다',
+  '금요일 퇴근길은 언제나 가볍습니다',
+  '오늘 하루도 수고 많으셨습니다',
+];
+let typingTarget = '';
+let typingStartTime = null;
+
+function loadTypingBest() {
+  try {
+    return Number(localStorage.getItem(TYPING_STORAGE_KEY)) || 0;
+  } catch {
+    return 0;
+  }
+}
+
+function saveTypingBestIfHigher(cpm) {
+  const best = loadTypingBest();
+  if (cpm > best) localStorage.setItem(TYPING_STORAGE_KEY, String(cpm));
+  return Math.max(best, cpm);
+}
+
+function renderTypingHint() {
+  const hintEl = document.getElementById('typingCardHint');
+  if (!hintEl) return;
+  const best = loadTypingBest();
+  hintEl.textContent = best ? `최고 ${best}타/분` : '문장 따라치기';
+}
+
+function startTypingTest() {
+  const idleEl = document.getElementById('typingIdle');
+  const runningEl = document.getElementById('typingRunning');
+  const doneEl = document.getElementById('typingDone');
+  const targetEl = document.getElementById('typingTarget');
+  const inputEl = document.getElementById('typingInput');
+  if (!idleEl || !runningEl || !targetEl || !inputEl) return;
+
+  typingTarget = TYPING_SENTENCES[Math.floor(Math.random() * TYPING_SENTENCES.length)];
+  typingStartTime = null;
+  targetEl.textContent = typingTarget;
+  inputEl.value = '';
+
+  idleEl.classList.add('hidden');
+  doneEl?.classList.add('hidden');
+  runningEl.classList.remove('hidden');
+  inputEl.focus();
+}
+
+function handleTypingInput(value) {
+  if (!typingTarget) return;
+  if (typingStartTime === null && value.length > 0) typingStartTime = Date.now();
+  if (value === typingTarget) finishTypingTest();
+}
+
+function finishTypingTest() {
+  const elapsedSec = Math.max((Date.now() - typingStartTime) / 1000, 0.5);
+  const cpm = Math.round((typingTarget.length / elapsedSec) * 60);
+  const best = saveTypingBestIfHigher(cpm);
+
+  document.getElementById('typingRunning')?.classList.add('hidden');
+  const doneTextEl = document.getElementById('typingDoneText');
+  if (doneTextEl) {
+    doneTextEl.textContent = cpm >= best
+      ? `${cpm}타/분 — 신기록 🎉`
+      : `${cpm}타/분 (최고 ${best}타/분)`;
+  }
+  document.getElementById('typingDone')?.classList.remove('hidden');
+  typingTarget = '';
+}
+
+function cancelTypingTest() {
+  typingTarget = '';
+  document.getElementById('typingRunning')?.classList.add('hidden');
+  document.getElementById('typingIdle')?.classList.remove('hidden');
+}
+
+function resetTypingToIdle() {
+  document.getElementById('typingDone')?.classList.add('hidden');
+  document.getElementById('typingIdle')?.classList.remove('hidden');
+}

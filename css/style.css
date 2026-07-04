@@ -1703,6 +1703,65 @@ body {
   margin: 0 0 0.75rem;
 }
 
+/* ── 타자 속도 테스트 ── */
+
+.typing-card {
+  border-top: 4px solid #ea580c;
+  background: linear-gradient(165deg, #fff7ed 0%, var(--card) 50%);
+  margin-bottom: 0.875rem;
+}
+
+.typing-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.typing-card-badge {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #c2410c;
+}
+
+.typing-card-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: #ffedd5;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+}
+
+.typing-running,
+.typing-done {
+  text-align: center;
+  padding: 0.25rem 0;
+}
+
+.typing-target {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem;
+}
+
+.typing-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--card);
+  color: var(--text);
+  font-size: 0.9375rem;
+  margin-bottom: 0.75rem;
+}
+
+.typing-done-text {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem;
+}
+
 /* ── 오늘의 사주 ── */
 
 .saju-card {
@@ -2317,6 +2376,15 @@ body {
       background: #831843;
     }
 
+    .typing-card {
+      background: linear-gradient(165deg, #431407 0%, var(--card) 50%);
+    }
+
+    .typing-card-hint {
+      background: #7c2d12;
+      color: #fed7aa;
+    }
+
     .fun-coming {
       background: #2e1065;
       border-color: #6b21a8;
@@ -2457,6 +2525,15 @@ body {
 
   .balance-bar {
     background: #831843;
+  }
+
+  .typing-card {
+    background: linear-gradient(165deg, #431407 0%, var(--card) 50%);
+  }
+
+  .typing-card-hint {
+    background: #7c2d12;
+    color: #fed7aa;
   }
 
   .fun-coming {

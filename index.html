@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=93">
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=93">
+  <link rel="stylesheet" href="css/style.css?v=94">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=94">
   <script>
     (function () {
       try {
@@ -389,6 +389,26 @@
           </div>
         </section>
 
+        <section class="card typing-card" id="typingCard">
+          <div class="typing-card-header">
+            <span class="typing-card-badge">⌨️ 타자 속도 테스트</span>
+            <span class="typing-card-hint" id="typingCardHint">문장 따라치기</span>
+          </div>
+          <div id="typingIdle" class="fun-reveal-idle">
+            <p class="fun-reveal-idle-text">문장을 빠르고 정확하게 쳐보세요</p>
+            <button type="button" class="btn btn-fun-reveal" id="btnTypingStart">시작 ⌨️</button>
+          </div>
+          <div id="typingRunning" class="typing-running hidden">
+            <p class="typing-target" id="typingTarget"></p>
+            <input type="text" id="typingInput" class="typing-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="여기에 따라 쳐보세요">
+            <button type="button" class="btn btn-ghost btn-sm" id="btnTypingCancel">그만하기</button>
+          </div>
+          <div id="typingDone" class="typing-done hidden">
+            <p class="typing-done-text" id="typingDoneText"></p>
+            <button type="button" class="btn btn-ghost btn-sm" id="btnTypingAgain">다시하기</button>
+          </div>
+        </section>
+
         <section class="card fun-coming">
           <h3 class="fun-coming-title">곧 올 기능 👀</h3>
           <ul class="fun-coming-list">
@@ -634,6 +654,7 @@
           <li>Fun 탭 — 가위바위보 vs AI 미니게임 추가 (v91)</li>
           <li>Fun 탭 — 1분 스트레칭 타이머 위젯 추가, 오늘 완료 횟수 표시 (v92)</li>
           <li>Fun 탭 — 밸런스 게임 위젯 추가, A/B 선택 후 가상 선택 비율 표시 (v93)</li>
+          <li>Fun 탭 — 타자 속도 테스트 추가, 분당 타수 측정 및 오늘 최고 기록 표시 (v94)</li>
           </ul>
         </section>
       </div>
@@ -667,17 +688,17 @@
     </nav>
   </div>
 
-  <script src="config.js?v=93"></script>
-  <script src="vendor/leaflet/leaflet.js?v=93"></script>
-  <script src="js/util.js?v=93"></script>
-  <script src="js/fortune.js?v=93"></script>
-  <script src="js/saju.js?v=93"></script>
-  <script src="js/lunch-map.js?v=93"></script>
-  <script src="js/user-location.js?v=93"></script>
-  <script src="js/weather-brief.js?v=93"></script>
-  <script src="js/news-brief.js?v=93"></script>
-  <script src="js/hermes-chat.js?v=93"></script>
-  <script src="js/commute-time.js?v=93"></script>
-  <script src="js/app.js?v=93"></script>
+  <script src="config.js?v=94"></script>
+  <script src="vendor/leaflet/leaflet.js?v=94"></script>
+  <script src="js/util.js?v=94"></script>
+  <script src="js/fortune.js?v=94"></script>
+  <script src="js/saju.js?v=94"></script>
+  <script src="js/lunch-map.js?v=94"></script>
+  <script src="js/user-location.js?v=94"></script>
+  <script src="js/weather-brief.js?v=94"></script>
+  <script src="js/news-brief.js?v=94"></script>
+  <script src="js/hermes-chat.js?v=94"></script>
+  <script src="js/commute-time.js?v=94"></script>
+  <script src="js/app.js?v=94"></script>
 </body>
 </html>
