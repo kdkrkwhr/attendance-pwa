@@ -975,3 +975,107 @@ function resetReactionToIdle() {
   document.getElementById('reactionDone')?.classList.add('hidden');
   document.getElementById('reactionIdle')?.classList.remove('hidden');
 }
+
+/** 숫자 맞추기 — 1~50, UP/DOWN 힌트 */
+const GUESS_STORAGE_KEY = 'attendance-guess-best';
+const GUESS_MAX = 50;
+let guessTarget = 0;
+let guessTries = 0;
+
+function loadGuessBest() {
+  try {
+    return Number(localStorage.getItem(GUESS_STORAGE_KEY)) || 0;
+  } catch {
+    return 0;
+  }
+}
+
+function saveGuessBestIfLower(tries) {
+  const best = loadGuessBest();
+  if (!best || tries < best) localStorage.setItem(GUESS_STORAGE_KEY, String(tries));
+  return Math.min(best || tries, tries);
+}
+
+function renderGuessHint() {
+  const hintEl = document.getElementById('guessCardHint');
+  if (!hintEl) return;
+  const best = loadGuessBest();
+  hintEl.textContent = best ? `최소 ${best}번` : '1~50';
+}
+
+function startGuessGame() {
+  const idleEl = document.getElementById('guessIdle');
+  const playingEl = document.getElementById('guessPlaying');
+  const doneEl = document.getElementById('guessDone');
+  const feedbackEl = document.getElementById('guessFeedback');
+  const triesEl = document.getElementById('guessTries');
+  const inputEl = document.getElementById('guessInput');
+  if (!idleEl || !playingEl) return;
+
+  guessTarget = Math.floor(Math.random() * GUESS_MAX) + 1;
+  guessTries = 0;
+  if (feedbackEl) feedbackEl.textContent = '숫자를 입력하세요';
+  if (triesEl) triesEl.textContent = '시도 0회';
+  if (inputEl) inputEl.value = '';
+
+  idleEl.classList.add('hidden');
+  doneEl?.classList.add('hidden');
+  playingEl.classList.remove('hidden');
+  inputEl?.focus();
+}
+
+function submitGuess() {
+  const inputEl = document.getElementById('guessInput');
+  const feedbackEl = document.getElementById('guessFeedback');
+  const triesEl = document.getElementById('guessTries');
+  if (!inputEl || !guessTarget) return;
+
+  const value = Number(inputEl.value);
+  if (!Number.isInteger(value) || value < 1 || value > GUESS_MAX) {
+    if (feedbackEl) feedbackEl.textContent = `1~${GUESS_MAX} 사이 숫자를 입력하세요`;
+    return;
+  }
+
+  guessTries += 1;
+  if (triesEl) triesEl.textContent = `시도 ${guessTries}회`;
+
+  if (value === guessTarget) {
+    const best = saveGuessBestIfLower(guessTries);
+    document.getElementById('guessPlaying')?.classList.add('hidden');
+    const doneTextEl = document.getElementById('guessDoneText');
+    if (doneTextEl) {
+      doneTextEl.textContent = guessTries <= best
+        ? `${guessTarget} 정답! ${guessTries}번 만에 맞춤 — 신기록 🎉`
+        : `${guessTarget} 정답! ${guessTries}번 (최고 ${best}번)`;
+    }
+    document.getElementById('guessDone')?.classList.remove('hidden');
+    renderGuessHint();
+    guessTarget = 0;
+    return;
+  }
+
+  if (feedbackEl) {
+    feedbackEl.textContent = value < guessTarget
+      ? `${value} — 더 큰 숫자예요 ⬆️`
+      : `${value} — 더 작은 숫자예요 ⬇️`;
+  }
+  inputEl.value = '';
+  inputEl.focus();
+}
+
+function giveUpGuessGame() {
+  if (!guessTarget) return;
+  const answer = guessTarget;
+  guessTarget = 0;
+  document.getElementById('guessPlaying')?.classList.add('hidden');
+  const doneTextEl = document.getElementById('guessDoneText');
+  if (doneTextEl) doneTextEl.textContent = `정답은 ${answer}였어요`;
+  document.getElementById('guessDone')?.classList.remove('hidden');
+}
+
+function resetGuessToIdle() {
+  guessTarget = 0;
+  document.getElementById('guessPlaying')?.classList.add('hidden');
+  document.getElementById('guessDone')?.classList.add('hidden');
+  document.getElementById('guessIdle')?.classList.remove('hidden');
+}

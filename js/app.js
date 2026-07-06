@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '95';
+const APP_BUILD = '96';
 const APP_VERSION_KEY = 'attendance-app-version';
 
 const DEFAULT_SETTINGS = {
@@ -445,6 +445,7 @@ function switchTab(tabName) {
     if (typeof renderBalanceGame === 'function') renderBalanceGame();
     if (typeof renderTypingHint === 'function') renderTypingHint();
     if (typeof renderReactionHint === 'function') renderReactionHint();
+    if (typeof renderGuessHint === 'function') renderGuessHint();
   }
   if (tabName === 'lunch') {
     if (typeof initLunchMap === 'function') {
@@ -1306,6 +1307,8 @@ function render() {
   if (typeof renderStretchHint === 'function') renderStretchHint();
   if (typeof renderBalanceGame === 'function') renderBalanceGame();
   if (typeof renderTypingHint === 'function') renderTypingHint();
+  if (typeof renderReactionHint === 'function') renderReactionHint();
+  if (typeof renderGuessHint === 'function') renderGuessHint();
   checkAndNotify();
   if (typeof checkFortuneNotify === 'function') checkFortuneNotify();
   if (typeof checkLunchRouletteNotify === 'function') checkLunchRouletteNotify();
@@ -1723,6 +1726,21 @@ function init() {
   });
   document.getElementById('btnReactionAgain')?.addEventListener('click', () => {
     if (typeof resetReactionToIdle === 'function') resetReactionToIdle();
+  });
+  document.getElementById('btnGuessStart')?.addEventListener('click', () => {
+    if (typeof startGuessGame === 'function') startGuessGame();
+  });
+  document.getElementById('btnGuessSubmit')?.addEventListener('click', () => {
+    if (typeof submitGuess === 'function') submitGuess();
+  });
+  document.getElementById('guessInput')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && typeof submitGuess === 'function') submitGuess();
+  });
+  document.getElementById('btnGuessGiveUp')?.addEventListener('click', () => {
+    if (typeof giveUpGuessGame === 'function') giveUpGuessGame();
+  });
+  document.getElementById('btnGuessAgain')?.addEventListener('click', () => {
+    if (typeof resetGuessToIdle === 'function') resetGuessToIdle();
   });
   document.getElementById('btnRevealQuote')?.addEventListener('click', handleRevealQuote);
   document.getElementById('btnRevealSaju')?.addEventListener('click', handleRevealSaju);
