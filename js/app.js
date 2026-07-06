@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '96';
+const APP_BUILD = '97';
 const APP_VERSION_KEY = 'attendance-app-version';
 
 const DEFAULT_SETTINGS = {
@@ -436,6 +436,7 @@ function switchTab(tabName) {
   document.querySelector('.app')?.classList.toggle('is-lunch-tab', tabName === 'lunch');
   document.querySelector('.app')?.classList.toggle('is-chat-tab', tabName === 'chat');
   if (tabName === 'fun') {
+    switchFunSubTab(loadFunSubTab(), false);
     renderFunDate();
     if (typeof renderFortune === 'function') renderFortune();
     if (typeof renderSaju === 'function') renderSaju();
@@ -1111,6 +1112,42 @@ function renderFunDate() {
   if (el) el.textContent = formatTodayLabel();
 }
 
+const FUN_SUBTAB_KEY = 'attendance-fun-subtab';
+const FUN_SUBTAB_META = {
+  fortune: { emoji: '🔮', title: '운세' },
+  game: { emoji: '🎮', title: '미니게임' },
+};
+
+function switchFunSubTab(panelName, persist = true) {
+  const name = panelName === 'game' ? 'game' : 'fortune';
+  document.querySelectorAll('.fun-subtab').forEach((btn) => {
+    const active = btn.dataset.funPanel === name;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+  document.querySelectorAll('.fun-panel').forEach((panel) => {
+    const active = panel.dataset.funPanel === name;
+    panel.classList.toggle('active', active);
+    panel.hidden = !active;
+  });
+  const meta = FUN_SUBTAB_META[name];
+  const emojiEl = document.getElementById('funHeroEmoji');
+  const titleEl = document.getElementById('funHeroTitle');
+  if (emojiEl) emojiEl.textContent = meta.emoji;
+  if (titleEl) titleEl.textContent = meta.title;
+  if (persist) {
+    try { localStorage.setItem(FUN_SUBTAB_KEY, name); } catch (e) {}
+  }
+}
+
+function loadFunSubTab() {
+  try {
+    const saved = localStorage.getItem(FUN_SUBTAB_KEY);
+    if (saved === 'game' || saved === 'fortune') return saved;
+  } catch (e) {}
+  return 'fortune';
+}
+
 // 이번 주 출근 현황 점: 평일 5칸, 출근 기록 있으면 채움, 오늘 칸은 테두리 표시
 function renderWeekStrip() {
   const dotsEl = document.getElementById('weekStripDots');
@@ -1749,6 +1786,11 @@ function init() {
   document.querySelectorAll('.tab-btn').forEach((btn) => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
+
+  document.querySelectorAll('.fun-subtab').forEach((btn) => {
+    btn.addEventListener('click', () => switchFunSubTab(btn.dataset.funPanel));
+  });
+  switchFunSubTab(loadFunSubTab(), false);
 
   ['notifyBefore', 'userName', 'birthDate', 'sheetUrl', 'themeMode', 'fortuneNotify', 'lunchRouletteNotify', 'hermesBaseUrl', 'hermesApiKey', 'hermesModel', 'homeAddress', 'commuteNotify'].forEach((id) => {
     const el = document.getElementById(id);

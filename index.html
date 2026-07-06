@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=96">
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=96">
+  <link rel="stylesheet" href="css/style.css?v=97">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=97">
   <script>
     (function () {
       try {
@@ -180,10 +180,17 @@
       <!-- Fun -->
       <div class="tab-panel" id="tabFun" data-tab-panel="fun">
         <section class="fun-hero">
-          <p class="fun-hero-emoji">🎲</p>
-          <h2 class="fun-hero-title">Fun</h2>
+          <p class="fun-hero-emoji" id="funHeroEmoji">🔮</p>
+          <h2 class="fun-hero-title" id="funHeroTitle">운세</h2>
           <p class="fun-hero-date" id="funTodayDate"></p>
         </section>
+
+        <nav class="fun-subtabs" role="tablist" aria-label="Fun 구분">
+          <button type="button" class="fun-subtab active" data-fun-panel="fortune" role="tab" aria-selected="true">🔮 운세</button>
+          <button type="button" class="fun-subtab" data-fun-panel="game" role="tab" aria-selected="false">🎮 미니게임</button>
+        </nav>
+
+        <div class="fun-panel active" id="funPanelFortune" data-fun-panel="fortune" role="tabpanel">
 
         <section class="card quote-card" id="quoteCard">
           <div class="quote-card-header">
@@ -295,6 +302,10 @@
             <p class="lucky-hint" id="luckyHint">—</p>
           </div>
         </section>
+
+        </div>
+
+        <div class="fun-panel" id="funPanelGame" data-fun-panel="game" role="tabpanel" hidden>
 
         <section class="card coin-card" id="coinCard">
           <div class="coin-card-header">
@@ -458,6 +469,8 @@
             <li>팀 밈 보드</li>
           </ul>
         </section>
+
+        </div>
       </div>
 
       <!-- 맛집 (전체화면 지도 + 플로팅 패널) -->
@@ -614,7 +627,7 @@
           </div>
           <button type="button" class="btn btn-ghost" id="btnNotifyPermission">알림 권한 허용</button>
           <div class="setting-row setting-row-fortune">
-            <label for="fortuneNotify">Fun 알림 — 한마디·운세 (10:00)</label>
+            <label for="fortuneNotify">운세 알림 — 한마디·사주·운세 (10:00)</label>
             <input type="checkbox" id="fortuneNotify" checked>
           </div>
           <div class="setting-row setting-row-lunch">
@@ -700,6 +713,7 @@
             <li>Fun 탭 — 타자 속도 테스트 추가, 분당 타수 측정 및 오늘 최고 기록 표시 (v94)</li>
             <li>Fun 탭 — 반응속도 테스트 추가, 초록불 반응 시간(ms) 측정 및 최고 기록 표시 (v95)</li>
             <li>Fun 탭 — 숫자 맞추기 미니게임 추가, UP/DOWN 힌트와 최소 시도 기록 표시 (v96)</li>
+            <li>Fun 탭 — 운세·미니게임 서브탭 분리 (v97)</li>
           </ul>
         </section>
       </div>
@@ -733,17 +747,17 @@
     </nav>
   </div>
 
-  <script src="config.js?v=96"></script>
-  <script src="vendor/leaflet/leaflet.js?v=96"></script>
-  <script src="js/util.js?v=96"></script>
-  <script src="js/fortune.js?v=96"></script>
-  <script src="js/saju.js?v=96"></script>
-  <script src="js/lunch-map.js?v=96"></script>
-  <script src="js/user-location.js?v=96"></script>
-  <script src="js/weather-brief.js?v=96"></script>
-  <script src="js/news-brief.js?v=96"></script>
-  <script src="js/hermes-chat.js?v=96"></script>
-  <script src="js/commute-time.js?v=96"></script>
-  <script src="js/app.js?v=96"></script>
+  <script src="config.js?v=97"></script>
+  <script src="vendor/leaflet/leaflet.js?v=97"></script>
+  <script src="js/util.js?v=97"></script>
+  <script src="js/fortune.js?v=97"></script>
+  <script src="js/saju.js?v=97"></script>
+  <script src="js/lunch-map.js?v=97"></script>
+  <script src="js/user-location.js?v=97"></script>
+  <script src="js/weather-brief.js?v=97"></script>
+  <script src="js/news-brief.js?v=97"></script>
+  <script src="js/hermes-chat.js?v=97"></script>
+  <script src="js/commute-time.js?v=97"></script>
+  <script src="js/app.js?v=97"></script>
 </body>
 </html>
