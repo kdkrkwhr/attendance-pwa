@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '100';
+const APP_BUILD = '101';
 const APP_VERSION_KEY = 'attendance-app-version';
 
 const DEFAULT_SETTINGS = {
@@ -450,6 +450,7 @@ function switchTab(tabName) {
     if (typeof renderDiceHint === 'function') renderDiceHint();
     if (typeof renderSlotHint === 'function') renderSlotHint();
     if (typeof renderTapHint === 'function') renderTapHint();
+    if (typeof renderGameDailyLocks === 'function') renderGameDailyLocks();
   }
   if (tabName === 'lunch') {
     if (typeof initLunchMap === 'function') {
@@ -1141,6 +1142,7 @@ function switchFunSubTab(panelName, persist = true) {
   if (persist) {
     try { localStorage.setItem(FUN_SUBTAB_KEY, name); } catch (e) {}
   }
+  if (name === 'game' && typeof renderGameDailyLocks === 'function') renderGameDailyLocks();
 }
 
 function loadFunSubTab() {
@@ -1352,6 +1354,7 @@ function render() {
   if (typeof renderDiceHint === 'function') renderDiceHint();
   if (typeof renderSlotHint === 'function') renderSlotHint();
   if (typeof renderTapHint === 'function') renderTapHint();
+  if (typeof renderGameDailyLocks === 'function') renderGameDailyLocks();
   checkAndNotify();
   if (typeof checkFortuneNotify === 'function') checkFortuneNotify();
   if (typeof checkLunchRouletteNotify === 'function') checkLunchRouletteNotify();

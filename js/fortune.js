@@ -391,6 +391,76 @@ function markFunRevealed(type) {
   localStorage.setItem(FUN_REVEAL_KEY, JSON.stringify(data));
 }
 
+/** 미니게임 — 각 게임 하루 1회 */
+const GAME_DAILY_KEY = 'attendance-game-daily';
+const GAME_CARD_IDS = [
+  ['tap', 'tapCard'],
+  ['slot', 'slotCard'],
+  ['dice', 'diceCard'],
+  ['coin', 'coinCard'],
+  ['rps', 'rpsCard'],
+  ['stretch', 'stretchCard'],
+  ['balance', 'balanceCard'],
+  ['reaction', 'reactionCard'],
+  ['typing', 'typingCard'],
+  ['guess', 'guessCard'],
+];
+
+function loadGameDaily() {
+  try {
+    const data = JSON.parse(localStorage.getItem(GAME_DAILY_KEY) || '{}');
+    if (data.dayKey !== todayKey()) return {};
+    return data;
+  } catch {
+    return {};
+  }
+}
+
+function isGamePlayedToday(id) {
+  return Boolean(loadGameDaily()[id]);
+}
+
+function markGamePlayedToday(id) {
+  const data = loadGameDaily();
+  data.dayKey = todayKey();
+  data[id] = true;
+  localStorage.setItem(GAME_DAILY_KEY, JSON.stringify(data));
+}
+
+function guardGameStart(id) {
+  return !isGamePlayedToday(id);
+}
+
+function finishGameDaily(id) {
+  if (isGamePlayedToday(id)) return;
+  markGamePlayedToday(id);
+  renderGameDailyLocks();
+}
+
+function renderGameDailyLocks() {
+  GAME_CARD_IDS.forEach(([id, cardId]) => {
+    const card = document.getElementById(cardId);
+    if (!card) return;
+    const played = isGamePlayedToday(id);
+    let lockEl = card.querySelector('.game-daily-lock');
+    if (!played) {
+      lockEl?.classList.add('hidden');
+      return;
+    }
+    card.querySelectorAll(
+      '[id$="Idle"], [id$="Running"], [id$="Playing"], [id$="Play"], .rps-idle, .balance-idle',
+    ).forEach((el) => el.classList.add('hidden'));
+    card.querySelectorAll('[id$="Result"], [id$="Done"]').forEach((el) => el.classList.add('hidden'));
+    if (!lockEl) {
+      lockEl = document.createElement('div');
+      lockEl.className = 'game-daily-lock fun-reveal-idle';
+      lockEl.innerHTML = '<p class="fun-reveal-idle-text">오늘은 이미 플레이했어요 ✓<br>내일 다시 도전!</p>';
+      card.appendChild(lockEl);
+    }
+    lockEl.classList.remove('hidden');
+  });
+}
+
 function handleRevealQuote() {
   markFunRevealed('quote');
   renderDailyQuote();
@@ -584,8 +654,9 @@ function renderLuckyNumber() {
   if (hintEl) hintEl.textContent = lucky.hint;
 }
 
-/** 동전 던지기 — 고민될 때 쓰는 미니게임 (하루 제한 없이 반복 가능) */
+/** 동전 던지기 — 하루 1회 */
 function flipCoin() {
+  if (!guardGameStart('coin')) return;
   const idleEl = document.getElementById('coinIdle');
   const resultEl = document.getElementById('coinResult');
   const faceEl = document.getElementById('coinResultFace');
@@ -603,6 +674,7 @@ function flipCoin() {
     idleEl.classList.add('hidden');
     resultEl.classList.remove('hidden');
     btn?.removeAttribute('disabled');
+    finishGameDaily('coin');
   }, 500);
 }
 
@@ -611,12 +683,13 @@ function resetCoin() {
   document.getElementById('coinIdle')?.classList.remove('hidden');
 }
 
-/** 가위바위보 vs AI — 하루 제한 없이 반복 가능 */
+/** 가위바위보 vs AI — 하루 1회 */
 const RPS_EMOJI = { rock: '✊', scissors: '✌️', paper: '✋' };
 const RPS_LABEL = { rock: '바위', scissors: '가위', paper: '보' };
 const RPS_BEATS = { rock: 'scissors', scissors: 'paper', paper: 'rock' };
 
 function playRps(myMove) {
+  if (!guardGameStart('rps')) return;
   if (!RPS_EMOJI[myMove]) return;
   const idleEl = document.getElementById('rpsIdle');
   const resultEl = document.getElementById('rpsResult');
@@ -638,6 +711,7 @@ function playRps(myMove) {
 
   idleEl.classList.add('hidden');
   resultEl.classList.remove('hidden');
+  finishGameDaily('rps');
 }
 
 function resetRps() {
@@ -645,7 +719,7 @@ function resetRps() {
   document.getElementById('rpsIdle')?.classList.remove('hidden');
 }
 
-/** 1분 스트레칭 — 하루 반복 가능, 완료 횟수만 오늘 기준으로 카운트 */
+/** 1분 스트레칭 — 하루 1회 */
 const STRETCH_STORAGE_KEY = 'attendance-stretch';
 const STRETCH_SECONDS = 60;
 const STRETCH_TIPS = [
@@ -684,6 +758,7 @@ function renderStretchHint() {
 }
 
 function startStretch() {
+  if (!guardGameStart('stretch')) return;
   const idleEl = document.getElementById('stretchIdle');
   const runningEl = document.getElementById('stretchRunning');
   const doneEl = document.getElementById('stretchDone');
@@ -710,12 +785,13 @@ function startStretch() {
 function finishStretch() {
   clearInterval(stretchTimerId);
   stretchTimerId = null;
-  const count = bumpStretchCount();
+  bumpStretchCount();
   document.getElementById('stretchRunning')?.classList.add('hidden');
   const doneTextEl = document.getElementById('stretchDoneText');
-  if (doneTextEl) doneTextEl.textContent = `완료! 오늘 ${count}번째 스트레칭 🎉`;
+  if (doneTextEl) doneTextEl.textContent = '완료! 스트레칭 끝 🎉';
   document.getElementById('stretchDone')?.classList.remove('hidden');
   renderStretchHint();
+  finishGameDaily('stretch');
 }
 
 function cancelStretch() {
@@ -748,6 +824,7 @@ const BALANCE_QUESTIONS = [
 let balanceQIndex = null;
 
 function renderBalanceGame() {
+  if (isGamePlayedToday('balance')) return;
   const qEl = document.getElementById('balanceQuestion');
   const aBtn = document.getElementById('balanceOptionA');
   const bBtn = document.getElementById('balanceOptionB');
@@ -785,6 +862,7 @@ function pickBalance(choice) {
   if (labelB) labelB.textContent = `${q.b} ${pctB}%`;
 
   document.getElementById('balanceResult')?.classList.remove('hidden');
+  finishGameDaily('balance');
 }
 
 /** 타자 속도 테스트 — 문장 따라치기, 분당 타수(CPM) 측정 */
@@ -826,6 +904,7 @@ function renderTypingHint() {
 }
 
 function startTypingTest() {
+  if (!guardGameStart('typing')) return;
   const idleEl = document.getElementById('typingIdle');
   const runningEl = document.getElementById('typingRunning');
   const doneEl = document.getElementById('typingDone');
@@ -864,6 +943,7 @@ function finishTypingTest() {
   }
   document.getElementById('typingDone')?.classList.remove('hidden');
   typingTarget = '';
+  finishGameDaily('typing');
 }
 
 function cancelTypingTest() {
@@ -921,6 +1001,7 @@ function setReactionPlayState(mode, text, sub = '') {
 }
 
 function startReactionTest() {
+  if (isGamePlayedToday('reaction')) return;
   const idleEl = document.getElementById('reactionIdle');
   const playEl = document.getElementById('reactionPlay');
   const doneEl = document.getElementById('reactionDone');
@@ -944,6 +1025,7 @@ function startReactionTest() {
 }
 
 function handleReactionTap() {
+  if (isGamePlayedToday('reaction')) return;
   if (reactionPhase === 'wait') {
     clearReactionTimer();
     reactionPhase = 'idle';
@@ -966,6 +1048,7 @@ function handleReactionTap() {
   }
   document.getElementById('reactionDone')?.classList.remove('hidden');
   renderReactionHint();
+  finishGameDaily('reaction');
 }
 
 function resetReactionToIdle() {
@@ -1004,6 +1087,7 @@ function renderGuessHint() {
 }
 
 function startGuessGame() {
+  if (!guardGameStart('guess')) return;
   const idleEl = document.getElementById('guessIdle');
   const playingEl = document.getElementById('guessPlaying');
   const doneEl = document.getElementById('guessDone');
@@ -1051,6 +1135,7 @@ function submitGuess() {
     document.getElementById('guessDone')?.classList.remove('hidden');
     renderGuessHint();
     guessTarget = 0;
+    finishGameDaily('guess');
     return;
   }
 
@@ -1071,6 +1156,7 @@ function giveUpGuessGame() {
   const doneTextEl = document.getElementById('guessDoneText');
   if (doneTextEl) doneTextEl.textContent = `정답은 ${answer}였어요`;
   document.getElementById('guessDone')?.classList.remove('hidden');
+  finishGameDaily('guess');
 }
 
 function resetGuessToIdle() {
@@ -1126,6 +1212,7 @@ function renderDiceHint() {
 }
 
 function rollDice() {
+  if (!guardGameStart('dice')) return;
   const idleEl = document.getElementById('diceIdle');
   const resultEl = document.getElementById('diceResult');
   const facesEl = document.getElementById('diceFaces');
@@ -1160,6 +1247,7 @@ function rollDice() {
       resultEl.classList.remove('hidden');
       btn?.removeAttribute('disabled');
       renderDiceHint();
+      finishGameDaily('dice');
     }
   }, 80);
 }
@@ -1198,6 +1286,7 @@ function renderSlotHint() {
 }
 
 function spinSlot() {
+  if (!guardGameStart('slot')) return;
   const idleEl = document.getElementById('slotIdle');
   const resultEl = document.getElementById('slotResult');
   const reelsEl = document.getElementById('slotReels');
@@ -1241,6 +1330,7 @@ function spinSlot() {
       resultEl.classList.remove('hidden');
       btn?.removeAttribute('disabled');
       renderSlotHint();
+      finishGameDaily('slot');
     }
   }, 80);
 }
@@ -1296,6 +1386,7 @@ function clearTapTimers() {
 }
 
 function startTapChallenge() {
+  if (!guardGameStart('tap')) return;
   const idleEl = document.getElementById('tapIdle');
   const runningEl = document.getElementById('tapRunning');
   const doneEl = document.getElementById('tapDone');
@@ -1344,6 +1435,7 @@ function finishTapChallenge() {
   }
   doneEl?.classList.remove('hidden');
   renderTapHint();
+  finishGameDaily('tap');
 }
 
 function resetTapToIdle() {
