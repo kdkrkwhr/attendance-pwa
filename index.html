@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=94">
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=94">
+  <link rel="stylesheet" href="css/style.css?v=95">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=95">
   <script>
     (function () {
       try {
@@ -389,6 +389,25 @@
           </div>
         </section>
 
+        <section class="card reaction-card" id="reactionCard">
+          <div class="reaction-card-header">
+            <span class="reaction-card-badge">⚡ 반응속도 테스트</span>
+            <span class="reaction-card-hint" id="reactionCardHint">초록불에 탭</span>
+          </div>
+          <div id="reactionIdle" class="fun-reveal-idle">
+            <p class="fun-reveal-idle-text">초록불이 뜨면 최대한 빨리 눌러보세요</p>
+            <button type="button" class="btn btn-fun-reveal" id="btnReactionStart">시작 ⚡</button>
+          </div>
+          <div id="reactionPlay" class="reaction-play hidden">
+            <p class="reaction-play-text" id="reactionPlayText">기다리세요…</p>
+            <p class="reaction-play-sub" id="reactionPlaySub"></p>
+          </div>
+          <div id="reactionDone" class="reaction-done hidden">
+            <p class="reaction-done-text" id="reactionDoneText"></p>
+            <button type="button" class="btn btn-ghost btn-sm" id="btnReactionAgain">다시하기</button>
+          </div>
+        </section>
+
         <section class="card typing-card" id="typingCard">
           <div class="typing-card-header">
             <span class="typing-card-badge">⌨️ 타자 속도 테스트</span>
@@ -654,7 +673,8 @@
           <li>Fun 탭 — 가위바위보 vs AI 미니게임 추가 (v91)</li>
           <li>Fun 탭 — 1분 스트레칭 타이머 위젯 추가, 오늘 완료 횟수 표시 (v92)</li>
           <li>Fun 탭 — 밸런스 게임 위젯 추가, A/B 선택 후 가상 선택 비율 표시 (v93)</li>
-          <li>Fun 탭 — 타자 속도 테스트 추가, 분당 타수 측정 및 오늘 최고 기록 표시 (v94)</li>
+            <li>Fun 탭 — 타자 속도 테스트 추가, 분당 타수 측정 및 오늘 최고 기록 표시 (v94)</li>
+            <li>Fun 탭 — 반응속도 테스트 추가, 초록불 반응 시간(ms) 측정 및 최고 기록 표시 (v95)</li>
           </ul>
         </section>
       </div>
@@ -688,17 +708,17 @@
     </nav>
   </div>
 
-  <script src="config.js?v=94"></script>
-  <script src="vendor/leaflet/leaflet.js?v=94"></script>
-  <script src="js/util.js?v=94"></script>
-  <script src="js/fortune.js?v=94"></script>
-  <script src="js/saju.js?v=94"></script>
-  <script src="js/lunch-map.js?v=94"></script>
-  <script src="js/user-location.js?v=94"></script>
-  <script src="js/weather-brief.js?v=94"></script>
-  <script src="js/news-brief.js?v=94"></script>
-  <script src="js/hermes-chat.js?v=94"></script>
-  <script src="js/commute-time.js?v=94"></script>
-  <script src="js/app.js?v=94"></script>
+  <script src="config.js?v=95"></script>
+  <script src="vendor/leaflet/leaflet.js?v=95"></script>
+  <script src="js/util.js?v=95"></script>
+  <script src="js/fortune.js?v=95"></script>
+  <script src="js/saju.js?v=95"></script>
+  <script src="js/lunch-map.js?v=95"></script>
+  <script src="js/user-location.js?v=95"></script>
+  <script src="js/weather-brief.js?v=95"></script>
+  <script src="js/news-brief.js?v=95"></script>
+  <script src="js/hermes-chat.js?v=95"></script>
+  <script src="js/commute-time.js?v=95"></script>
+  <script src="js/app.js?v=95"></script>
 </body>
 </html>

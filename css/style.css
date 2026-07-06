@@ -1703,6 +1703,82 @@ body {
   margin: 0 0 0.75rem;
 }
 
+/* ── 반응속도 테스트 ── */
+
+.reaction-card {
+  border-top: 4px solid #eab308;
+  background: linear-gradient(165deg, #fefce8 0%, var(--card) 50%);
+  margin-bottom: 0.875rem;
+}
+
+.reaction-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.reaction-card-badge {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #a16207;
+}
+
+.reaction-card-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: #fef9c3;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+}
+
+.reaction-play {
+  text-align: center;
+  padding: 1.25rem 0.75rem;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.reaction-play.reaction-wait {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.reaction-play.reaction-go {
+  background: #bbf7d0;
+  color: #15803d;
+}
+
+.reaction-play.reaction-early {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.reaction-play-text {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin: 0 0 0.35rem;
+}
+
+.reaction-play-sub {
+  font-size: 0.8125rem;
+  margin: 0;
+  opacity: 0.85;
+}
+
+.reaction-done {
+  text-align: center;
+  padding: 0.25rem 0;
+}
+
+.reaction-done-text {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem;
+}
+
 /* ── 타자 속도 테스트 ── */
 
 .typing-card {
@@ -2385,6 +2461,30 @@ body {
       color: #fed7aa;
     }
 
+    .reaction-card {
+      background: linear-gradient(165deg, #422006 0%, var(--card) 50%);
+    }
+
+    .reaction-card-hint {
+      background: #713f12;
+      color: #fef08a;
+    }
+
+    .reaction-play.reaction-wait {
+      background: #7f1d1d;
+      color: #fecaca;
+    }
+
+    .reaction-play.reaction-go {
+      background: #14532d;
+      color: #bbf7d0;
+    }
+
+    .reaction-play.reaction-early {
+      background: #7c2d12;
+      color: #fed7aa;
+    }
+
     .fun-coming {
       background: #2e1065;
       border-color: #6b21a8;
@@ -2532,6 +2632,30 @@ body {
   }
 
   .typing-card-hint {
+    background: #7c2d12;
+    color: #fed7aa;
+  }
+
+  .reaction-card {
+    background: linear-gradient(165deg, #422006 0%, var(--card) 50%);
+  }
+
+  .reaction-card-hint {
+    background: #713f12;
+    color: #fef08a;
+  }
+
+  .reaction-play.reaction-wait {
+    background: #7f1d1d;
+    color: #fecaca;
+  }
+
+  .reaction-play.reaction-go {
+    background: #14532d;
+    color: #bbf7d0;
+  }
+
+  .reaction-play.reaction-early {
     background: #7c2d12;
     color: #fed7aa;
   }

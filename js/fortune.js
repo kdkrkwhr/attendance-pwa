@@ -876,3 +876,102 @@ function resetTypingToIdle() {
   document.getElementById('typingDone')?.classList.add('hidden');
   document.getElementById('typingIdle')?.classList.remove('hidden');
 }
+
+/** 반응속도 테스트 — 초록불에 빠르게 탭, ms 측정 */
+const REACTION_STORAGE_KEY = 'attendance-reaction-best';
+let reactionPhase = 'idle';
+let reactionGoAt = 0;
+let reactionTimerId = null;
+
+function loadReactionBest() {
+  try {
+    return Number(localStorage.getItem(REACTION_STORAGE_KEY)) || 0;
+  } catch {
+    return 0;
+  }
+}
+
+function saveReactionBestIfLower(ms) {
+  const best = loadReactionBest();
+  if (!best || ms < best) localStorage.setItem(REACTION_STORAGE_KEY, String(ms));
+  return Math.min(best || ms, ms);
+}
+
+function renderReactionHint() {
+  const hintEl = document.getElementById('reactionCardHint');
+  if (!hintEl) return;
+  const best = loadReactionBest();
+  hintEl.textContent = best ? `최고 ${best}ms` : '초록불에 탭';
+}
+
+function clearReactionTimer() {
+  clearTimeout(reactionTimerId);
+  reactionTimerId = null;
+}
+
+function setReactionPlayState(mode, text, sub = '') {
+  const playEl = document.getElementById('reactionPlay');
+  const textEl = document.getElementById('reactionPlayText');
+  const subEl = document.getElementById('reactionPlaySub');
+  if (!playEl) return;
+  playEl.classList.remove('reaction-wait', 'reaction-go', 'reaction-early');
+  if (mode) playEl.classList.add(mode);
+  if (textEl) textEl.textContent = text;
+  if (subEl) subEl.textContent = sub;
+}
+
+function startReactionTest() {
+  const idleEl = document.getElementById('reactionIdle');
+  const playEl = document.getElementById('reactionPlay');
+  const doneEl = document.getElementById('reactionDone');
+  if (!idleEl || !playEl) return;
+
+  clearReactionTimer();
+  reactionPhase = 'wait';
+  reactionGoAt = 0;
+
+  idleEl.classList.add('hidden');
+  doneEl?.classList.add('hidden');
+  playEl.classList.remove('hidden');
+  setReactionPlayState('reaction-wait', '기다리세요…', '빨간불일 땐 누르지 마세요');
+
+  const delay = 1500 + Math.random() * 2500;
+  reactionTimerId = setTimeout(() => {
+    reactionPhase = 'go';
+    reactionGoAt = Date.now();
+    setReactionPlayState('reaction-go', '지금!', '최대한 빨리 탭하세요');
+  }, delay);
+}
+
+function handleReactionTap() {
+  if (reactionPhase === 'wait') {
+    clearReactionTimer();
+    reactionPhase = 'idle';
+    setReactionPlayState('reaction-early', '너무 빨라요!', '초록불이 뜰 때까지 기다리세요');
+    setTimeout(resetReactionToIdle, 1200);
+    return;
+  }
+  if (reactionPhase !== 'go' || !reactionGoAt) return;
+
+  const ms = Date.now() - reactionGoAt;
+  reactionPhase = 'idle';
+  const best = saveReactionBestIfLower(ms);
+
+  document.getElementById('reactionPlay')?.classList.add('hidden');
+  const doneTextEl = document.getElementById('reactionDoneText');
+  if (doneTextEl) {
+    doneTextEl.textContent = ms <= best
+      ? `${ms}ms — 신기록 ⚡`
+      : `${ms}ms (최고 ${best}ms)`;
+  }
+  document.getElementById('reactionDone')?.classList.remove('hidden');
+  renderReactionHint();
+}
+
+function resetReactionToIdle() {
+  clearReactionTimer();
+  reactionPhase = 'idle';
+  document.getElementById('reactionPlay')?.classList.add('hidden');
+  document.getElementById('reactionDone')?.classList.add('hidden');
+  document.getElementById('reactionIdle')?.classList.remove('hidden');
+}

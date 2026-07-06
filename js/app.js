@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '94';
+const APP_BUILD = '95';
 const APP_VERSION_KEY = 'attendance-app-version';
 
 const DEFAULT_SETTINGS = {
@@ -444,6 +444,7 @@ function switchTab(tabName) {
     if (typeof renderStretchHint === 'function') renderStretchHint();
     if (typeof renderBalanceGame === 'function') renderBalanceGame();
     if (typeof renderTypingHint === 'function') renderTypingHint();
+    if (typeof renderReactionHint === 'function') renderReactionHint();
   }
   if (tabName === 'lunch') {
     if (typeof initLunchMap === 'function') {
@@ -1713,6 +1714,15 @@ function init() {
   });
   document.getElementById('btnTypingAgain')?.addEventListener('click', () => {
     if (typeof resetTypingToIdle === 'function') resetTypingToIdle();
+  });
+  document.getElementById('btnReactionStart')?.addEventListener('click', () => {
+    if (typeof startReactionTest === 'function') startReactionTest();
+  });
+  document.getElementById('reactionPlay')?.addEventListener('click', () => {
+    if (typeof handleReactionTap === 'function') handleReactionTap();
+  });
+  document.getElementById('btnReactionAgain')?.addEventListener('click', () => {
+    if (typeof resetReactionToIdle === 'function') resetReactionToIdle();
   });
   document.getElementById('btnRevealQuote')?.addEventListener('click', handleRevealQuote);
   document.getElementById('btnRevealSaju')?.addEventListener('click', handleRevealSaju);
