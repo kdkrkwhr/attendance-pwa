@@ -825,6 +825,13 @@ body {
   text-align: center;
 }
 
+.feature-changelog-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 1rem 0 0.35rem;
+  color: var(--text);
+}
+
 .feature-notes {
   margin: 0;
   padding: 0;
