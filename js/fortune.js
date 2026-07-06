@@ -1249,3 +1249,107 @@ function resetSlot() {
   document.getElementById('slotResult')?.classList.add('hidden');
   document.getElementById('slotIdle')?.classList.remove('hidden');
 }
+
+/** 5초 탭 챌린지 — 오늘 최고 탭 수 */
+const TAP_STORAGE_KEY = 'attendance-tap-best';
+const TAP_SECONDS = 5;
+let tapCount = 0;
+let tapTimerId = null;
+let tapIntervalId = null;
+
+function loadTapBest() {
+  try {
+    const raw = localStorage.getItem(TAP_STORAGE_KEY);
+    if (!raw) return 0;
+    const data = JSON.parse(raw);
+    return data?.date === todayKey() ? Number(data.count) || 0 : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function saveTapBestIfHigher(count) {
+  const best = loadTapBest();
+  if (!best || count > best) {
+    localStorage.setItem(TAP_STORAGE_KEY, JSON.stringify({ date: todayKey(), count }));
+    return count;
+  }
+  return best;
+}
+
+function renderTapHint() {
+  const hintEl = document.getElementById('tapCardHint');
+  if (!hintEl) return;
+  const best = loadTapBest();
+  hintEl.textContent = best ? `오늘 최고 ${best}탭` : '5초 안에';
+}
+
+function clearTapTimers() {
+  if (tapTimerId) {
+    clearTimeout(tapTimerId);
+    tapTimerId = null;
+  }
+  if (tapIntervalId) {
+    clearInterval(tapIntervalId);
+    tapIntervalId = null;
+  }
+}
+
+function startTapChallenge() {
+  const idleEl = document.getElementById('tapIdle');
+  const runningEl = document.getElementById('tapRunning');
+  const doneEl = document.getElementById('tapDone');
+  const countEl = document.getElementById('tapCount');
+  const countdownEl = document.getElementById('tapCountdown');
+  if (!idleEl || !runningEl) return;
+
+  clearTapTimers();
+  tapCount = 0;
+  if (countEl) countEl.textContent = '0';
+  if (countdownEl) countdownEl.textContent = String(TAP_SECONDS);
+
+  idleEl.classList.add('hidden');
+  doneEl?.classList.add('hidden');
+  runningEl.classList.remove('hidden');
+
+  let left = TAP_SECONDS;
+  tapIntervalId = setInterval(() => {
+    left -= 1;
+    if (countdownEl) countdownEl.textContent = String(Math.max(left, 0));
+    if (left <= 0) clearInterval(tapIntervalId);
+  }, 1000);
+
+  tapTimerId = setTimeout(() => finishTapChallenge(), TAP_SECONDS * 1000);
+}
+
+function handleTapHit() {
+  if (!tapTimerId) return;
+  tapCount += 1;
+  const countEl = document.getElementById('tapCount');
+  if (countEl) countEl.textContent = String(tapCount);
+}
+
+function finishTapChallenge() {
+  clearTapTimers();
+  const runningEl = document.getElementById('tapRunning');
+  const doneEl = document.getElementById('tapDone');
+  const doneTextEl = document.getElementById('tapDoneText');
+  runningEl?.classList.add('hidden');
+
+  const best = saveTapBestIfHigher(tapCount);
+  if (doneTextEl) {
+    doneTextEl.textContent = tapCount >= best
+      ? `${tapCount}탭 — 오늘 최고!`
+      : `${tapCount}탭 (오늘 최고 ${best}탭)`;
+  }
+  doneEl?.classList.remove('hidden');
+  renderTapHint();
+}
+
+function resetTapToIdle() {
+  clearTapTimers();
+  tapCount = 0;
+  document.getElementById('tapRunning')?.classList.add('hidden');
+  document.getElementById('tapDone')?.classList.add('hidden');
+  document.getElementById('tapIdle')?.classList.remove('hidden');
+}

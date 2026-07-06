@@ -1968,6 +1968,83 @@ body {
   margin: 0 0 0.75rem;
 }
 
+/* ── 5초 탭 챌린지 ── */
+
+.tap-card {
+  border-top: 4px solid #0d9488;
+  background: linear-gradient(165deg, #f0fdfa 0%, var(--card) 50%);
+  margin-bottom: 0.875rem;
+}
+
+.tap-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.tap-card-badge {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.tap-card-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: #ccfbf1;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+}
+
+.tap-running {
+  text-align: center;
+  padding: 0.25rem 0;
+}
+
+.tap-countdown {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f766e;
+  margin: 0 0 0.25rem;
+}
+
+.tap-count {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 0.75rem;
+  color: var(--text);
+}
+
+.btn-tap-hit {
+  display: block;
+  width: 100%;
+  max-width: 200px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, #14b8a6, #0d9488);
+  border: none;
+  border-radius: 1rem;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.btn-tap-hit:active {
+  transform: scale(0.97);
+}
+
+.tap-done-text {
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+  margin: 0 0 0.75rem;
+  color: #0f766e;
+}
+
 /* ── 타자 속도 테스트 ── */
 
 .typing-card {
