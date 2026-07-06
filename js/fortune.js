@@ -391,8 +391,9 @@ function markFunRevealed(type) {
   localStorage.setItem(FUN_REVEAL_KEY, JSON.stringify(data));
 }
 
-/** 미니게임 — 각 게임 하루 1회 */
+/** 미니게임 — 대부분 하루 1회 (가위바위보·밸런스는 무제한) */
 const GAME_DAILY_KEY = 'attendance-game-daily';
+const UNLIMITED_GAMES = new Set(['rps', 'balance']);
 const GAME_CARD_IDS = [
   ['tap', 'tapCard'],
   ['slot', 'slotCard'],
@@ -417,6 +418,7 @@ function loadGameDaily() {
 }
 
 function isGamePlayedToday(id) {
+  if (UNLIMITED_GAMES.has(id)) return false;
   return Boolean(loadGameDaily()[id]);
 }
 
@@ -432,6 +434,7 @@ function guardGameStart(id) {
 }
 
 function finishGameDaily(id) {
+  if (UNLIMITED_GAMES.has(id)) return;
   if (isGamePlayedToday(id)) return;
   markGamePlayedToday(id);
   renderGameDailyLocks();
@@ -683,13 +686,12 @@ function resetCoin() {
   document.getElementById('coinIdle')?.classList.remove('hidden');
 }
 
-/** 가위바위보 vs AI — 하루 1회 */
+/** 가위바위보 vs AI — 무제한 */
 const RPS_EMOJI = { rock: '✊', scissors: '✌️', paper: '✋' };
 const RPS_LABEL = { rock: '바위', scissors: '가위', paper: '보' };
 const RPS_BEATS = { rock: 'scissors', scissors: 'paper', paper: 'rock' };
 
 function playRps(myMove) {
-  if (!guardGameStart('rps')) return;
   if (!RPS_EMOJI[myMove]) return;
   const idleEl = document.getElementById('rpsIdle');
   const resultEl = document.getElementById('rpsResult');
@@ -711,7 +713,6 @@ function playRps(myMove) {
 
   idleEl.classList.add('hidden');
   resultEl.classList.remove('hidden');
-  finishGameDaily('rps');
 }
 
 function resetRps() {
@@ -824,7 +825,6 @@ const BALANCE_QUESTIONS = [
 let balanceQIndex = null;
 
 function renderBalanceGame() {
-  if (isGamePlayedToday('balance')) return;
   const qEl = document.getElementById('balanceQuestion');
   const aBtn = document.getElementById('balanceOptionA');
   const bBtn = document.getElementById('balanceOptionB');
@@ -862,7 +862,6 @@ function pickBalance(choice) {
   if (labelB) labelB.textContent = `${q.b} ${pctB}%`;
 
   document.getElementById('balanceResult')?.classList.remove('hidden');
-  finishGameDaily('balance');
 }
 
 /** 타자 속도 테스트 — 문장 따라치기, 분당 타수(CPM) 측정 */
