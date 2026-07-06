@@ -1168,3 +1168,84 @@ function resetDice() {
   document.getElementById('diceResult')?.classList.add('hidden');
   document.getElementById('diceIdle')?.classList.remove('hidden');
 }
+
+/** 행운 슬롯 — 3릴 매칭, 오늘 잭팟 횟수 */
+const SLOT_STORAGE_KEY = 'attendance-slot-jackpots';
+const SLOT_SYMBOLS = ['🍀', '⭐', '💎', '☕', '🍕', '🎯'];
+
+function loadSlotJackpots() {
+  try {
+    const raw = localStorage.getItem(SLOT_STORAGE_KEY);
+    if (!raw) return 0;
+    const data = JSON.parse(raw);
+    return data?.date === todayKey() ? Number(data.count) || 0 : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function saveSlotJackpot() {
+  const count = loadSlotJackpots() + 1;
+  localStorage.setItem(SLOT_STORAGE_KEY, JSON.stringify({ date: todayKey(), count }));
+  return count;
+}
+
+function renderSlotHint() {
+  const hintEl = document.getElementById('slotCardHint');
+  if (!hintEl) return;
+  const jackpots = loadSlotJackpots();
+  hintEl.textContent = jackpots ? `오늘 잭팟 ${jackpots}회` : '3개 일치';
+}
+
+function spinSlot() {
+  const idleEl = document.getElementById('slotIdle');
+  const resultEl = document.getElementById('slotResult');
+  const reelsEl = document.getElementById('slotReels');
+  const msgEl = document.getElementById('slotMsgText');
+  const btn = document.getElementById('btnSlotSpin');
+  if (!idleEl || !resultEl) return;
+
+  btn?.setAttribute('disabled', 'true');
+  idleEl.classList.add('slot-spinning');
+  let ticks = 0;
+  const spin = setInterval(() => {
+    const picks = [
+      SLOT_SYMBOLS[Math.floor(Math.random() * SLOT_SYMBOLS.length)],
+      SLOT_SYMBOLS[Math.floor(Math.random() * SLOT_SYMBOLS.length)],
+      SLOT_SYMBOLS[Math.floor(Math.random() * SLOT_SYMBOLS.length)],
+    ];
+    if (reelsEl) reelsEl.textContent = picks.join(' ');
+    ticks += 1;
+    if (ticks >= 10) {
+      clearInterval(spin);
+      const final = [
+        SLOT_SYMBOLS[Math.floor(Math.random() * SLOT_SYMBOLS.length)],
+        SLOT_SYMBOLS[Math.floor(Math.random() * SLOT_SYMBOLS.length)],
+        SLOT_SYMBOLS[Math.floor(Math.random() * SLOT_SYMBOLS.length)],
+      ];
+      if (reelsEl) reelsEl.textContent = final.join(' ');
+      const allMatch = final[0] === final[1] && final[1] === final[2];
+      const pairMatch = !allMatch && (final[0] === final[1] || final[1] === final[2] || final[0] === final[2]);
+      if (msgEl) {
+        if (allMatch) {
+          const count = saveSlotJackpot();
+          msgEl.textContent = `잭팟! ${final[0]} 3개 — 오늘 ${count}번째 🎉`;
+        } else if (pairMatch) {
+          msgEl.textContent = '더블 매치! 꽤 좋은 행운이에요';
+        } else {
+          msgEl.textContent = '아쉽네요… 다시 도전해보세요';
+        }
+      }
+      idleEl.classList.remove('slot-spinning');
+      idleEl.classList.add('hidden');
+      resultEl.classList.remove('hidden');
+      btn?.removeAttribute('disabled');
+      renderSlotHint();
+    }
+  }, 80);
+}
+
+function resetSlot() {
+  document.getElementById('slotResult')?.classList.add('hidden');
+  document.getElementById('slotIdle')?.classList.remove('hidden');
+}

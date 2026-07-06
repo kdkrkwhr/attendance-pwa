@@ -1915,6 +1915,59 @@ body {
   margin: 0 0 0.75rem;
 }
 
+/* ── 행운 슬롯 ── */
+
+.slot-card {
+  border-top: 4px solid #d97706;
+  background: linear-gradient(165deg, #fffbeb 0%, var(--card) 50%);
+  margin-bottom: 0.875rem;
+}
+
+.slot-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.slot-card-badge {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #b45309;
+}
+
+.slot-card-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: #fef3c7;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+}
+
+.slot-reels {
+  font-size: 2.5rem;
+  letter-spacing: 0.35rem;
+  text-align: center;
+  margin: 0.5rem 0 0.75rem;
+}
+
+.slot-spinning .slot-reels,
+#slotIdle.slot-spinning .fun-reveal-idle-emoji {
+  animation: slot-shake 0.12s ease-in-out infinite;
+}
+
+@keyframes slot-shake {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.slot-msg-text {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin: 0 0 0.75rem;
+}
+
 /* ── 타자 속도 테스트 ── */
 
 .typing-card {
@@ -2675,6 +2728,15 @@ body {
       color: #ddd6fe;
     }
 
+    .slot-card {
+      background: linear-gradient(165deg, #451a03 0%, var(--card) 50%);
+    }
+
+    .slot-card-hint {
+      background: #78350f;
+      color: #fde68a;
+    }
+
     .dice-sum-text {
       color: #c4b5fd;
     }
@@ -2870,6 +2932,15 @@ body {
   .dice-card-hint {
     background: #4c1d95;
     color: #ddd6fe;
+  }
+
+  .slot-card {
+    background: linear-gradient(165deg, #451a03 0%, var(--card) 50%);
+  }
+
+  .slot-card-hint {
+    background: #78350f;
+    color: #fde68a;
   }
 
   .dice-sum-text {
