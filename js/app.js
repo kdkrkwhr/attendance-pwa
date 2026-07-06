@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '103';
+const APP_BUILD = '104';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 
@@ -1662,11 +1662,10 @@ function renderAppVersion() {
   if (el) el.textContent = `앱 버전 ${APP_BUILD}`;
 }
 
-/** 설정 탭: (vNN) 달린 기능추가 항목만 최근 N개 표시 */
+/** 설정 탭 기능 안내: (vNN) 항목만 최근 N개 표시 */
 function renderFeatureChangelog() {
   const list = document.getElementById('featureNotesList');
-  const card = document.getElementById('featureNotesCard');
-  if (!list || !card) return;
+  if (!list) return;
 
   const versioned = [...list.querySelectorAll('li')]
     .map((li) => {
@@ -1677,23 +1676,9 @@ function renderFeatureChangelog() {
     .sort((a, b) => a.v - b.v);
   if (!versioned.length) return;
 
-  let changelogList = document.getElementById('featureChangelogList');
-  if (!changelogList) {
-    const heading = document.createElement('h3');
-    heading.className = 'feature-changelog-title';
-    heading.textContent = '최근 기능 추가';
-    card.appendChild(heading);
-    changelogList = document.createElement('ul');
-    changelogList.className = 'feature-notes';
-    changelogList.id = 'featureChangelogList';
-    card.appendChild(changelogList);
-  } else {
-    changelogList.replaceChildren();
-  }
-
   const recent = versioned.slice(-FEATURE_CHANGELOG_LIMIT);
-  versioned.forEach(({ li }) => li.remove());
-  recent.forEach(({ li }) => changelogList.appendChild(li));
+  list.replaceChildren();
+  recent.forEach(({ li }) => list.appendChild(li));
 }
 
 // ── 초기화 ──────────────────────────────────────────
