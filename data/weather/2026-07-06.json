@@ -3,11 +3,60 @@
   "location": "DMC첨단산업센터",
   "lat": 37.5845,
   "lng": 126.8856,
-  "generatedAt": "2026-07-06T12:00:55+09:00",
-  "periods": [],
+  "generatedAt": "2026-07-06T20:01:08+09:00",
+  "periods": [
+    {
+      "time": "18:00",
+      "label": "저녁",
+      "temp": 27,
+      "sky": "흐림",
+      "pop": 60,
+      "pty": "소나기"
+    },
+    {
+      "time": "19:00",
+      "label": "저녁",
+      "temp": 26,
+      "sky": "흐림",
+      "pop": 30,
+      "pty": "없음"
+    },
+    {
+      "time": "20:00",
+      "label": "저녁",
+      "temp": 25,
+      "sky": "흐림",
+      "pop": 60,
+      "pty": "소나기"
+    },
+    {
+      "time": "21:00",
+      "label": "저녁",
+      "temp": 25,
+      "sky": "흐림",
+      "pop": 30,
+      "pty": "없음"
+    },
+    {
+      "time": "22:00",
+      "label": "저녁",
+      "temp": 25,
+      "sky": "흐림",
+      "pop": 30,
+      "pty": "없음"
+    },
+    {
+      "time": "23:00",
+      "label": "저녁",
+      "temp": 25,
+      "sky": "흐림",
+      "pop": 30,
+      "pty": "없음"
+    }
+  ],
   "highlights": {
-    "tempMin": null,
-    "tempMax": null
+    "tempMin": 25,
+    "tempMax": 27
   },
-  "summary": "예보 데이터를 불러오지 못했습니다."
+  "summary": "오늘 25~27°C. 흐림. 비/소나기 가능 — 우산 챙기세요."
 }
