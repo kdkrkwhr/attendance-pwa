@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=97">
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=97">
+  <link rel="stylesheet" href="css/style.css?v=98">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=98">
   <script>
     (function () {
       try {
@@ -306,6 +306,24 @@
         </div>
 
         <div class="fun-panel" id="funPanelGame" data-fun-panel="game" role="tabpanel" hidden>
+
+        <section class="card dice-card" id="diceCard">
+          <div class="dice-card-header">
+            <span class="dice-card-badge">🎲 주사위 굴리기</span>
+            <span class="dice-card-hint" id="diceCardHint">2개 합계</span>
+          </div>
+          <div id="diceIdle" class="fun-reveal-idle">
+            <p class="fun-reveal-idle-emoji">🎲</p>
+            <p class="fun-reveal-idle-text">두 개 주사위를 굴려 오늘의 행운을 확인하세요</p>
+            <button type="button" class="btn btn-fun-reveal" id="btnDiceRoll">주사위 굴리기</button>
+          </div>
+          <div id="diceResult" class="dice-result hidden">
+            <div class="dice-faces" id="diceFaces">⚀ ⚀</div>
+            <p class="dice-sum-text" id="diceSumText">합계 2</p>
+            <p class="dice-msg-text" id="diceMsgText"></p>
+            <button type="button" class="btn btn-ghost btn-sm" id="btnDiceAgain">다시 굴리기</button>
+          </div>
+        </section>
 
         <section class="card coin-card" id="coinCard">
           <div class="coin-card-header">
@@ -714,6 +732,7 @@
             <li>Fun 탭 — 반응속도 테스트 추가, 초록불 반응 시간(ms) 측정 및 최고 기록 표시 (v95)</li>
             <li>Fun 탭 — 숫자 맞추기 미니게임 추가, UP/DOWN 힌트와 최소 시도 기록 표시 (v96)</li>
             <li>Fun 탭 — 운세·미니게임 서브탭 분리 (v97)</li>
+            <li>Fun 탭 — 주사위 굴리기 미니게임 추가, 오늘 최고 합계 표시 (v98)</li>
           </ul>
         </section>
       </div>
@@ -747,17 +766,17 @@
     </nav>
   </div>
 
-  <script src="config.js?v=97"></script>
-  <script src="vendor/leaflet/leaflet.js?v=97"></script>
-  <script src="js/util.js?v=97"></script>
-  <script src="js/fortune.js?v=97"></script>
-  <script src="js/saju.js?v=97"></script>
-  <script src="js/lunch-map.js?v=97"></script>
-  <script src="js/user-location.js?v=97"></script>
-  <script src="js/weather-brief.js?v=97"></script>
-  <script src="js/news-brief.js?v=97"></script>
-  <script src="js/hermes-chat.js?v=97"></script>
-  <script src="js/commute-time.js?v=97"></script>
-  <script src="js/app.js?v=97"></script>
+  <script src="config.js?v=98"></script>
+  <script src="vendor/leaflet/leaflet.js?v=98"></script>
+  <script src="js/util.js?v=98"></script>
+  <script src="js/fortune.js?v=98"></script>
+  <script src="js/saju.js?v=98"></script>
+  <script src="js/lunch-map.js?v=98"></script>
+  <script src="js/user-location.js?v=98"></script>
+  <script src="js/weather-brief.js?v=98"></script>
+  <script src="js/news-brief.js?v=98"></script>
+  <script src="js/hermes-chat.js?v=98"></script>
+  <script src="js/commute-time.js?v=98"></script>
+  <script src="js/app.js?v=98"></script>
 </body>
 </html>

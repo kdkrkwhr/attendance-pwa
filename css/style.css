@@ -1850,6 +1850,71 @@ body {
   margin: 0 0 0.75rem;
 }
 
+/* ── 주사위 굴리기 ── */
+
+.dice-card {
+  border-top: 4px solid #7c3aed;
+  background: linear-gradient(165deg, #f5f3ff 0%, var(--card) 50%);
+  margin-bottom: 0.875rem;
+}
+
+.dice-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.dice-card-badge {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #6d28d9;
+}
+
+.dice-card-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: #ede9fe;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+}
+
+.dice-result {
+  text-align: center;
+  padding: 0.25rem 0;
+}
+
+.dice-faces {
+  font-size: 2.5rem;
+  letter-spacing: 0.5rem;
+  margin: 0 0 0.5rem;
+  line-height: 1.2;
+}
+
+.dice-rolling .dice-faces,
+#diceIdle.dice-rolling .fun-reveal-idle-emoji {
+  animation: dice-shake 0.15s ease-in-out infinite;
+}
+
+@keyframes dice-shake {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-8deg); }
+  75% { transform: rotate(8deg); }
+}
+
+.dice-sum-text {
+  font-size: 1.125rem;
+  font-weight: 800;
+  margin: 0 0 0.35rem;
+  color: #6d28d9;
+}
+
+.dice-msg-text {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin: 0 0 0.75rem;
+}
+
 /* ── 타자 속도 테스트 ── */
 
 .typing-card {
@@ -2601,6 +2666,19 @@ body {
       color: #a5f3fc;
     }
 
+    .dice-card {
+      background: linear-gradient(165deg, #2e1065 0%, var(--card) 50%);
+    }
+
+    .dice-card-hint {
+      background: #4c1d95;
+      color: #ddd6fe;
+    }
+
+    .dice-sum-text {
+      color: #c4b5fd;
+    }
+
     .fun-coming {
       background: #2e1065;
       border-color: #6b21a8;
@@ -2783,6 +2861,19 @@ body {
   .guess-card-hint {
     background: #155e75;
     color: #a5f3fc;
+  }
+
+  .dice-card {
+    background: linear-gradient(165deg, #2e1065 0%, var(--card) 50%);
+  }
+
+  .dice-card-hint {
+    background: #4c1d95;
+    color: #ddd6fe;
+  }
+
+  .dice-sum-text {
+    color: #c4b5fd;
   }
 
   .fun-coming {

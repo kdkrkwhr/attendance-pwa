@@ -1079,3 +1079,92 @@ function resetGuessToIdle() {
   document.getElementById('guessDone')?.classList.add('hidden');
   document.getElementById('guessIdle')?.classList.remove('hidden');
 }
+
+/** 주사위 굴리기 — 2개 합계, 오늘 최고 합 기록 */
+const DICE_STORAGE_KEY = 'attendance-dice-best';
+const DICE_FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+
+const DICE_SUM_MSG = {
+  2: '스네이크아이즈… 오늘은 조심히 가요',
+  3: '작은 숫자지만 시작은 됐어요',
+  4: '무난한 출발이에요',
+  5: '평범이 최고의 행운이에요',
+  6: '괜찮은 숫자예요',
+  7: '행운의 7! 뭐든 해보세요',
+  8: '기분 좋은 숫자예요',
+  9: '오늘 운이 따르는 편이에요',
+  10: '꽤 좋은 합이에요!',
+  11: '거의 최고! 오늘 잘 될 거예요',
+  12: '더블 식스! 레전드 행운 🎉',
+};
+
+function loadDiceBest() {
+  try {
+    const raw = localStorage.getItem(DICE_STORAGE_KEY);
+    if (!raw) return 0;
+    const data = JSON.parse(raw);
+    return data?.date === todayKey() ? Number(data.sum) || 0 : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function saveDiceBestIfHigher(sum) {
+  const best = loadDiceBest();
+  if (!best || sum > best) {
+    localStorage.setItem(DICE_STORAGE_KEY, JSON.stringify({ date: todayKey(), sum }));
+    return sum;
+  }
+  return best;
+}
+
+function renderDiceHint() {
+  const hintEl = document.getElementById('diceCardHint');
+  if (!hintEl) return;
+  const best = loadDiceBest();
+  hintEl.textContent = best ? `오늘 최고 ${best}` : '2개 합계';
+}
+
+function rollDice() {
+  const idleEl = document.getElementById('diceIdle');
+  const resultEl = document.getElementById('diceResult');
+  const facesEl = document.getElementById('diceFaces');
+  const sumEl = document.getElementById('diceSumText');
+  const msgEl = document.getElementById('diceMsgText');
+  const btn = document.getElementById('btnDiceRoll');
+  if (!idleEl || !resultEl) return;
+
+  btn?.setAttribute('disabled', 'true');
+  idleEl.classList.add('dice-rolling');
+  let ticks = 0;
+  const spin = setInterval(() => {
+    const a = Math.floor(Math.random() * 6);
+    const b = Math.floor(Math.random() * 6);
+    if (facesEl) facesEl.textContent = `${DICE_FACES[a]} ${DICE_FACES[b]}`;
+    ticks += 1;
+    if (ticks >= 8) {
+      clearInterval(spin);
+      const d1 = Math.floor(Math.random() * 6) + 1;
+      const d2 = Math.floor(Math.random() * 6) + 1;
+      const sum = d1 + d2;
+      const best = saveDiceBestIfHigher(sum);
+      if (facesEl) facesEl.textContent = `${DICE_FACES[d1 - 1]} ${DICE_FACES[d2 - 1]}`;
+      if (sumEl) {
+        sumEl.textContent = sum >= best && sum > 0
+          ? `합계 ${sum} — 오늘 최고!`
+          : `합계 ${sum} (오늘 최고 ${best})`;
+      }
+      if (msgEl) msgEl.textContent = DICE_SUM_MSG[sum] || '주사위가 말해줬어요';
+      idleEl.classList.remove('dice-rolling');
+      idleEl.classList.add('hidden');
+      resultEl.classList.remove('hidden');
+      btn?.removeAttribute('disabled');
+      renderDiceHint();
+    }
+  }, 80);
+}
+
+function resetDice() {
+  document.getElementById('diceResult')?.classList.add('hidden');
+  document.getElementById('diceIdle')?.classList.remove('hidden');
+}
