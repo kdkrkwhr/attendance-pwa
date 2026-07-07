@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '104';
+const APP_BUILD = '105';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 
@@ -1638,20 +1638,50 @@ async function registerSW() {
 
     await reg.update();
 
+    const pollUpdate = () => {
+      reg.update();
+      checkForRemoteUpdate();
+    };
+
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') reg.update();
+      if (document.visibilityState === 'visible') pollUpdate();
     });
+    setInterval(pollUpdate, 5 * 60 * 1000);
   } catch (e) {
     console.warn('SW 등록 실패:', e);
   }
 }
 
+async function fetchRemoteBuild() {
+  try {
+    const res = await fetch(`./js/app.js?_=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) return null;
+    const m = (await res.text()).match(/APP_BUILD\s*=\s*['"](\d+)['"]/);
+    return m ? m[1] : null;
+  } catch {
+    return null;
+  }
+}
+
+async function reloadToLatestBuild(build) {
+  await purgeAppCaches();
+  localStorage.setItem(APP_VERSION_KEY, build);
+  window.location.reload();
+}
+
+async function checkForRemoteUpdate() {
+  const remote = await fetchRemoteBuild();
+  if (!remote || remote === APP_BUILD) return false;
+  await reloadToLatestBuild(remote);
+  return true;
+}
+
 async function syncAppVersion() {
+  if (await checkForRemoteUpdate()) return;
+
   const stored = localStorage.getItem(APP_VERSION_KEY);
   if (stored && stored !== APP_BUILD) {
-    await purgeAppCaches();
-    localStorage.setItem(APP_VERSION_KEY, APP_BUILD);
-    window.location.reload();
+    await reloadToLatestBuild(APP_BUILD);
     return;
   }
   localStorage.setItem(APP_VERSION_KEY, APP_BUILD);
