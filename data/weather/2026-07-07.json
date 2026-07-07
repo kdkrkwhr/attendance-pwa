@@ -3,76 +3,36 @@
   "location": "DMC첨단산업센터",
   "lat": 37.5845,
   "lng": 126.8856,
-  "generatedAt": "2026-07-07T14:00:39+09:00",
+  "generatedAt": "2026-07-07T22:01:11+09:00",
   "periods": [
     {
-      "time": "12:00",
-      "label": "오후",
+      "time": "21:00",
+      "label": "저녁",
       "temp": 28,
       "sky": "흐림",
       "pop": 30,
       "pty": "없음"
     },
     {
-      "time": "13:00",
-      "label": "오후",
-      "temp": 29,
-      "sky": "흐림",
-      "pop": 60,
-      "pty": "소나기"
-    },
-    {
-      "time": "14:00",
-      "label": "오후",
-      "temp": 30,
-      "sky": "흐림",
-      "pop": 60,
-      "pty": "소나기"
-    },
-    {
-      "time": "15:00",
-      "label": "오후",
-      "temp": 31,
-      "sky": "흐림",
-      "pop": 60,
-      "pty": "소나기"
-    },
-    {
-      "time": "16:00",
-      "label": "오후",
-      "temp": 30,
-      "sky": "흐림",
-      "pop": 60,
-      "pty": "소나기"
-    },
-    {
-      "time": "17:00",
-      "label": "오후",
-      "temp": 30,
+      "time": "22:00",
+      "label": "저녁",
+      "temp": 27,
       "sky": "흐림",
       "pop": 30,
       "pty": "없음"
     },
     {
-      "time": "18:00",
+      "time": "23:00",
       "label": "저녁",
-      "temp": 29,
-      "sky": "흐림",
-      "pop": 30,
-      "pty": "없음"
-    },
-    {
-      "time": "19:00",
-      "label": "저녁",
-      "temp": 29,
+      "temp": 27,
       "sky": "흐림",
       "pop": 30,
       "pty": "없음"
     }
   ],
   "highlights": {
-    "tempMin": 28,
-    "tempMax": 31
+    "tempMin": 27,
+    "tempMax": 28
   },
-  "summary": "오늘 28~31°C. 흐림. 비/소나기 가능 — 우산 챙기세요."
+  "summary": "오늘 27~28°C. 흐림."
 }
