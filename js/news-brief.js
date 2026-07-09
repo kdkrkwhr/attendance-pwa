@@ -8,6 +8,7 @@ const NEWS_PIN_MAX = 8;
 let newsCache = null;
 let newsMarket = localStorage.getItem(NEWS_MARKET_KEY) || 'kr';
 let newsCategory = localStorage.getItem(NEWS_CATEGORY_KEY) || 'stock';
+let newsSearchQuery = '';
 
 async function loadTodayNews() {
   if (newsCache) return newsCache;
@@ -96,6 +97,15 @@ function sortNewsByPins(items, pins) {
   return [...pinned, ...rest];
 }
 
+function filterNewsBySearch(items, query) {
+  const q = String(query || '').trim().toLowerCase();
+  if (!q) return items;
+  return items.filter((it) => {
+    const hay = `${it?.title || ''} ${it?.description || ''}`.toLowerCase();
+    return hay.includes(q);
+  });
+}
+
 function renderNewsPinBar() {
   const bar = document.getElementById('newsPinBar');
   if (!bar) return;
@@ -169,14 +179,19 @@ function renderNewsBrief(data) {
   if (metaEl) metaEl.textContent = gen ? `${gen} 갱신` : '';
 
   const pins = getActiveNewsPins();
-  const items = sortNewsByPins(marketData.items || [], pins);
-  if (!items.length || !listEl) {
+  const sorted = sortNewsByPins(marketData.items || [], pins);
+  const items = filterNewsBySearch(sorted, newsSearchQuery);
+  if (!sorted.length || !listEl) {
     listCard?.classList.add('hidden');
     return;
   }
 
   listCard?.classList.remove('hidden');
   renderNewsPinBar();
+  if (!items.length) {
+    listEl.innerHTML = '<li class="news-item news-item-empty">검색 결과가 없어요</li>';
+    return;
+  }
   listEl.innerHTML = items.map((it) => {
     const title = escapeHtml(it.title || '제목 없음');
     const link = it.link ? escapeHtml(it.link) : '';
@@ -249,10 +264,22 @@ function bindNewsPinBar() {
   }
 }
 
+function bindNewsSearch() {
+  const input = document.getElementById('newsSearchInput');
+  if (!input || input.dataset.bound) return;
+  input.dataset.bound = '1';
+  input.addEventListener('input', async () => {
+    newsSearchQuery = input.value;
+    const data = await loadTodayNews();
+    renderNewsBrief(data);
+  });
+}
+
 async function initNewsBrief() {
   renderNewsDate();
   bindNewsToggles();
   bindNewsPinBar();
+  bindNewsSearch();
   syncNewsCategoryToggle();
   syncNewsMarketToggle();
   const data = await loadTodayNews();

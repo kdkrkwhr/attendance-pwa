@@ -4552,6 +4552,28 @@ body {
   color: var(--text);
 }
 
+.news-search-bar {
+  margin-top: 0.5rem;
+}
+
+.news-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  background: var(--card);
+  color: var(--text);
+}
+
+.news-item-empty {
+  color: var(--text-muted, #64748b);
+  font-size: 0.8125rem;
+  text-align: center;
+  list-style: none;
+}
+
 .news-item-pinned {
   background: rgba(234, 88, 12, 0.06);
   margin: 0 -0.5rem;
