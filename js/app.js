@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '111';
+const APP_BUILD = '112';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_KEYS = [
@@ -1171,17 +1171,25 @@ function renderWeekStrip() {
   const todayK = todayKey();
 
   let done = 0;
+  let weekNetMin = 0;
+  const now = new Date();
   dotsEl.innerHTML = weekdays.map((date) => {
     const key = formatDateKey(date);
-    const checked = !!records[key]?.checkIn;
-    if (checked) done += 1;
+    const rec = records[key];
+    const checked = !!rec?.checkIn;
+    if (checked) {
+      done += 1;
+      if (rec.checkOut) weekNetMin += calcNetWorkMinutes(rec.checkIn, rec.checkOut);
+      else if (key === todayK) weekNetMin += calcNetWorkMinutes(rec.checkIn, now.toISOString());
+    }
     const cls = ['week-strip-dot'];
     if (checked) cls.push('done');
     if (key === todayK) cls.push('today');
     return `<span class="${cls.join(' ')}" title="${DAY_NAMES[date.getDay()]}요일${checked ? ' 출근' : ''}"></span>`;
   }).join('');
 
-  textEl.textContent = `이번 주 ${done}/${weekdays.length}일 출근`;
+  const hoursPart = weekNetMin > 0 ? ` · ${(weekNetMin / 60).toFixed(1)}h 순근무` : '';
+  textEl.textContent = `이번 주 ${done}/${weekdays.length}일 출근${hoursPart}`;
 }
 
 // 이번 주 평일별 순근무 시간 히트맵 (8h 기준 막대 높이)
