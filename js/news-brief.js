@@ -4,6 +4,7 @@
 const NEWS_MARKET_KEY = 'attendance-news-market';
 const NEWS_CATEGORY_KEY = 'attendance-news-category';
 const NEWS_PINS_KEY = 'attendance-news-pins';
+const NEWS_READ_KEY = 'attendance-news-read';
 const NEWS_PIN_MAX = 8;
 let newsCache = null;
 let newsMarket = localStorage.getItem(NEWS_MARKET_KEY) || 'kr';
@@ -106,6 +107,29 @@ function filterNewsBySearch(items, query) {
   });
 }
 
+function loadNewsReadSet() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(NEWS_READ_KEY) || '{}');
+    const today = typeof todayKey === 'function' ? todayKey() : new Date().toISOString().slice(0, 10);
+    if (raw.date !== today) return new Set();
+    return new Set(Array.isArray(raw.links) ? raw.links : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function markNewsArticleRead(link) {
+  const href = String(link || '').trim();
+  if (!href) return;
+  try {
+    const today = typeof todayKey === 'function' ? todayKey() : new Date().toISOString().slice(0, 10);
+    const raw = JSON.parse(localStorage.getItem(NEWS_READ_KEY) || '{}');
+    const links = raw.date === today && Array.isArray(raw.links) ? [...raw.links] : [];
+    if (!links.includes(href)) links.push(href);
+    localStorage.setItem(NEWS_READ_KEY, JSON.stringify({ date: today, links }));
+  } catch (e) {}
+}
+
 function renderNewsPinBar() {
   const bar = document.getElementById('newsPinBar');
   if (!bar) return;
@@ -179,6 +203,7 @@ function renderNewsBrief(data) {
   if (metaEl) metaEl.textContent = gen ? `${gen} 갱신` : '';
 
   const pins = getActiveNewsPins();
+  const readSet = loadNewsReadSet();
   const sorted = sortNewsByPins(marketData.items || [], pins);
   const items = filterNewsBySearch(sorted, newsSearchQuery);
   if (!sorted.length || !listEl) {
@@ -200,8 +225,9 @@ function renderNewsBrief(data) {
       : title;
     const matched = pins.find((p) => articleMatchesPin(it, p));
     const pinCls = matched ? ' news-item-pinned' : '';
+    const readCls = it.link && readSet.has(it.link) ? ' news-item-read' : '';
     const pinTag = matched ? `<span class="news-pin-tag">📌 ${escapeHtml(matched)}</span>` : '';
-    return `<li class="news-item${pinCls}">${pinTag}${inner}</li>`;
+    return `<li class="news-item${pinCls}${readCls}">${pinTag}${inner}</li>`;
   }).join('');
 }
 
@@ -275,11 +301,26 @@ function bindNewsSearch() {
   });
 }
 
+function bindNewsReadTracking() {
+  const list = document.getElementById('newsList');
+  if (!list || list.dataset.readBound) return;
+  list.dataset.readBound = '1';
+  list.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href]');
+    if (!a) return;
+    const href = a.getAttribute('href');
+    if (!href) return;
+    markNewsArticleRead(href);
+    a.closest('.news-item')?.classList.add('news-item-read');
+  });
+}
+
 async function initNewsBrief() {
   renderNewsDate();
   bindNewsToggles();
   bindNewsPinBar();
   bindNewsSearch();
+  bindNewsReadTracking();
   syncNewsCategoryToggle();
   syncNewsMarketToggle();
   const data = await loadTodayNews();

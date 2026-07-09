@@ -4504,6 +4504,14 @@ body {
   color: #2563eb;
 }
 
+.news-item-read {
+  opacity: 0.55;
+}
+
+.news-item-read a {
+  color: var(--text-muted, #64748b);
+}
+
 .news-pin-bar {
   margin-top: 0.75rem;
   padding: 0.65rem 0.75rem;
