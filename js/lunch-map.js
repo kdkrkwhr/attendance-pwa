@@ -22,6 +22,27 @@ let lunchWeatherMarker = null;
 let lunchWeatherData = null;
 
 const LUNCH_USER_ZOOM = 17;
+const LUNCH_FAVORITES_KEY = 'attendance-lunch-favorites';
+
+function loadLunchFavorites() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(LUNCH_FAVORITES_KEY) || '[]');
+    return new Set(Array.isArray(raw) ? raw.filter(Boolean) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveLunchFavorites(favs) {
+  localStorage.setItem(LUNCH_FAVORITES_KEY, JSON.stringify([...favs]));
+}
+
+function toggleLunchFavorite(placeId) {
+  const favs = loadLunchFavorites();
+  if (favs.has(placeId)) favs.delete(placeId);
+  else favs.add(placeId);
+  saveLunchFavorites(favs);
+}
 
 function getLunchMapConfig() {
   return window.APP_CONFIG?.lunchMap || {};
@@ -611,9 +632,19 @@ function getFilteredLunchPlaces() {
   if (!lunchMapData) return [];
   const filterEl = document.getElementById('lunchCategoryFilter');
   const selected = filterEl?.value || 'all';
-  return selected === 'all'
-    ? lunchMapData.places
-    : lunchMapData.places.filter((p) => p.category === selected);
+  const favs = loadLunchFavorites();
+  let places = lunchMapData.places;
+  if (selected === 'favorites') {
+    places = places.filter((p) => favs.has(p.id));
+  } else if (selected !== 'all') {
+    places = places.filter((p) => p.category === selected);
+  }
+  return [...places].sort((a, b) => {
+    const af = favs.has(a.id) ? 0 : 1;
+    const bf = favs.has(b.id) ? 0 : 1;
+    if (af !== bf) return af - bf;
+    return a.name.localeCompare(b.name, 'ko');
+  });
 }
 
 function sleep(ms) {
@@ -704,7 +735,7 @@ function populateCategoryFilter(places) {
   if (!filterEl) return;
   const selected = filterEl.value;
   const categories = [...new Set(places.map((p) => p.category))].sort((a, b) => a.localeCompare(b, 'ko'));
-  filterEl.innerHTML = '<option value="all">전체</option>';
+  filterEl.innerHTML = '<option value="all">전체</option><option value="favorites">⭐ 찜</option>';
   categories.forEach((cat) => {
     const opt = document.createElement('option');
     opt.value = cat;
@@ -723,21 +754,33 @@ function renderLunchList(data) {
   populateCategoryFilter(data.places);
   const filtered = getFilteredLunchPlaces();
 
+  const favs = loadLunchFavorites();
   listEl.innerHTML = filtered.map((place) => {
     const rating = formatRatingLabel(place.rating, place.ratingSource);
     const metaParts = [place.category];
     if (place.price) metaParts.push(place.price);
     if (rating) metaParts.push(rating);
     const memo = place.signatureMenu || place.memo;
+    const isFav = favs.has(place.id);
     return `
-    <button type="button" class="lunch-list-item${place.id === lunchRouletteWinnerId ? ' lunch-list-item-picked' : ''}" data-place-id="${place.id}">
-      <span class="lunch-list-name">${place.name}</span>
-      <span class="lunch-list-meta">${metaParts.join(' · ')}</span>
-      ${memo ? `<span class="lunch-list-memo">${memo}</span>` : ''}
-    </button>
+    <div class="lunch-list-item-wrap">
+      <button type="button" class="lunch-fav-btn${isFav ? ' is-fav' : ''}" data-fav-id="${place.id}" aria-label="${isFav ? '찜 해제' : '찜'}">${isFav ? '★' : '☆'}</button>
+      <button type="button" class="lunch-list-item${place.id === lunchRouletteWinnerId ? ' lunch-list-item-picked' : ''}" data-place-id="${place.id}">
+        <span class="lunch-list-name">${place.name}</span>
+        <span class="lunch-list-meta">${metaParts.join(' · ')}</span>
+        ${memo ? `<span class="lunch-list-memo">${memo}</span>` : ''}
+      </button>
+    </div>
   `;
   }).join('');
 
+  listEl.querySelectorAll('.lunch-fav-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleLunchFavorite(btn.dataset.favId);
+      if (lunchMapData) renderLunchList(lunchMapData);
+    });
+  });
   listEl.querySelectorAll('.lunch-list-item').forEach((btn) => {
     btn.addEventListener('click', () => focusLunchPlace(btn.dataset.placeId));
   });

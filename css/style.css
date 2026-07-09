@@ -3624,6 +3624,42 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
+.lunch-list-item-wrap {
+  display: flex;
+  align-items: stretch;
+  gap: 0.3rem;
+}
+
+.lunch-fav-btn {
+  flex-shrink: 0;
+  width: 2.25rem;
+  border: 1px solid var(--border);
+  background: var(--card);
+  border-radius: 12px;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-family: inherit;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.lunch-fav-btn.is-fav {
+  color: #f59e0b;
+  border-color: #fcd34d;
+}
+
+.lunch-fav-btn:hover,
+.lunch-fav-btn:focus-visible {
+  border-color: #f59e0b;
+  outline: none;
+}
+
+.lunch-list-item-wrap .lunch-list-item {
+  flex: 1;
+  min-width: 0;
+}
+
 .lunch-list-item {
   width: 100%;
   text-align: left;
