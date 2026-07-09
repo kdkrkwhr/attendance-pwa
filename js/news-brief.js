@@ -5,11 +5,13 @@ const NEWS_MARKET_KEY = 'attendance-news-market';
 const NEWS_CATEGORY_KEY = 'attendance-news-category';
 const NEWS_PINS_KEY = 'attendance-news-pins';
 const NEWS_READ_KEY = 'attendance-news-read';
+const NEWS_UNREAD_ONLY_KEY = 'attendance-news-unread-only';
 const NEWS_PIN_MAX = 8;
 let newsCache = null;
 let newsMarket = localStorage.getItem(NEWS_MARKET_KEY) || 'kr';
 let newsCategory = localStorage.getItem(NEWS_CATEGORY_KEY) || 'stock';
 let newsSearchQuery = '';
+let newsUnreadOnly = localStorage.getItem(NEWS_UNREAD_ONLY_KEY) === '1';
 
 async function loadTodayNews() {
   if (newsCache) return newsCache;
@@ -107,6 +109,22 @@ function filterNewsBySearch(items, query) {
   });
 }
 
+function filterNewsByUnread(items, readSet) {
+  if (!newsUnreadOnly) return items;
+  return items.filter((it) => !it.link || !readSet.has(it.link));
+}
+
+function countUnreadNews(items, readSet) {
+  return items.filter((it) => it.link && !readSet.has(it.link)).length;
+}
+
+function syncNewsUnreadToggle() {
+  const btn = document.getElementById('newsUnreadToggle');
+  if (!btn) return;
+  btn.classList.toggle('active', newsUnreadOnly);
+  btn.setAttribute('aria-pressed', newsUnreadOnly ? 'true' : 'false');
+}
+
 function loadNewsReadSet() {
   try {
     const raw = JSON.parse(localStorage.getItem(NEWS_READ_KEY) || '{}');
@@ -197,15 +215,20 @@ function renderNewsBrief(data) {
   card?.classList.remove('hidden');
   if (summaryEl) summaryEl.textContent = marketData.summary || '';
 
-  const gen = data?.generatedAt
-    ? new Date(data.generatedAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
-    : '';
-  if (metaEl) metaEl.textContent = gen ? `${gen} 갱신` : '';
-
   const pins = getActiveNewsPins();
   const readSet = loadNewsReadSet();
   const sorted = sortNewsByPins(marketData.items || [], pins);
-  const items = filterNewsBySearch(sorted, newsSearchQuery);
+  const searched = filterNewsBySearch(sorted, newsSearchQuery);
+  const items = filterNewsByUnread(searched, readSet);
+  const unread = countUnreadNews(searched, readSet);
+
+  const gen = data?.generatedAt
+    ? new Date(data.generatedAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+    : '';
+  const metaParts = [];
+  if (unread > 0) metaParts.push(`미읽음 ${unread}`);
+  if (gen) metaParts.push(`${gen} 갱신`);
+  if (metaEl) metaEl.textContent = metaParts.join(' · ');
   if (!sorted.length || !listEl) {
     listCard?.classList.add('hidden');
     return;
@@ -214,7 +237,8 @@ function renderNewsBrief(data) {
   listCard?.classList.remove('hidden');
   renderNewsPinBar();
   if (!items.length) {
-    listEl.innerHTML = '<li class="news-item news-item-empty">검색 결과가 없어요</li>';
+    const emptyMsg = newsUnreadOnly ? '미읽은 기사가 없어요' : '검색 결과가 없어요';
+    listEl.innerHTML = `<li class="news-item news-item-empty">${emptyMsg}</li>`;
     return;
   }
   listEl.innerHTML = items.map((it) => {
@@ -301,6 +325,19 @@ function bindNewsSearch() {
   });
 }
 
+function bindNewsUnreadToggle() {
+  const btn = document.getElementById('newsUnreadToggle');
+  if (!btn || btn.dataset.bound) return;
+  btn.dataset.bound = '1';
+  btn.addEventListener('click', async () => {
+    newsUnreadOnly = !newsUnreadOnly;
+    localStorage.setItem(NEWS_UNREAD_ONLY_KEY, newsUnreadOnly ? '1' : '0');
+    syncNewsUnreadToggle();
+    const data = await loadTodayNews();
+    renderNewsBrief(data);
+  });
+}
+
 function bindNewsReadTracking() {
   const list = document.getElementById('newsList');
   if (!list || list.dataset.readBound) return;
@@ -312,6 +349,9 @@ function bindNewsReadTracking() {
     if (!href) return;
     markNewsArticleRead(href);
     a.closest('.news-item')?.classList.add('news-item-read');
+    if (newsUnreadOnly) {
+      loadTodayNews().then((data) => renderNewsBrief(data));
+    }
   });
 }
 
@@ -320,7 +360,9 @@ async function initNewsBrief() {
   bindNewsToggles();
   bindNewsPinBar();
   bindNewsSearch();
+  bindNewsUnreadToggle();
   bindNewsReadTracking();
+  syncNewsUnreadToggle();
   syncNewsCategoryToggle();
   syncNewsMarketToggle();
   const data = await loadTodayNews();
