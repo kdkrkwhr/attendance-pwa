@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '107';
+const APP_BUILD = '108';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 
@@ -1178,6 +1178,44 @@ function renderWeekStrip() {
   textEl.textContent = `이번 주 ${done}/${weekdays.length}일 출근`;
 }
 
+// 이번 주 평일별 순근무 시간 히트맵 (8h 기준 막대 높이)
+function renderWeekHeatmap() {
+  const el = document.getElementById('weekHeatmap');
+  if (!el) return;
+
+  const records = loadRecords();
+  const weekdays = getWeekDates().filter((d) => d.getDay() !== 0 && d.getDay() !== 6);
+  const todayK = todayKey();
+  const now = new Date();
+  const targetH = WORK_HOURS;
+
+  el.innerHTML = weekdays.map((date) => {
+    const key = formatDateKey(date);
+    const rec = records[key];
+    const day = DAY_NAMES[date.getDay()];
+    let hours = null;
+
+    if (rec?.checkIn) {
+      if (rec.checkOut) {
+        hours = calcNetWorkMinutes(rec.checkIn, rec.checkOut) / 60;
+      } else if (key === todayK) {
+        hours = calcNetWorkMinutes(rec.checkIn, now.toISOString()) / 60;
+      }
+    }
+
+    const pct = hours != null ? Math.min(100, Math.round((hours / targetH) * 100)) : 4;
+    const cls = ['week-heatmap-col'];
+    if (key === todayK) cls.push('today');
+    if (hours == null) cls.push('empty');
+    const title = hours != null ? `${day} ${hours.toFixed(1)}h 순근무` : `${day} 미출근`;
+
+    return `<div class="${cls.join(' ')}" title="${title}">
+      <div class="week-heatmap-bar" style="height:${pct}%"></div>
+      <span class="week-heatmap-label">${day}</span>
+    </div>`;
+  }).join('');
+}
+
 // 이번 달 출근일수·평균 순근무 시간 요약
 function renderMonthSummary() {
   const el = document.getElementById('monthSummaryText');
@@ -1232,6 +1270,7 @@ function renderToday() {
   }
 
   renderWeekStrip();
+  renderWeekHeatmap();
   renderMonthSummary();
 
   todayCard?.classList.toggle('card-field-work', fieldWork);
