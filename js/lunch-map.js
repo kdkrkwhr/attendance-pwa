@@ -628,6 +628,11 @@ function highlightLunchListItem(placeId) {
   });
 }
 
+function formatLunchDistance(m) {
+  if (!Number.isFinite(m)) return '';
+  return m < 1000 ? `${Math.round(m)}m` : `${(m / 1000).toFixed(1)}km`;
+}
+
 function getFilteredLunchPlaces() {
   if (!lunchMapData) return [];
   const filterEl = document.getElementById('lunchCategoryFilter');
@@ -643,6 +648,9 @@ function getFilteredLunchPlaces() {
     const af = favs.has(a.id) ? 0 : 1;
     const bf = favs.has(b.id) ? 0 : 1;
     if (af !== bf) return af - bf;
+    const da = a.distance_m ?? Infinity;
+    const db = b.distance_m ?? Infinity;
+    if (da !== db) return da - db;
     return a.name.localeCompare(b.name, 'ko');
   });
 }
@@ -757,7 +765,10 @@ function renderLunchList(data) {
   const favs = loadLunchFavorites();
   listEl.innerHTML = filtered.map((place) => {
     const rating = formatRatingLabel(place.rating, place.ratingSource);
-    const metaParts = [place.category];
+    const dist = formatLunchDistance(place.distance_m);
+    const metaParts = [];
+    if (dist) metaParts.push(`📍 ${dist}`);
+    metaParts.push(place.category);
     if (place.price) metaParts.push(place.price);
     if (rating) metaParts.push(rating);
     const memo = place.signatureMenu || place.memo;
