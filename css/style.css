@@ -4163,6 +4163,34 @@ body {
   opacity: 0.75;
 }
 
+.chat-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-bottom: 0.5rem;
+}
+
+.chat-shortcut {
+  flex: 0 0 auto;
+  padding: 0.3rem 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.chat-shortcut:hover,
+.chat-shortcut:focus-visible {
+  border-color: var(--primary);
+  color: var(--primary);
+  outline: none;
+}
+
 .chat-footer {
   flex-shrink: 0;
   padding: 0.5rem 0 max(0.25rem, env(safe-area-inset-bottom));

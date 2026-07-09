@@ -19,6 +19,12 @@ const CHAT_EMPTY_FALLBACK =
   '응답을 받지 못했어요. 앱을 새로고침하거나 잠시 후 다시 보내 보세요.';
 const CHAT_HISTORY_LIMIT = 40;
 const RUN_POLL_INTERVAL_MS = 3_000;
+const CHAT_SHORTCUTS = [
+  { label: '⏱ 오늘 요약', prompt: '오늘 출퇴근 기록을 한 줄로 요약해줘' },
+  { label: '📅 이번 주', prompt: '이번 주 평일 출퇴근·순근무 시간을 짧게 정리해줘' },
+  { label: '🍽️ 점심 추천', prompt: 'DMC 근처 점심 메뉴를 하나 추천하고 이유를 한 줄로 말해줘' },
+  { label: '📰 뉴스 요약', prompt: '오늘 국내 주식 뉴스 핵심만 3줄로 요약해줘' },
+];
 
 function normalizeChatReply(text) {
   const t = String(text || '').trim();
@@ -737,13 +743,30 @@ function bindChatViewport() {
   sync();
 }
 
+function renderChatShortcuts() {
+  const bar = document.getElementById('chatShortcuts');
+  if (!bar) return;
+  bar.innerHTML = CHAT_SHORTCUTS.map(
+    (s) =>
+      `<button type="button" class="chat-shortcut" data-prompt="${escapeHtml(s.prompt)}">${escapeHtml(s.label)}</button>`
+  ).join('');
+}
+
+function handleChatShortcutClick(e) {
+  const btn = e.target.closest('[data-prompt]');
+  if (!btn || chatReplyInFlight) return;
+  sendHermesChatMessage(btn.dataset.prompt);
+}
+
 function initHermesChat() {
   if (hermesChatInited) return;
   hermesChatInited = true;
 
   bindChatViewport();
   seedHermesDevDefaults();
+  renderChatShortcuts();
 
+  document.getElementById('chatShortcuts')?.addEventListener('click', handleChatShortcutClick);
   document.getElementById('chatForm')?.addEventListener('submit', handleChatSubmit);
   document.getElementById('btnChatClear')?.addEventListener('click', handleChatClear);
   document.getElementById('btnChatGoSettings')?.addEventListener('click', handleChatGoSettings);
