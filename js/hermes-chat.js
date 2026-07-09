@@ -667,6 +667,29 @@ function handleChatClear() {
   setChatStatus('', '');
 }
 
+function getLastAssistantReply() {
+  const messages = loadChatMessages();
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    if (messages[i]?.role === 'assistant' && messages[i].content) return messages[i].content;
+  }
+  return '';
+}
+
+async function handleChatCopyLast() {
+  const text = getLastAssistantReply();
+  if (!text) {
+    setChatStatus('복사할 응답이 없어요', 'info');
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    setChatStatus('복사했어요', 'ok');
+    setTimeout(() => setChatStatus('', ''), 2000);
+  } catch {
+    setChatStatus('복사에 실패했어요', 'error');
+  }
+}
+
 function handleChatGoSettings() {
   if (typeof switchTab === 'function') switchTab('settings');
   document.getElementById('hermesBaseUrl')?.focus();
@@ -768,6 +791,7 @@ function initHermesChat() {
 
   document.getElementById('chatShortcuts')?.addEventListener('click', handleChatShortcutClick);
   document.getElementById('chatForm')?.addEventListener('submit', handleChatSubmit);
+  document.getElementById('btnChatCopyLast')?.addEventListener('click', handleChatCopyLast);
   document.getElementById('btnChatClear')?.addEventListener('click', handleChatClear);
   document.getElementById('btnChatGoSettings')?.addEventListener('click', handleChatGoSettings);
   document.getElementById('btnHermesTest')?.addEventListener('click', testHermesConnection);
