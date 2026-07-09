@@ -11,9 +11,15 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '109';
+const APP_BUILD = '110';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
+const BACKUP_KEYS = [
+  SETTINGS_KEY,
+  STORAGE_KEY,
+  'attendance-news-pins',
+  'attendance-lunch-favorites',
+];
 
 const DEFAULT_SETTINGS = {
   notifyBefore: '30,10,0',
@@ -1573,6 +1579,61 @@ function handleExport() {
   URL.revokeObjectURL(a.href);
 }
 
+function handleBackupData() {
+  const data = {};
+  for (const key of BACKUP_KEYS) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw != null) data[key] = JSON.parse(raw);
+    } catch (e) {}
+  }
+  const payload = {
+    backupVersion: 1,
+    exportedAt: new Date().toISOString(),
+    data,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `출퇴근백업_${todayKey()}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  setSyncStatus('백업 파일을 저장했습니다.', 'ok');
+}
+
+async function afterBackupRestore() {
+  render();
+  renderSettings();
+  if (typeof renderHermesChat === 'function') renderHermesChat();
+  if (typeof renderCommuteCard === 'function') renderCommuteCard();
+  if (typeof initNewsBrief === 'function') await initNewsBrief();
+  if (typeof initLunchMap === 'function') initLunchMap(true);
+}
+
+function handleRestoreFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async () => {
+    try {
+      const payload = JSON.parse(reader.result);
+      if (!payload?.data || typeof payload.data !== 'object') throw new Error('백업 형식이 아닙니다');
+      const entries = Object.entries(payload.data).filter(([key]) => BACKUP_KEYS.includes(key));
+      if (!entries.length) throw new Error('복원할 항목이 없습니다');
+      if (!confirm(`백업 ${entries.length}개 항목을 복원할까요? 현재 데이터를 덮어씁니다.`)) return;
+      for (const [key, value] of entries) {
+        localStorage.setItem(key, JSON.stringify(value));
+      }
+      await afterBackupRestore();
+      setSyncStatus('백업 복원 완료', 'ok');
+    } catch (e) {
+      setSyncStatus(`백업 복원 실패: ${e.message || '알 수 없음'}`, 'err');
+    }
+    const input = document.getElementById('backupFileInput');
+    if (input) input.value = '';
+  };
+  reader.readAsText(file);
+}
+
 function handleSettingsChange() {
   const theme = document.getElementById('themeMode')?.value || 'system';
   const prev = loadSettings();
@@ -1801,6 +1862,13 @@ function init() {
 
   document.getElementById('btnResetToday').addEventListener('click', handleResetToday);
   document.getElementById('btnExport').addEventListener('click', handleExport);
+  document.getElementById('btnBackupData')?.addEventListener('click', handleBackupData);
+  document.getElementById('btnRestoreData')?.addEventListener('click', () => {
+    document.getElementById('backupFileInput')?.click();
+  });
+  document.getElementById('backupFileInput')?.addEventListener('change', (e) => {
+    handleRestoreFile(e.target.files?.[0]);
+  });
   document.getElementById('btnSyncSheet').addEventListener('click', syncWeekToSheet);
   document.getElementById('btnTestSheet')?.addEventListener('click', testSheetConnection);
   document.getElementById('btnNotifyPermission').addEventListener('click', requestNotificationPermission);
