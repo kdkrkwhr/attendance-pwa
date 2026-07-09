@@ -3,6 +3,8 @@
  */
 const NEWS_MARKET_KEY = 'attendance-news-market';
 const NEWS_CATEGORY_KEY = 'attendance-news-category';
+const NEWS_PINS_KEY = 'attendance-news-pins';
+const NEWS_PIN_MAX = 8;
 let newsCache = null;
 let newsMarket = localStorage.getItem(NEWS_MARKET_KEY) || 'kr';
 let newsCategory = localStorage.getItem(NEWS_CATEGORY_KEY) || 'stock';
@@ -37,6 +39,82 @@ function renderNewsDate() {
   });
 }
 
+function loadNewsPins() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(NEWS_PINS_KEY) || '{}');
+    return raw && typeof raw === 'object' ? raw : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveNewsPins(pins) {
+  localStorage.setItem(NEWS_PINS_KEY, JSON.stringify(pins));
+}
+
+function getActiveNewsPins() {
+  if (newsCategory !== 'stock') return [];
+  const all = loadNewsPins();
+  const list = all[newsMarket];
+  return Array.isArray(list) ? list.map((s) => String(s).trim()).filter(Boolean) : [];
+}
+
+function addNewsPin(name) {
+  const term = String(name || '').trim();
+  if (!term || newsCategory !== 'stock') return;
+  const pins = loadNewsPins();
+  const list = getActiveNewsPins();
+  if (list.some((p) => p.toLowerCase() === term.toLowerCase())) return;
+  if (list.length >= NEWS_PIN_MAX) list.shift();
+  list.push(term);
+  pins[newsMarket] = list;
+  saveNewsPins(pins);
+}
+
+function removeNewsPin(name) {
+  const term = String(name || '').trim();
+  if (!term) return;
+  const pins = loadNewsPins();
+  const list = getActiveNewsPins().filter((p) => p !== term);
+  pins[newsMarket] = list;
+  saveNewsPins(pins);
+}
+
+function articleMatchesPin(item, pin) {
+  const hay = `${item?.title || ''} ${item?.description || ''}`.toLowerCase();
+  return hay.includes(String(pin).toLowerCase());
+}
+
+function sortNewsByPins(items, pins) {
+  if (!pins.length) return items;
+  const pinned = [];
+  const rest = [];
+  items.forEach((it) => {
+    if (pins.some((p) => articleMatchesPin(it, p))) pinned.push(it);
+    else rest.push(it);
+  });
+  return [...pinned, ...rest];
+}
+
+function renderNewsPinBar() {
+  const bar = document.getElementById('newsPinBar');
+  if (!bar) return;
+  const show = newsCategory === 'stock';
+  bar.classList.toggle('hidden', !show);
+  if (!show) return;
+
+  const chipsEl = document.getElementById('newsPinChips');
+  const pins = getActiveNewsPins();
+  if (chipsEl) {
+    chipsEl.innerHTML = pins.length
+      ? pins.map((p) => {
+          const safe = escapeHtml(p);
+          return `<button type="button" class="news-pin-chip" data-pin="${safe}" aria-label="${safe} 핀 해제">📌 ${safe} ×</button>`;
+        }).join('')
+      : '<span class="news-pin-hint">종목명을 핀하면 관련 기사가 위로 올라와요</span>';
+  }
+}
+
 function syncNewsCategoryToggle() {
   document.querySelectorAll('[data-category]').forEach((btn) => {
     const active = btn.dataset.category === newsCategory;
@@ -45,6 +123,7 @@ function syncNewsCategoryToggle() {
   });
   const stockToggle = document.getElementById('newsStockToggle');
   if (stockToggle) stockToggle.classList.toggle('hidden', newsCategory !== 'stock');
+  renderNewsPinBar();
 }
 
 function syncNewsMarketToggle() {
@@ -53,6 +132,7 @@ function syncNewsMarketToggle() {
     btn.classList.toggle('active', active);
     btn.setAttribute('aria-selected', active ? 'true' : 'false');
   });
+  renderNewsPinBar();
 }
 
 function renderNewsBrief(data) {
@@ -88,20 +168,25 @@ function renderNewsBrief(data) {
     : '';
   if (metaEl) metaEl.textContent = gen ? `${gen} 갱신` : '';
 
-  const items = marketData.items || [];
+  const pins = getActiveNewsPins();
+  const items = sortNewsByPins(marketData.items || [], pins);
   if (!items.length || !listEl) {
     listCard?.classList.add('hidden');
     return;
   }
 
   listCard?.classList.remove('hidden');
+  renderNewsPinBar();
   listEl.innerHTML = items.map((it) => {
     const title = escapeHtml(it.title || '제목 없음');
     const link = it.link ? escapeHtml(it.link) : '';
     const inner = link
       ? `<a href="${link}" target="_blank" rel="noopener noreferrer">${title}</a>`
       : title;
-    return `<li class="news-item">${inner}</li>`;
+    const matched = pins.find((p) => articleMatchesPin(it, p));
+    const pinCls = matched ? ' news-item-pinned' : '';
+    const pinTag = matched ? `<span class="news-pin-tag">📌 ${escapeHtml(matched)}</span>` : '';
+    return `<li class="news-item${pinCls}">${pinTag}${inner}</li>`;
   }).join('');
 }
 
@@ -135,9 +220,39 @@ function bindNewsToggles() {
   });
 }
 
+function bindNewsPinBar() {
+  const form = document.getElementById('newsPinForm');
+  if (form && !form.dataset.bound) {
+    form.dataset.bound = '1';
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('newsPinInput');
+      const name = input?.value;
+      if (!name?.trim()) return;
+      addNewsPin(name);
+      if (input) input.value = '';
+      const data = await loadTodayNews();
+      renderNewsBrief(data);
+    });
+  }
+
+  const chips = document.getElementById('newsPinChips');
+  if (chips && !chips.dataset.bound) {
+    chips.dataset.bound = '1';
+    chips.addEventListener('click', async (e) => {
+      const btn = e.target.closest('[data-pin]');
+      if (!btn) return;
+      removeNewsPin(btn.dataset.pin);
+      const data = await loadTodayNews();
+      renderNewsBrief(data);
+    });
+  }
+}
+
 async function initNewsBrief() {
   renderNewsDate();
   bindNewsToggles();
+  bindNewsPinBar();
   syncNewsCategoryToggle();
   syncNewsMarketToggle();
   const data = await loadTodayNews();
