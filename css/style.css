@@ -606,6 +606,10 @@ body {
   text-align: right;
 }
 
+.yesterday-summary-text {
+  margin-top: -0.75rem;
+}
+
 .time-panel {
   display: flex;
   flex-direction: column;

@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '112';
+const APP_BUILD = '113';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_KEYS = [
@@ -1230,6 +1230,34 @@ function renderWeekHeatmap() {
   }).join('');
 }
 
+function getPreviousWeekdayKey(from = new Date()) {
+  const d = new Date(from);
+  do {
+    d.setDate(d.getDate() - 1);
+  } while (d.getDay() === 0 || d.getDay() === 6);
+  return formatDateKey(d);
+}
+
+// 전 평일(월요일이면 금요일) 출퇴근·순근무 한 줄
+function renderYesterdaySummary() {
+  const el = document.getElementById('yesterdaySummaryText');
+  if (!el) return;
+
+  const rec = loadRecords()[getPreviousWeekdayKey()];
+  if (!rec?.checkIn) {
+    el.textContent = '';
+    return;
+  }
+
+  const inT = formatTime(rec.checkIn);
+  if (rec.checkOut) {
+    const net = calcNetWorkMinutes(rec.checkIn, rec.checkOut);
+    el.textContent = `어제 ${inT} 출근 · ${formatTime(rec.checkOut)} 퇴근 (${formatDuration(net)})`;
+  } else {
+    el.textContent = `어제 ${inT} 출근 · 미퇴근`;
+  }
+}
+
 // 이번 달 출근일수·평균 순근무 시간 요약
 function renderMonthSummary() {
   const el = document.getElementById('monthSummaryText');
@@ -1286,6 +1314,7 @@ function renderToday() {
   renderWeekStrip();
   renderWeekHeatmap();
   renderMonthSummary();
+  renderYesterdaySummary();
 
   todayCard?.classList.toggle('card-field-work', fieldWork);
   fieldBadge?.classList.toggle('hidden', !fieldWork);
