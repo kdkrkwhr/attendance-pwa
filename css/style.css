@@ -4590,6 +4590,19 @@ body {
   cursor: pointer;
 }
 
+.news-pin-count {
+  display: inline-block;
+  min-width: 1rem;
+  margin: 0 0.1rem;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  line-height: 1.2;
+  background: rgba(234, 88, 12, 0.2);
+  color: #c2410c;
+}
+
 .news-pin-form {
   display: flex;
   gap: 0.35rem;

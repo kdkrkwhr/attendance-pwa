@@ -168,7 +168,7 @@ function syncNewsMarkAllBtn(unreadCount) {
   btn.disabled = !show;
 }
 
-function renderNewsPinBar() {
+function renderNewsPinBar(items) {
   const bar = document.getElementById('newsPinBar');
   if (!bar) return;
   const show = newsCategory === 'stock';
@@ -177,11 +177,17 @@ function renderNewsPinBar() {
 
   const chipsEl = document.getElementById('newsPinChips');
   const pins = getActiveNewsPins();
+  const articles = items || (() => {
+    const marketData = newsCache ? pickMarketData(newsCache, activeNewsKey()) : null;
+    return marketData?.items || [];
+  })();
   if (chipsEl) {
     chipsEl.innerHTML = pins.length
       ? pins.map((p) => {
+          const count = articles.filter((it) => articleMatchesPin(it, p)).length;
+          const countTag = count > 0 ? `<span class="news-pin-count">${count}</span>` : '';
           const safe = escapeHtml(p);
-          return `<button type="button" class="news-pin-chip" data-pin="${safe}" aria-label="${safe} 핀 해제">📌 ${safe} ×</button>`;
+          return `<button type="button" class="news-pin-chip" data-pin="${safe}" aria-label="${safe} 핀 해제${count ? `, 기사 ${count}건` : ''}">📌 ${safe}${countTag} ×</button>`;
         }).join('')
       : '<span class="news-pin-hint">종목명을 핀하면 관련 기사가 위로 올라와요</span>';
   }
@@ -256,7 +262,7 @@ function renderNewsBrief(data) {
   }
 
   listCard?.classList.remove('hidden');
-  renderNewsPinBar();
+  renderNewsPinBar(sorted);
   if (!items.length) {
     const emptyMsg = newsUnreadOnly ? '미읽은 기사가 없어요' : '검색 결과가 없어요';
     listEl.innerHTML = `<li class="news-item news-item-empty">${emptyMsg}</li>`;
