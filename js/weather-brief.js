@@ -76,6 +76,29 @@ function renderWeatherBrief(data) {
   if (metaEl) {
     metaEl.textContent = [loc, range, gen ? `${gen} 갱신` : ''].filter(Boolean).join(' · ');
   }
+
+  renderWeatherPeriods(data);
+}
+
+function renderWeatherPeriods(data) {
+  const el = document.getElementById('weatherBriefPeriods');
+  if (!el) return;
+  const periods = data?.periods || [];
+  if (!periods.length) {
+    el.classList.add('hidden');
+    el.innerHTML = '';
+    return;
+  }
+  el.classList.remove('hidden');
+  el.innerHTML = periods
+    .map((p) => {
+      const emoji = weatherEmojiFromPeriod(p);
+      const rain = isRainyPeriod(p);
+      const pop = p.pop > 0 ? ` · ${p.pop}%` : '';
+      const cls = rain ? ' weather-period-rain' : '';
+      return `<li class="${cls.trim()}">${emoji} ${p.time} ${p.temp}°${pop}</li>`;
+    })
+    .join('');
 }
 
 async function initWeatherBrief() {
