@@ -1,4 +1,4 @@
-const CACHE_NAME = 'attendance-pwa-v126';
+const CACHE_NAME = 'attendance-pwa-v127';
 
 const PRECACHE_ASSETS = [
   './',

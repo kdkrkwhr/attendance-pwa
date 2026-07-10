@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '126';
+const APP_BUILD = '127';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_KEYS = [
@@ -552,6 +552,28 @@ function renderProgress(record, previewCheckInISO = null) {
 
   const checkInISO = record?.checkIn || previewCheckInISO;
   if (!checkInISO) {
+    const target = (loadSettings().targetCheckIn || '').trim();
+    if (target && /^\d{2}:\d{2}$/.test(target)) {
+      const now = new Date();
+      const [th, tm] = target.split(':').map(Number);
+      const targetAt = new Date(now);
+      targetAt.setHours(th, tm, 0, 0);
+      const diffMs = targetAt - now;
+      fill.style.width = diffMs > 0 ? '0%' : '100%';
+      if (diffMs > 0) {
+        labelEl.textContent = '목표 출근까지';
+        valueEl.textContent = formatDuration(Math.ceil(diffMs / 60000));
+        fill.className = 'progress-fill';
+        metaEl.textContent = `목표 ${target} · 출근 등록 전`;
+      } else {
+        const lateMin = Math.ceil(-diffMs / 60000);
+        labelEl.textContent = '목표 출근';
+        valueEl.textContent = `+${formatDuration(lateMin)}`;
+        fill.className = 'progress-fill overtime';
+        metaEl.textContent = `${lateMin}분 지각 (목표 ${target})`;
+      }
+      return;
+    }
     labelEl.textContent = '남은 시간';
     valueEl.textContent = '—';
     fill.style.width = '0%';
