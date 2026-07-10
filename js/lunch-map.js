@@ -24,6 +24,41 @@ let lunchWeatherData = null;
 const LUNCH_USER_ZOOM = 17;
 const LUNCH_FAVORITES_KEY = 'attendance-lunch-favorites';
 const LUNCH_ROULETTE_DAY_KEY = 'attendance-lunch-roulette-day';
+const LUNCH_DIARY_KEY = 'attendance-lunch-diary';
+
+function loadLunchDiaryText() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(LUNCH_DIARY_KEY) || 'null');
+    if (raw?.date === todayKey() && raw.text) return String(raw.text);
+  } catch {}
+  return '';
+}
+
+function saveLunchDiary(text) {
+  const t = String(text || '').trim();
+  if (!t) {
+    localStorage.removeItem(LUNCH_DIARY_KEY);
+    return;
+  }
+  localStorage.setItem(LUNCH_DIARY_KEY, JSON.stringify({ date: todayKey(), text: t }));
+}
+
+function setLunchDiaryFromRoulette(placeName) {
+  const input = document.getElementById('lunchDiaryInput');
+  if (!input || input.value.trim()) return;
+  input.value = placeName;
+  saveLunchDiary(placeName);
+}
+
+function initLunchDiary() {
+  const input = document.getElementById('lunchDiaryInput');
+  if (!input || input.dataset.bound) return;
+  input.dataset.bound = '1';
+  input.value = loadLunchDiaryText();
+  const persist = () => saveLunchDiary(input.value);
+  input.addEventListener('change', persist);
+  input.addEventListener('blur', persist);
+}
 
 function loadLunchFavorites() {
   try {
@@ -703,7 +738,10 @@ function showRouletteResult(place, persist = true) {
     metaEl.textContent = parts.join(' · ');
   }
   resultEl.classList.remove('hidden');
-  if (persist) saveLunchRouletteToday(place.id);
+  if (persist) {
+    saveLunchRouletteToday(place.id);
+    setLunchDiaryFromRoulette(place.name);
+  }
 }
 
 function hideRouletteResult() {
@@ -1041,6 +1079,7 @@ function bindLunchMapControls() {
 
 bindLunchMapControls();
 bindLunchSheetControls();
+initLunchDiary();
 
 const LUNCH_ROULETTE_NOTIFY_HOUR = 11;
 const LUNCH_ROULETTE_NOTIFY_MINUTE = 20;
