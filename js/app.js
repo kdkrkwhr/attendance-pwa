@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '121';
+const APP_BUILD = '122';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_KEYS = [
@@ -492,6 +492,21 @@ function switchTab(tabName) {
   }
 }
 
+function getNextLeaveNotifyHint(leaveTime, now = new Date()) {
+  const offsets = loadSettings().notifyBefore.split(',').map(Number).filter((n) => !Number.isNaN(n));
+  let next = null;
+  for (const min of offsets) {
+    const notifyAt = addMinutes(leaveTime, -min);
+    if (notifyAt <= now) continue;
+    if (!next || notifyAt < next.at) {
+      next = { at: notifyAt, min };
+    }
+  }
+  if (!next) return null;
+  const label = next.min === 0 ? '정각' : `${next.min}분 전`;
+  return `다음 알림 ${formatTime(next.at)} (${label})`;
+}
+
 function renderProgress(record, previewCheckInISO = null) {
   const fill = document.getElementById('progressFill');
   const labelEl = document.getElementById('progressLabel');
@@ -540,7 +555,9 @@ function renderProgress(record, previewCheckInISO = null) {
   }
 
   fill.style.width = `${pct}%`;
-  metaEl.textContent = `순근무 ${(netSoFar / 60).toFixed(1)}/${WORK_HOURS}h · 경과 ${(elapsedMs / 3600000).toFixed(1)}h`;
+  const notifyHint = getNextLeaveNotifyHint(leaveTime, now);
+  const base = `순근무 ${(netSoFar / 60).toFixed(1)}/${WORK_HOURS}h · 경과 ${(elapsedMs / 3600000).toFixed(1)}h`;
+  metaEl.textContent = notifyHint ? `${base} · ${notifyHint}` : base;
 }
 
 // ── Wi-Fi 출근 추정 (Android 앱 연동) ──────────────────────────────────────────
