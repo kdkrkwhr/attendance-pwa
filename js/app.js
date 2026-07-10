@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '123';
+const APP_BUILD = '124';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_KEYS = [
@@ -46,6 +46,8 @@ let onCompanyNetwork = null;
 let networkCheckAt = 0;
 let morningPollInterval = null;
 const NETWORK_CACHE_MS = 60_000;
+// ponytail: IP API 일시 실패 시 직전 OK 캐시 신뢰 (회사망에서 ipify 막히는 경우)
+const NETWORK_STALE_OK_MS = 30 * 60_000;
 
 // ── 회사 네트워크 ──────────────────────────────────────────
 
@@ -96,6 +98,13 @@ async function fetchCurrentPublicIp() {
   throw lastError || new Error('IP 확인 실패');
 }
 
+function canAttendNow() {
+  if (!isNetworkGuardActive() || isFieldWorkToday()) return true;
+  // ponytail: null(확인 중/실패)이면 버튼 잠그지 않음 — 클릭 시 requireCompanyNetwork가 재검증
+  if (onCompanyNetwork === null) return true;
+  return onCompanyNetwork === true;
+}
+
 async function checkCompanyNetwork(force = false) {
   if (!isNetworkGuardActive()) {
     onCompanyNetwork = true;
@@ -115,7 +124,10 @@ async function checkCompanyNetwork(force = false) {
     window.__lastPublicIp = currentIp;
     return onCompanyNetwork;
   } catch {
-    onCompanyNetwork = false;
+    if (onCompanyNetwork === true && now - networkCheckAt < NETWORK_STALE_OK_MS) {
+      return true;
+    }
+    onCompanyNetwork = null;
     networkCheckAt = now;
     return false;
   }
@@ -138,10 +150,15 @@ function updateNetworkStatusUI() {
   }
 
   if (onCompanyNetwork === null) {
-    el.textContent = '네트워크 확인 중…';
-    el.className = 'network-banner';
+    el.textContent = networkCheckAt > 0
+      ? '네트워크 확인 실패 · 탭해서 재시도'
+      : '네트워크 확인 중…';
+    el.className = networkCheckAt > 0 ? 'network-banner warn' : 'network-banner';
+    el.style.cursor = networkCheckAt > 0 ? 'pointer' : '';
     return;
   }
+
+  el.style.cursor = '';
 
   if (onCompanyNetwork) {
     el.textContent = `회사 네트워크 연결됨 (${window.__lastPublicIp || '확인됨'})`;
@@ -171,12 +188,15 @@ async function requireCompanyNetwork() {
 
   const ok = await checkCompanyNetwork(true);
   updateNetworkStatusUI();
-  setAttendanceButtonsEnabled(ok || !isNetworkGuardActive());
+  setAttendanceButtonsEnabled(canAttendNow());
 
   if (!isNetworkGuardActive()) return true;
 
   if (!ok) {
-    alert('회사 Wi-Fi에 연결된 후 출퇴근할 수 있습니다.\n외근이면 「오늘 외근」을 켜 주세요.');
+    const hint = networkCheckAt > 0 && onCompanyNetwork === null
+      ? '네트워크(IP) 확인에 실패했습니다. 상단 배너를 눌러 재시도하거나 잠시 후 다시 시도해 주세요.'
+      : '회사 Wi-Fi에 연결된 후 출퇴근할 수 있습니다.';
+    alert(`${hint}\n외근이면 「오늘 외근」을 켜 주세요.`);
     return false;
   }
   return true;
@@ -186,8 +206,7 @@ async function refreshNetworkGuard() {
   const previous = onCompanyNetwork;
   await checkCompanyNetwork(true);
   updateNetworkStatusUI();
-  const canAttend = onCompanyNetwork || !isNetworkGuardActive() || isFieldWorkToday();
-  setAttendanceButtonsEnabled(canAttend);
+  setAttendanceButtonsEnabled(canAttendNow());
   evaluateMorningNetworkCheckIn(previous, onCompanyNetwork);
   syncMorningNetworkPolling();
 }
@@ -256,6 +275,7 @@ function handleFieldWorkToggle() {
   }
 
   updateNetworkStatusUI();
+  setAttendanceButtonsEnabled(canAttendNow());
   refreshNetworkGuard();
   renderToday();
 }
@@ -1013,9 +1033,14 @@ function prevWeekday(date) {
 }
 
 function saveTodayRecord(record) {
-  const records = loadRecords();
-  records[todayKey()] = record;
-  saveRecords(records);
+  try {
+    const records = loadRecords();
+    records[todayKey()] = record;
+    saveRecords(records);
+  } catch (e) {
+    alert('출퇴근 기록 저장 실패 — 브라우저 저장 공간을 비우거나 캐시를 지운 뒤 다시 시도해 주세요.');
+    throw e;
+  }
 }
 
 // ── 계산 ──────────────────────────────────────────
@@ -1475,8 +1500,7 @@ function render() {
   if (typeof initWeatherBrief === 'function') initWeatherBrief();
   if (typeof initNewsBrief === 'function') initNewsBrief();
   updateNetworkStatusUI();
-  const canAttend = onCompanyNetwork || !isNetworkGuardActive() || isFieldWorkToday();
-  setAttendanceButtonsEnabled(canAttend);
+  setAttendanceButtonsEnabled(canAttendNow());
 }
 
 // ── 액션 ──────────────────────────────────────────
@@ -1494,11 +1518,15 @@ async function handleCheckIn() {
   }
 
   const settings = loadSettings();
-  saveTodayRecord({
-    checkIn: checkInISOFromTimeInput(input.value),
-    userName: getUserName(),
-    fieldWork: isFieldWorkToday(),
-  });
+  try {
+    saveTodayRecord({
+      checkIn: checkInISOFromTimeInput(input.value),
+      userName: getUserName(),
+      fieldWork: isFieldWorkToday(),
+    });
+  } catch {
+    return;
+  }
   saveFieldModePending(false);
   clearWifiSuggestion();
   checkInInputTouched = false;
@@ -1902,7 +1930,10 @@ function init() {
   });
 
   document.getElementById('btnInstall')?.addEventListener('click', handleInstall);
-  document.getElementById('btnCheckIn').addEventListener('click', handleCheckIn);
+  document.getElementById('btnCheckIn')?.addEventListener('click', handleCheckIn);
+  document.getElementById('networkStatus')?.addEventListener('click', () => {
+    refreshNetworkGuard().then(() => render());
+  });
   document.getElementById('btnSaveCheckIn')?.addEventListener('click', async () => {
     if (await applyCheckInTimeChange()) {
       setSyncStatus('출근 시각이 저장되었습니다.', 'ok');
