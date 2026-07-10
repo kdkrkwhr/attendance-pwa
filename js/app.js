@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '124';
+const APP_BUILD = '125';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_KEYS = [
@@ -25,6 +25,7 @@ const BACKUP_KEYS = [
 const DEFAULT_SETTINGS = {
   notifyBefore: '30,10,0',
   userName: '',
+  targetCheckIn: '',
   sheetUrl: '',
   theme: 'system',
   fortuneNotify: true,
@@ -512,6 +513,21 @@ function switchTab(tabName) {
   }
 }
 
+function getTargetCheckInHint(checkInISO) {
+  const target = (loadSettings().targetCheckIn || '').trim();
+  if (!target || !/^\d{2}:\d{2}$/.test(target) || !checkInISO) return null;
+
+  const checkIn = parseISO(checkInISO);
+  const [th, tm] = target.split(':').map(Number);
+  const targetAt = new Date(checkIn);
+  targetAt.setHours(th, tm, 0, 0);
+
+  const diffMin = Math.round((checkIn - targetAt) / 60000);
+  if (diffMin === 0) return `목표 ${target} 정각 출근`;
+  if (diffMin > 0) return `${diffMin}분 지각 (목표 ${target})`;
+  return `${Math.abs(diffMin)}분 일찍 (목표 ${target})`;
+}
+
 function getNextLeaveNotifyHint(leaveTime, now = new Date()) {
   const offsets = loadSettings().notifyBefore.split(',').map(Number).filter((n) => !Number.isNaN(n));
   let next = null;
@@ -555,7 +571,9 @@ function renderProgress(record, previewCheckInISO = null) {
     valueEl.textContent = `${(net / 60).toFixed(1)}h`;
     fill.style.width = '100%';
     fill.className = 'progress-fill done';
-    metaEl.textContent = `순근무 ${formatDuration(net)} · 퇴근 완료`;
+    const targetHint = getTargetCheckInHint(record.checkIn);
+    const doneBase = `순근무 ${formatDuration(net)} · 퇴근 완료`;
+    metaEl.textContent = targetHint ? `${doneBase} · ${targetHint}` : doneBase;
     return;
   }
 
@@ -576,8 +594,10 @@ function renderProgress(record, previewCheckInISO = null) {
 
   fill.style.width = `${pct}%`;
   const notifyHint = getNextLeaveNotifyHint(leaveTime, now);
+  const targetHint = getTargetCheckInHint(checkInISO);
   const base = `순근무 ${(netSoFar / 60).toFixed(1)}/${WORK_HOURS}h · 경과 ${(elapsedMs / 3600000).toFixed(1)}h`;
-  metaEl.textContent = notifyHint ? `${base} · ${notifyHint}` : base;
+  const parts = [base, targetHint, notifyHint].filter(Boolean);
+  metaEl.textContent = parts.join(' · ');
 }
 
 // ── Wi-Fi 출근 추정 (Android 앱 연동) ──────────────────────────────────────────
@@ -1453,6 +1473,8 @@ function renderSettings() {
   const sheetEl = document.getElementById('sheetUrl');
   const themeEl = document.getElementById('themeMode');
   if (nameEl) nameEl.value = settings.userName || '';
+  const targetCheckInEl = document.getElementById('targetCheckIn');
+  if (targetCheckInEl) targetCheckInEl.value = settings.targetCheckIn || '';
   if (sheetEl) sheetEl.value = settings.sheetUrl || '';
   if (themeEl) themeEl.value = settings.theme || 'system';
   const fortuneNotifyEl = document.getElementById('fortuneNotify');
@@ -1736,6 +1758,7 @@ function handleSettingsChange() {
     ...prev,
     notifyBefore: document.getElementById('notifyBefore').value,
     userName: (document.getElementById('userName')?.value || '').trim(),
+    targetCheckIn: (document.getElementById('targetCheckIn')?.value || '').trim(),
     sheetUrl: normalizeSheetUrl(document.getElementById('sheetUrl')?.value || ''),
     theme,
     fortuneNotify: document.getElementById('fortuneNotify')?.checked !== false,
@@ -1771,6 +1794,7 @@ function handleSettingsChange() {
       ...record,
       userName: settings.userName,
     });
+    renderProgress(record);
   }
 
   render();
@@ -2077,7 +2101,7 @@ function init() {
   });
   switchFunSubTab(loadFunSubTab(), false);
 
-  ['notifyBefore', 'userName', 'birthDate', 'sheetUrl', 'themeMode', 'fortuneNotify', 'lunchRouletteNotify', 'hermesBaseUrl', 'hermesApiKey', 'hermesModel', 'homeAddress', 'commuteNotify'].forEach((id) => {
+  ['notifyBefore', 'userName', 'targetCheckIn', 'birthDate', 'sheetUrl', 'themeMode', 'fortuneNotify', 'lunchRouletteNotify', 'hermesBaseUrl', 'hermesApiKey', 'hermesModel', 'homeAddress', 'commuteNotify'].forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
     el.addEventListener('change', handleSettingsChange);
