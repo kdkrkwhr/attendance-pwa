@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '118';
+const APP_BUILD = '119';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_KEYS = [
@@ -1258,6 +1258,17 @@ function renderYesterdaySummary() {
   }
 }
 
+function countElapsedWeekdaysInMonth(now = new Date()) {
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  let n = 0;
+  for (let d = 1; d <= now.getDate(); d++) {
+    const dow = new Date(y, m, d).getDay();
+    if (dow !== 0 && dow !== 6) n += 1;
+  }
+  return n;
+}
+
 // 이번 달 출근일수·평균 순근무 시간 요약
 function renderMonthSummary() {
   const el = document.getElementById('monthSummaryText');
@@ -1279,15 +1290,16 @@ function renderMonthSummary() {
     }
   }
 
-  if (days === 0) {
+  const elapsed = countElapsedWeekdaysInMonth(now);
+  if (elapsed === 0) {
     el.textContent = '';
     return;
   }
 
+  const rate = Math.round((days / elapsed) * 100);
   const avg = completed > 0 ? (totalNet / completed / 60).toFixed(1) : null;
-  el.textContent = avg
-    ? `이번 달 ${days}일 출근 · 평균 순근무 ${avg}h`
-    : `이번 달 ${days}일 출근`;
+  const base = `이번 달 ${days}/${elapsed} 평일 출근 (${rate}%)`;
+  el.textContent = avg ? `${base} · 평균 순근무 ${avg}h` : base;
 }
 
 function renderToday() {
