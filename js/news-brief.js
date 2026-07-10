@@ -148,6 +148,26 @@ function markNewsArticleRead(link) {
   } catch (e) {}
 }
 
+function markAllNewsArticlesRead(links) {
+  const hrefs = (links || []).map((l) => String(l || '').trim()).filter(Boolean);
+  if (!hrefs.length) return;
+  try {
+    const today = typeof todayKey === 'function' ? todayKey() : new Date().toISOString().slice(0, 10);
+    const raw = JSON.parse(localStorage.getItem(NEWS_READ_KEY) || '{}');
+    const set = new Set(raw.date === today && Array.isArray(raw.links) ? raw.links : []);
+    hrefs.forEach((h) => set.add(h));
+    localStorage.setItem(NEWS_READ_KEY, JSON.stringify({ date: today, links: [...set] }));
+  } catch (e) {}
+}
+
+function syncNewsMarkAllBtn(unreadCount) {
+  const btn = document.getElementById('newsMarkAllRead');
+  if (!btn) return;
+  const show = unreadCount > 0;
+  btn.hidden = !show;
+  btn.disabled = !show;
+}
+
 function renderNewsPinBar() {
   const bar = document.getElementById('newsPinBar');
   if (!bar) return;
@@ -221,6 +241,7 @@ function renderNewsBrief(data) {
   const searched = filterNewsBySearch(sorted, newsSearchQuery);
   const items = filterNewsByUnread(searched, readSet);
   const unread = countUnreadNews(searched, readSet);
+  syncNewsMarkAllBtn(unread);
 
   const gen = data?.generatedAt
     ? new Date(data.generatedAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
@@ -338,6 +359,24 @@ function bindNewsUnreadToggle() {
   });
 }
 
+function bindNewsMarkAllRead() {
+  const btn = document.getElementById('newsMarkAllRead');
+  if (!btn || btn.dataset.bound) return;
+  btn.dataset.bound = '1';
+  btn.addEventListener('click', async () => {
+    const data = await loadTodayNews();
+    const key = activeNewsKey();
+    const marketData = data ? pickMarketData(data, key) : null;
+    const pins = getActiveNewsPins();
+    const sorted = sortNewsByPins(marketData?.items || [], pins);
+    const searched = filterNewsBySearch(sorted, newsSearchQuery);
+    const links = searched.map((it) => it.link).filter(Boolean);
+    markAllNewsArticlesRead(links);
+    const refreshed = await loadTodayNews();
+    renderNewsBrief(refreshed);
+  });
+}
+
 function bindNewsReadTracking() {
   const list = document.getElementById('newsList');
   if (!list || list.dataset.readBound) return;
@@ -361,6 +400,7 @@ async function initNewsBrief() {
   bindNewsPinBar();
   bindNewsSearch();
   bindNewsUnreadToggle();
+  bindNewsMarkAllRead();
   bindNewsReadTracking();
   syncNewsUnreadToggle();
   syncNewsCategoryToggle();
