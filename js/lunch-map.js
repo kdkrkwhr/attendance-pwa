@@ -23,6 +23,7 @@ let lunchWeatherData = null;
 
 const LUNCH_USER_ZOOM = 17;
 const LUNCH_FAVORITES_KEY = 'attendance-lunch-favorites';
+const LUNCH_ROULETTE_DAY_KEY = 'attendance-lunch-roulette-day';
 
 function loadLunchFavorites() {
   try {
@@ -666,7 +667,28 @@ function setRouletteDisplay(text, spinning = false) {
   wheelEl?.classList.toggle('lunch-roulette-wheel-spinning', spinning);
 }
 
-function showRouletteResult(place) {
+function saveLunchRouletteToday(placeId) {
+  if (!placeId) return;
+  localStorage.setItem(LUNCH_ROULETTE_DAY_KEY, JSON.stringify({ date: todayKey(), placeId }));
+}
+
+function tryRestoreLunchRouletteToday() {
+  if (!lunchMapData?.places?.length) return false;
+  let saved;
+  try {
+    saved = JSON.parse(localStorage.getItem(LUNCH_ROULETTE_DAY_KEY) || 'null');
+  } catch {
+    return false;
+  }
+  if (saved?.date !== todayKey() || !saved.placeId) return false;
+  const place = lunchMapData.places.find((p) => p.id === saved.placeId);
+  if (!place) return false;
+  setRouletteDisplay(place.name, false);
+  showRouletteResult(place, false);
+  return true;
+}
+
+function showRouletteResult(place, persist = true) {
   const resultEl = document.getElementById('lunchRouletteResult');
   const nameEl = document.getElementById('lunchRouletteResultName');
   const metaEl = document.getElementById('lunchRouletteResultMeta');
@@ -681,6 +703,7 @@ function showRouletteResult(place) {
     metaEl.textContent = parts.join(' · ');
   }
   resultEl.classList.remove('hidden');
+  if (persist) saveLunchRouletteToday(place.id);
 }
 
 function hideRouletteResult() {
@@ -912,6 +935,7 @@ async function initLunchMap(force = false) {
     updateLunchMapDesc(data);
     renderLunchMapMarkers(data);
     renderLunchList(data);
+    tryRestoreLunchRouletteToday();
     lunchMapReady = true;
     hideLunchMapStatus();
     initLunchMapWeather();
@@ -930,8 +954,9 @@ async function initLunchMap(force = false) {
 
 function handleLunchCategoryFilter() {
   if (!lunchMapData) return;
-  hideRouletteResult();
-  setRouletteDisplay('버튼을 눌러 오늘 점심을 정해요');
+  if (!tryRestoreLunchRouletteToday()) {
+    setRouletteDisplay('버튼을 눌러 오늘 점심을 정해요');
+  }
   renderLunchList(lunchMapData);
 }
 
