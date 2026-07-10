@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '127';
+const APP_BUILD = '128';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_KEYS = [
@@ -1266,6 +1266,7 @@ function renderWeekStrip() {
 
   let done = 0;
   let weekNetMin = 0;
+  const checkInMins = [];
   const now = new Date();
   dotsEl.innerHTML = weekdays.map((date) => {
     const key = formatDateKey(date);
@@ -1273,6 +1274,8 @@ function renderWeekStrip() {
     const checked = !!rec?.checkIn;
     if (checked) {
       done += 1;
+      const ci = parseISO(rec.checkIn);
+      checkInMins.push(ci.getHours() * 60 + ci.getMinutes());
       if (rec.checkOut) weekNetMin += calcNetWorkMinutes(rec.checkIn, rec.checkOut);
       else if (key === todayK) weekNetMin += calcNetWorkMinutes(rec.checkIn, now.toISOString());
     }
@@ -1283,7 +1286,12 @@ function renderWeekStrip() {
   }).join('');
 
   const hoursPart = weekNetMin > 0 ? ` · ${(weekNetMin / 60).toFixed(1)}h 순근무` : '';
-  textEl.textContent = `이번 주 ${done}/${weekdays.length}일 출근${hoursPart}`;
+  let avgPart = '';
+  if (checkInMins.length > 0) {
+    const avg = Math.round(checkInMins.reduce((a, b) => a + b, 0) / checkInMins.length);
+    avgPart = ` · 평균 ${String(Math.floor(avg / 60)).padStart(2, '0')}:${String(avg % 60).padStart(2, '0')} 출근`;
+  }
+  textEl.textContent = `이번 주 ${done}/${weekdays.length}일 출근${hoursPart}${avgPart}`;
 }
 
 // 이번 주 평일별 순근무 시간 히트맵 (8h 기준 막대 높이)
