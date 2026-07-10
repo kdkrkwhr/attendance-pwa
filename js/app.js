@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '125';
+const APP_BUILD = '126';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_KEYS = [
@@ -582,21 +582,30 @@ function renderProgress(record, previewCheckInISO = null) {
   const pct = Math.min(100, Math.round((elapsedMs / totalMs) * 100));
   const netSoFar = calcNetWorkSoFar(checkInISO, now.toISOString());
 
+  let overtimeHint = '';
   if (remainingMs > 0) {
     labelEl.textContent = '남은 시간';
     valueEl.textContent = formatDuration(Math.ceil(remainingMs / 60000));
     fill.className = `progress-fill${remainingMs <= 30 * 60000 ? ' urgent' : ''}`;
   } else {
-    labelEl.textContent = '퇴근 가능';
-    valueEl.textContent = '지금';
-    fill.className = 'progress-fill ready';
+    const overtimeMin = Math.ceil((now - leaveTime) / 60000);
+    if (overtimeMin > 0) {
+      labelEl.textContent = '초과근무';
+      valueEl.textContent = `+${formatDuration(overtimeMin)}`;
+      fill.className = 'progress-fill overtime';
+      overtimeHint = '퇴근 체크를 눌러 주세요';
+    } else {
+      labelEl.textContent = '퇴근 가능';
+      valueEl.textContent = '지금';
+      fill.className = 'progress-fill ready';
+    }
   }
 
   fill.style.width = `${pct}%`;
-  const notifyHint = getNextLeaveNotifyHint(leaveTime, now);
+  const notifyHint = remainingMs > 0 ? getNextLeaveNotifyHint(leaveTime, now) : '';
   const targetHint = getTargetCheckInHint(checkInISO);
   const base = `순근무 ${(netSoFar / 60).toFixed(1)}/${WORK_HOURS}h · 경과 ${(elapsedMs / 3600000).toFixed(1)}h`;
-  const parts = [base, targetHint, notifyHint].filter(Boolean);
+  const parts = [base, targetHint, notifyHint, overtimeHint].filter(Boolean);
   metaEl.textContent = parts.join(' · ');
 }
 

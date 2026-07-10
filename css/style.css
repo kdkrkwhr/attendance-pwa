@@ -149,6 +149,10 @@ body {
   background: var(--success);
 }
 
+.progress-fill.overtime {
+  background: #dc2626;
+}
+
 .progress-fill.done {
   background: var(--success);
 }
