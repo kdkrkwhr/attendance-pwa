@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '131';
+const APP_BUILD = '132';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_KEYS = [
@@ -26,6 +26,7 @@ const DEFAULT_SETTINGS = {
   notifyBefore: '30,10,0',
   userName: '',
   targetCheckIn: '',
+  targetCheckOut: '',
   sheetUrl: '',
   theme: 'system',
   fortuneNotify: true,
@@ -528,6 +529,33 @@ function getTargetCheckInHint(checkInISO) {
   return `${Math.abs(diffMin)}분 일찍 (목표 ${target})`;
 }
 
+function getTargetCheckOutHint(now = new Date()) {
+  const target = (loadSettings().targetCheckOut || '').trim();
+  if (!target || !/^\d{2}:\d{2}$/.test(target)) return null;
+
+  const [th, tm] = target.split(':').map(Number);
+  const targetAt = new Date(now);
+  targetAt.setHours(th, tm, 0, 0);
+  const diffMin = Math.round((targetAt - now) / 60000);
+  if (diffMin > 0) return `목표 퇴근 ${target}까지 ${formatDuration(diffMin)}`;
+  if (diffMin < 0) return `목표 퇴근 +${formatDuration(-diffMin)}`;
+  return `목표 퇴근 ${target} 정각`;
+}
+
+function getTargetCheckOutDoneHint(checkOutISO) {
+  const target = (loadSettings().targetCheckOut || '').trim();
+  if (!target || !/^\d{2}:\d{2}$/.test(target) || !checkOutISO) return null;
+
+  const out = parseISO(checkOutISO);
+  const [th, tm] = target.split(':').map(Number);
+  const targetAt = new Date(out);
+  targetAt.setHours(th, tm, 0, 0);
+  const diffMin = Math.round((out - targetAt) / 60000);
+  if (diffMin === 0) return `목표 ${target} 정각 퇴근`;
+  if (diffMin > 0) return `${diffMin}분 늦게 퇴근 (목표 ${target})`;
+  return `${Math.abs(diffMin)}분 일찍 (목표 ${target})`;
+}
+
 function getNextLeaveNotifyHint(leaveTime, now = new Date()) {
   const offsets = loadSettings().notifyBefore.split(',').map(Number).filter((n) => !Number.isNaN(n));
   let next = null;
@@ -594,8 +622,10 @@ function renderProgress(record, previewCheckInISO = null) {
     fill.style.width = '100%';
     fill.className = 'progress-fill done';
     const targetHint = getTargetCheckInHint(record.checkIn);
+    const outHint = getTargetCheckOutDoneHint(record.checkOut);
     const doneBase = `순근무 ${formatDuration(net)} · 퇴근 완료`;
-    metaEl.textContent = targetHint ? `${doneBase} · ${targetHint}` : doneBase;
+    const hints = [targetHint, outHint].filter(Boolean);
+    metaEl.textContent = hints.length ? `${doneBase} · ${hints.join(' · ')}` : doneBase;
     return;
   }
 
@@ -626,8 +656,9 @@ function renderProgress(record, previewCheckInISO = null) {
   fill.style.width = `${pct}%`;
   const notifyHint = remainingMs > 0 ? getNextLeaveNotifyHint(leaveTime, now) : '';
   const targetHint = getTargetCheckInHint(checkInISO);
+  const targetOutHint = getTargetCheckOutHint(now);
   const base = `순근무 ${(netSoFar / 60).toFixed(1)}/${WORK_HOURS}h · 경과 ${(elapsedMs / 3600000).toFixed(1)}h`;
-  const parts = [base, targetHint, notifyHint, overtimeHint].filter(Boolean);
+  const parts = [base, targetHint, targetOutHint, notifyHint, overtimeHint].filter(Boolean);
   metaEl.textContent = parts.join(' · ');
 }
 
@@ -1537,6 +1568,8 @@ function renderSettings() {
   if (nameEl) nameEl.value = settings.userName || '';
   const targetCheckInEl = document.getElementById('targetCheckIn');
   if (targetCheckInEl) targetCheckInEl.value = settings.targetCheckIn || '';
+  const targetCheckOutEl = document.getElementById('targetCheckOut');
+  if (targetCheckOutEl) targetCheckOutEl.value = settings.targetCheckOut || '';
   if (sheetEl) sheetEl.value = settings.sheetUrl || '';
   if (themeEl) themeEl.value = settings.theme || 'system';
   const fortuneNotifyEl = document.getElementById('fortuneNotify');
@@ -1821,6 +1854,7 @@ function handleSettingsChange() {
     notifyBefore: document.getElementById('notifyBefore').value,
     userName: (document.getElementById('userName')?.value || '').trim(),
     targetCheckIn: (document.getElementById('targetCheckIn')?.value || '').trim(),
+    targetCheckOut: (document.getElementById('targetCheckOut')?.value || '').trim(),
     sheetUrl: normalizeSheetUrl(document.getElementById('sheetUrl')?.value || ''),
     theme,
     fortuneNotify: document.getElementById('fortuneNotify')?.checked !== false,
@@ -2163,7 +2197,7 @@ function init() {
   });
   switchFunSubTab(loadFunSubTab(), false);
 
-  ['notifyBefore', 'userName', 'targetCheckIn', 'birthDate', 'sheetUrl', 'themeMode', 'fortuneNotify', 'lunchRouletteNotify', 'hermesBaseUrl', 'hermesApiKey', 'hermesModel', 'homeAddress', 'commuteNotify'].forEach((id) => {
+  ['notifyBefore', 'userName', 'targetCheckIn', 'targetCheckOut', 'birthDate', 'sheetUrl', 'themeMode', 'fortuneNotify', 'lunchRouletteNotify', 'hermesBaseUrl', 'hermesApiKey', 'hermesModel', 'homeAddress', 'commuteNotify'].forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
     el.addEventListener('change', handleSettingsChange);
