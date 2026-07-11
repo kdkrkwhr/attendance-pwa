@@ -38,9 +38,11 @@ function saveLunchDiary(text) {
   const t = String(text || '').trim();
   if (!t) {
     localStorage.removeItem(LUNCH_DIARY_KEY);
+    if (typeof renderLunchSummary === 'function') renderLunchSummary();
     return;
   }
   localStorage.setItem(LUNCH_DIARY_KEY, JSON.stringify({ date: todayKey(), text: t }));
+  if (typeof renderLunchSummary === 'function') renderLunchSummary();
 }
 
 function setLunchDiaryFromRoulette(placeName) {

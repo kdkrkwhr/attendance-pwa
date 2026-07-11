@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '130';
+const APP_BUILD = '131';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_KEYS = [
@@ -1349,6 +1349,19 @@ function getPreviousWeekdayKey(from = new Date()) {
   return formatDateKey(d);
 }
 
+function renderLunchSummary() {
+  const el = document.getElementById('lunchSummaryText');
+  if (!el) return;
+  const text = typeof loadLunchDiaryText === 'function' ? loadLunchDiaryText() : '';
+  if (text) {
+    el.textContent = `🍽️ 오늘 점심 · ${text}`;
+    el.classList.remove('hidden');
+  } else {
+    el.textContent = '';
+    el.classList.add('hidden');
+  }
+}
+
 // 전 평일(월요일이면 금요일) 출퇴근·순근무 한 줄
 function renderYesterdaySummary() {
   const el = document.getElementById('yesterdaySummaryText');
@@ -1438,6 +1451,7 @@ function renderToday() {
   renderWeekHeatmap();
   renderMonthSummary();
   renderYesterdaySummary();
+  renderLunchSummary();
 
   todayCard?.classList.toggle('card-field-work', fieldWork);
   fieldBadge?.classList.toggle('hidden', !fieldWork);
