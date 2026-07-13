@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '142';
+const APP_BUILD = '143';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -1404,6 +1404,52 @@ function getPreviousWeekdayKey(from = new Date()) {
   return formatDateKey(d);
 }
 
+
+function buildTodaySummaryText() {
+  const record = getTodayRecord();
+  if (!record?.checkIn) return '';
+  const label = formatTodayLabel(new Date());
+  const inT = formatTime(record.checkIn);
+  if (record.checkOut) {
+    const net = calcNetWorkMinutes(record.checkIn, record.checkOut);
+    return `${label} ${inT}~${formatTime(record.checkOut)} (순 ${formatDuration(net)})`;
+  }
+  const leave = formatTime(calcLeaveTime(record.checkIn));
+  return `${label} 출근 ${inT} · 퇴근가능 ${leave}`;
+}
+
+async function copyTodaySummary() {
+  const text = buildTodaySummaryText();
+  if (!text) {
+    setSyncStatus('출근 기록이 없어요.', 'err');
+    return;
+  }
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+    }
+    setSyncStatus('근무 요약을 복사했어요.', 'ok');
+  } catch {
+    setSyncStatus('복사에 실패했어요.', 'err');
+  }
+}
+
+function updateCopyTodaySummaryBtn(record) {
+  const btn = document.getElementById('btnCopyTodaySummary');
+  if (!btn) return;
+  btn.classList.toggle('hidden', !record?.checkIn);
+}
+
 function renderLunchSummary() {
   const el = document.getElementById('lunchSummaryText');
   if (!el) return;
@@ -1493,6 +1539,7 @@ function renderToday() {
   const fieldMemoText = document.getElementById('fieldMemoText');
 
   document.getElementById('todayDate').textContent = formatTodayLabel(now);
+  updateCopyTodaySummaryBtn(record);
 
   const streakBadge = document.getElementById('streakBadge');
   if (streakBadge) {
@@ -2113,6 +2160,7 @@ function init() {
     }
   });
   document.getElementById('btnCheckOut').addEventListener('click', handleCheckOut);
+  document.getElementById('btnCopyTodaySummary')?.addEventListener('click', copyTodaySummary);
   document.getElementById('fieldWorkToggle')?.addEventListener('change', handleFieldWorkToggle);
   document.getElementById('btnFieldCheckOut')?.addEventListener('click', handleFieldCheckOut);
   document.getElementById('btnFieldMemoCancel')?.addEventListener('click', handleFieldMemoCancel);
