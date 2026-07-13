@@ -86,21 +86,41 @@ def build_market(items: list[dict], summary_override: str | None, empty_msg: str
     }
 
 
+def load_existing_file(date: str) -> dict | None:
+    for name in (f"{date}.json", "latest.json"):
+        path = OUT_DIR / name
+        if not path.exists():
+            continue
+        try:
+            return json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+    return None
+
+
 def load_existing_summaries(date: str) -> tuple[str | None, str | None, str | None]:
   # ponytail: auto-refresh must not clobber cron AI summaries with naive title joins
-    path = OUT_DIR / f"{date}.json"
-    if not path.exists():
+    data = load_existing_file(date)
+    if not data:
         return None, None, None
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-        m = data.get("markets") or {}
-        return (
-            (m.get("kr") or {}).get("summary"),
-            (m.get("us") or {}).get("summary"),
-            (m.get("all") or {}).get("summary"),
-        )
-    except (OSError, json.JSONDecodeError):
-        return None, None, None
+    m = data.get("markets") or {}
+    return (
+        (m.get("kr") or {}).get("summary"),
+        (m.get("us") or {}).get("summary"),
+        (m.get("all") or {}).get("summary"),
+    )
+
+
+def load_existing_items(date: str) -> tuple[list[dict], list[dict], list[dict]]:
+    data = load_existing_file(date)
+    if not data:
+        return [], [], []
+    m = data.get("markets") or {}
+    return (
+        list((m.get("kr") or {}).get("items") or []),
+        list((m.get("us") or {}).get("items") or []),
+        list((m.get("all") or {}).get("items") or []),
+    )
 
 
 def is_naive_summary(text: str | None) -> bool:
@@ -144,9 +164,10 @@ def main() -> int:
         us_summary = prev_us
     if not all_summary and prev_all and not is_naive_summary(prev_all):
         all_summary = prev_all
-    kr_items = collect_items(QUERIES_KR)
-    us_items = collect_items(QUERIES_US)
-    all_items = collect_items(QUERIES_ALL)
+    prev_kr_items, prev_us_items, prev_all_items = load_existing_items(date)
+    kr_items = collect_items(QUERIES_KR) or prev_kr_items
+    us_items = collect_items(QUERIES_US) or prev_us_items
+    all_items = collect_items(QUERIES_ALL) or prev_all_items
     payload = build_payload(kr_items, us_items, all_items, kr_summary, us_summary, all_summary)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUT_DIR / f"{payload['date']}.json"

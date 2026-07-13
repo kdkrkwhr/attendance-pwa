@@ -11,9 +11,11 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '137';
+const APP_BUILD = '138';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
+const BACKUP_AT_KEY = 'attendance-last-backup-at';
+const BACKUP_HINT_DAYS = 7;
 const BACKUP_KEYS = [
   SETTINGS_KEY,
   STORAGE_KEY,
@@ -1589,6 +1591,33 @@ function renderSettings() {
   const commuteNotifyEl = document.getElementById('commuteNotify');
   if (commuteNotifyEl) commuteNotifyEl.checked = settings.commuteNotify !== false;
   applyTheme(settings.theme || 'system');
+  renderBackupHint();
+}
+
+function renderBackupHint() {
+  const el = document.getElementById('backupHint');
+  if (!el) return;
+
+  let at = null;
+  try {
+    const raw = localStorage.getItem(BACKUP_AT_KEY);
+    if (raw) at = new Date(raw);
+  } catch {}
+
+  el.classList.remove('backup-hint-warn');
+  if (!at || Number.isNaN(at.getTime())) {
+    el.textContent = '아직 백업 기록 없음 — 주기적으로 JSON 백업을 권장해요';
+    return;
+  }
+
+  const label = at.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
+  const days = Math.floor((Date.now() - at.getTime()) / 86400000);
+  if (days >= BACKUP_HINT_DAYS) {
+    el.textContent = `마지막 백업 ${label} (${days}일 전) — 백업을 권장해요`;
+    el.classList.add('backup-hint-warn');
+  } else {
+    el.textContent = `마지막 백업 ${label}${days === 0 ? ' (오늘)' : days === 1 ? ' (어제)' : ''}`;
+  }
 }
 
 function render() {
@@ -1810,6 +1839,8 @@ function handleBackupData() {
   a.download = `출퇴근백업_${todayKey()}.json`;
   a.click();
   URL.revokeObjectURL(a.href);
+  localStorage.setItem(BACKUP_AT_KEY, new Date().toISOString());
+  renderBackupHint();
   setSyncStatus('백업 파일을 저장했습니다.', 'ok');
 }
 

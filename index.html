@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=137">
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=137">
+  <link rel="stylesheet" href="css/style.css?v=138">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=138">
   <script>
     (function () {
       try {
@@ -778,6 +778,7 @@
           <button type="button" class="btn btn-ghost" id="btnExport">기록보내기 (CSV)</button>
           <button type="button" class="btn btn-ghost" id="btnBackupData">설정·기록 백업 (JSON)</button>
           <button type="button" class="btn btn-ghost" id="btnRestoreData">백업 복원</button>
+          <p class="field-hint" id="backupHint"></p>
           <input type="file" id="backupFileInput" accept="application/json,.json" hidden>
           <button type="button" class="btn btn-ghost btn-danger" id="btnResetToday">오늘 기록 초기화</button>
           <button type="button" class="btn btn-ghost" id="btnClearCache">캐시 지우고 새로고침</button>
@@ -816,6 +817,7 @@
             <li>Fun 탭 — 행운 슬롯 미니게임 추가, 3개 일치 잭팟·오늘 잭팟 횟수 표시 (v99)</li>
             <li>Fun 탭 — 5초 탭 챌린지 미니게임 추가, 오늘 최고 탭 수 기록 표시 (v100)</li>
             <li>설정 — 기능 안내에서 (vNN) 항목 최근 5개만 표시 (v104)</li>
+            <li>설정 — 마지막 JSON 백업 일시 표시·7일 경과 시 권장 힌트 (v138)</li>
             <li>오늘 탭 — 고온·폭염 예보 시 날짜 옆 🥵 고온 배지 표시 (v137)</li>
             <li>오늘 탭 — 비 예보 시 날짜 옆 ☂️ 우산 배지 표시 (v136)</li>
             <li>AI 채팅 — 마지막 질문 재전송 버튼 (v135)</li>
@@ -885,17 +887,17 @@
     </nav>
   </div>
 
-  <script src="config.js?v=137"></script>
-  <script src="vendor/leaflet/leaflet.js?v=137"></script>
-  <script src="js/util.js?v=137"></script>
-  <script src="js/fortune.js?v=137"></script>
-  <script src="js/saju.js?v=137"></script>
-  <script src="js/lunch-map.js?v=137"></script>
-  <script src="js/user-location.js?v=137"></script>
-  <script src="js/weather-brief.js?v=137"></script>
-  <script src="js/news-brief.js?v=137"></script>
-  <script src="js/hermes-chat.js?v=137"></script>
-  <script src="js/commute-time.js?v=137"></script>
-  <script src="js/app.js?v=137"></script>
+  <script src="config.js?v=138"></script>
+  <script src="vendor/leaflet/leaflet.js?v=138"></script>
+  <script src="js/util.js?v=138"></script>
+  <script src="js/fortune.js?v=138"></script>
+  <script src="js/saju.js?v=138"></script>
+  <script src="js/lunch-map.js?v=138"></script>
+  <script src="js/user-location.js?v=138"></script>
+  <script src="js/weather-brief.js?v=138"></script>
+  <script src="js/news-brief.js?v=138"></script>
+  <script src="js/hermes-chat.js?v=138"></script>
+  <script src="js/commute-time.js?v=138"></script>
+  <script src="js/app.js?v=138"></script>
 </body>
 </html>

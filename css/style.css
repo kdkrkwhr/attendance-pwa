@@ -911,6 +911,10 @@ body {
   line-height: 1.5;
 }
 
+.field-hint.backup-hint-warn {
+  color: var(--warning, #c2410c);
+}
+
 .app-version {
   margin-top: 0.75rem;
   text-align: center;
