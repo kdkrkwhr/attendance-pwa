@@ -51,11 +51,26 @@ async function loadTodayWeather() {
   return loadDailyJson('weather');
 }
 
+function needsUmbrellaToday(data) {
+  if (!data) return false;
+  const sum = String(data.summary || '');
+  if (/우산 챙기|우산 필요|비\/소나기 가능/.test(sum)) return true;
+  return typeof shouldShowMapRain === 'function' && shouldShowMapRain(data);
+}
+
+function renderUmbrellaBadge(data) {
+  const el = document.getElementById('umbrellaBadge');
+  if (!el) return;
+  el.classList.toggle('hidden', !needsUmbrellaToday(data));
+}
+
 function renderWeatherBrief(data) {
   const card = document.getElementById('weatherBriefCard');
   const summaryEl = document.getElementById('weatherBriefSummary');
   const metaEl = document.getElementById('weatherBriefMeta');
   if (!card) return;
+
+  renderUmbrellaBadge(data);
 
   if (!data?.summary) {
     card.classList.add('hidden');

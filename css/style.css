@@ -546,6 +546,11 @@ body {
   color: #be123c;
 }
 
+.badge-umbrella {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
 .week-strip {
   display: flex;
   align-items: center;
@@ -1213,6 +1218,11 @@ body {
   .badge-streak {
     background: #4c0519;
     color: #fda4af;
+  }
+
+  .badge-umbrella {
+    background: #1e3a5f;
+    color: #93c5fd;
   }
 
   .btn-secondary {
