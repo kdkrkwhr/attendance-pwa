@@ -58,10 +58,24 @@ function needsUmbrellaToday(data) {
   return typeof shouldShowMapRain === 'function' && shouldShowMapRain(data);
 }
 
+function needsHeatWarningToday(data) {
+  if (!data) return false;
+  const hi = data.highlights || {};
+  if (hi.tempMax != null && hi.tempMax >= 33) return true;
+  const sum = String(data.summary || '');
+  return /폭염|무더|고온|자외선|덥/.test(sum);
+}
+
 function renderUmbrellaBadge(data) {
   const el = document.getElementById('umbrellaBadge');
   if (!el) return;
   el.classList.toggle('hidden', !needsUmbrellaToday(data));
+}
+
+function renderHeatBadge(data) {
+  const el = document.getElementById('heatBadge');
+  if (!el) return;
+  el.classList.toggle('hidden', !needsHeatWarningToday(data));
 }
 
 function renderWeatherBrief(data) {
@@ -71,6 +85,7 @@ function renderWeatherBrief(data) {
   if (!card) return;
 
   renderUmbrellaBadge(data);
+  renderHeatBadge(data);
 
   if (!data?.summary) {
     card.classList.add('hidden');

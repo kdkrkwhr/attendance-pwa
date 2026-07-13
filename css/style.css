@@ -551,6 +551,11 @@ body {
   color: #1d4ed8;
 }
 
+.badge-heat {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
 .week-strip {
   display: flex;
   align-items: center;
@@ -1223,6 +1228,11 @@ body {
   .badge-umbrella {
     background: #1e3a5f;
     color: #93c5fd;
+  }
+
+  .badge-heat {
+    background: #431407;
+    color: #fdba74;
   }
 
   .btn-secondary {
