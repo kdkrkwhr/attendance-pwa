@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '143';
+const APP_BUILD = '144';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -1858,12 +1858,15 @@ function handleResetToday() {
   render();
 }
 
-function handleExport() {
+function handleExport(monthOnly = false) {
   const records = loadRecords();
   const name = getUserName();
+  const now = new Date();
+  const monthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   const rows = [['이름', '날짜', '근무유형', '출근', '퇴근', '퇴근예정', '순근무(분)', '외근메모']];
 
   Object.keys(records).sort().forEach((key) => {
+    if (monthOnly && !key.startsWith(monthPrefix)) return;
     const r = records[key];
     if (!r.checkIn) return;
     const leave = calcLeaveTime(r.checkIn);
@@ -1880,13 +1883,21 @@ function handleExport() {
     ]);
   });
 
+  if (rows.length === 1) {
+    setSyncStatus(monthOnly ? '이번 달 기록이 없어요.' : '내보낼 기록이 없어요.', 'err');
+    return;
+  }
+
   const csv = rows.map((r) => r.join(',')).join('\n');
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `출퇴근기록_${name || 'unknown'}_${todayKey()}.csv`;
+  a.download = monthOnly
+    ? `출퇴근기록_${name || 'unknown'}_${monthPrefix}.csv`
+    : `출퇴근기록_${name || 'unknown'}_${todayKey()}.csv`;
   a.click();
   URL.revokeObjectURL(a.href);
+  setSyncStatus(monthOnly ? '이번 달 CSV를 저장했어요.' : 'CSV를 저장했어요.', 'ok');
 }
 
 function handleBackupData() {
@@ -2180,7 +2191,8 @@ function init() {
   }
 
   document.getElementById('btnResetToday').addEventListener('click', handleResetToday);
-  document.getElementById('btnExport').addEventListener('click', handleExport);
+  document.getElementById('btnExport').addEventListener('click', () => handleExport(false));
+  document.getElementById('btnExportMonth')?.addEventListener('click', () => handleExport(true));
   document.getElementById('btnBackupData')?.addEventListener('click', handleBackupData);
   document.getElementById('btnRestoreData')?.addEventListener('click', () => {
     document.getElementById('backupFileInput')?.click();
