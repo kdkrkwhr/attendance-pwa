@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '140';
+const APP_BUILD = '141';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -1350,7 +1350,12 @@ function renderWeekStrip() {
     const avgOut = Math.round(checkOutMins.reduce((a, b) => a + b, 0) / checkOutMins.length);
     avgOutPart = ` · 평균 ${String(Math.floor(avgOut / 60)).padStart(2, '0')}:${String(avgOut % 60).padStart(2, '0')} 퇴근`;
   }
-  textEl.textContent = `이번 주 ${done}/${weekdays.length}일 출근${hoursPart}${avgPart}${avgOutPart}`;
+  const remaining = weekdays.filter((date) => {
+    const key = formatDateKey(date);
+    return key >= todayK && !records[key]?.checkIn;
+  }).length;
+  const remainPart = remaining > 0 ? ` · 남은 ${remaining}일` : '';
+  textEl.textContent = `이번 주 ${done}/${weekdays.length}일 출근${hoursPart}${avgPart}${avgOutPart}${remainPart}`;
 }
 
 // 이번 주 평일별 순근무 시간 히트맵 (8h 기준 막대 높이)
