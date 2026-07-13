@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '139';
+const APP_BUILD = '140';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -558,6 +558,22 @@ function getTargetCheckOutDoneHint(checkOutISO) {
   return `${Math.abs(diffMin)}분 일찍 (목표 ${target})`;
 }
 
+const LUNCH_HINT_START_HOUR = 10;
+const LUNCH_START_HOUR = 12;
+const LUNCH_END_HOUR = 13;
+
+function getLunchCountdownHint(now = new Date()) {
+  const mins = now.getHours() * 60 + now.getMinutes();
+  const lunchStart = LUNCH_START_HOUR * 60;
+  const lunchEnd = LUNCH_END_HOUR * 60;
+  const hintStart = LUNCH_HINT_START_HOUR * 60;
+  if (mins < hintStart || mins >= lunchEnd) return null;
+  if (mins < lunchStart) {
+    return `점심 12:00까지 ${formatDuration(lunchStart - mins)}`;
+  }
+  return `점심시간 ${formatDuration(lunchEnd - mins)} 남음`;
+}
+
 function getNextLeaveNotifyHint(leaveTime, now = new Date()) {
   const offsets = loadSettings().notifyBefore.split(',').map(Number).filter((n) => !Number.isNaN(n));
   let next = null;
@@ -657,10 +673,11 @@ function renderProgress(record, previewCheckInISO = null) {
 
   fill.style.width = `${pct}%`;
   const notifyHint = remainingMs > 0 ? getNextLeaveNotifyHint(leaveTime, now) : '';
+  const lunchHint = getLunchCountdownHint(now);
   const targetHint = getTargetCheckInHint(checkInISO);
   const targetOutHint = getTargetCheckOutHint(now);
   const base = `순근무 ${(netSoFar / 60).toFixed(1)}/${WORK_HOURS}h · 경과 ${(elapsedMs / 3600000).toFixed(1)}h`;
-  const parts = [base, targetHint, targetOutHint, notifyHint, overtimeHint].filter(Boolean);
+  const parts = [base, lunchHint, targetHint, targetOutHint, notifyHint, overtimeHint].filter(Boolean);
   metaEl.textContent = parts.join(' · ');
 }
 
