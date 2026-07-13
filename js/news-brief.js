@@ -13,10 +13,14 @@ let newsCategory = localStorage.getItem(NEWS_CATEGORY_KEY) || 'stock';
 let newsSearchQuery = '';
 let newsUnreadOnly = localStorage.getItem(NEWS_UNREAD_ONLY_KEY) === '1';
 
-async function loadTodayNews() {
-  if (newsCache) return newsCache;
+async function loadTodayNews(force = false) {
+  if (!force && newsCache) return newsCache;
   newsCache = await loadDailyJson('news');
   return newsCache;
+}
+
+function invalidateNewsCache() {
+  newsCache = null;
 }
 
 function activeNewsKey() {
@@ -414,6 +418,26 @@ function bindNewsUnreadToggle() {
   });
 }
 
+function bindNewsRefresh() {
+  const btn = document.getElementById('newsRefreshBtn');
+  if (!btn || btn.dataset.bound) return;
+  btn.dataset.bound = '1';
+  btn.addEventListener('click', async () => {
+    if (btn.disabled) return;
+    btn.disabled = true;
+    btn.textContent = '…';
+    try {
+      invalidateNewsCache();
+      const data = await loadTodayNews(true);
+      renderNewsBrief(data);
+      syncNewsTabBadge(countAllUnreadNews(data));
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '새로고침';
+    }
+  });
+}
+
 function bindNewsMarkAllRead() {
   const btn = document.getElementById('newsMarkAllRead');
   if (!btn || btn.dataset.bound) return;
@@ -474,6 +498,7 @@ async function initNewsBrief() {
   bindNewsPinBar();
   bindNewsSearch();
   bindNewsUnreadToggle();
+  bindNewsRefresh();
   bindNewsMarkAllRead();
   bindNewsQuickPin();
   bindNewsReadTracking();
