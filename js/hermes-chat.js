@@ -268,6 +268,9 @@ function renderHermesChatFrom(messages) {
   requestAnimationFrame(() => {
     listEl.scrollTop = listEl.scrollHeight;
   });
+
+  const resendBtn = document.getElementById('btnChatResendLast');
+  if (resendBtn) resendBtn.disabled = !getLastUserMessage() || chatReplyInFlight;
 }
 
 function setChatStatus(text, kind) {
@@ -667,12 +670,47 @@ function handleChatClear() {
   setChatStatus('', '');
 }
 
+function getLastUserMessage() {
+  const messages = loadChatMessages();
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    if (messages[i]?.role === 'user' && messages[i].content) return messages[i].content;
+  }
+  return '';
+}
+
 function getLastAssistantReply() {
   const messages = loadChatMessages();
   for (let i = messages.length - 1; i >= 0; i -= 1) {
     if (messages[i]?.role === 'assistant' && messages[i].content) return messages[i].content;
   }
   return '';
+}
+
+function handleChatResendLast() {
+  const text = getLastUserMessage();
+  if (!text) {
+    setChatStatus('재전송할 질문이 없어요', 'info');
+    return;
+  }
+  if (chatReplyInFlight) {
+    setChatStatus('이전 응답 생성 중… 잠시만', 'error');
+    return;
+  }
+
+  const messages = loadChatMessages();
+  const last = messages[messages.length - 1];
+  if (last?.role === 'user' && last.content === text) {
+    void runHermesReplyInBackground(text);
+    return;
+  }
+  if (last?.role === 'assistant' && (!last.content || last.content === '…')) {
+    messages.pop();
+    saveChatMessages(messages);
+    renderHermesChatFrom(messages);
+    void runHermesReplyInBackground(text);
+    return;
+  }
+  sendHermesChatMessage(text);
 }
 
 async function handleChatCopyLast() {
@@ -791,6 +829,7 @@ function initHermesChat() {
 
   document.getElementById('chatShortcuts')?.addEventListener('click', handleChatShortcutClick);
   document.getElementById('chatForm')?.addEventListener('submit', handleChatSubmit);
+  document.getElementById('btnChatResendLast')?.addEventListener('click', handleChatResendLast);
   document.getElementById('btnChatCopyLast')?.addEventListener('click', handleChatCopyLast);
   document.getElementById('btnChatClear')?.addEventListener('click', handleChatClear);
   document.getElementById('btnChatGoSettings')?.addEventListener('click', handleChatGoSettings);
