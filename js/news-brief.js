@@ -89,6 +89,16 @@ function articleMatchesPin(item, pin) {
   return hay.includes(String(pin).toLowerCase());
 }
 
+function extractPinKeyword(title) {
+  const t = String(title || '').replace(/^\[[^\]]+\]\s*/, '').trim();
+  const quoted = t.match(/^["「]([가-힣A-Za-z0-9]{2,12})/);
+  if (quoted) return quoted[1];
+  const lead = t.match(/^([가-힣A-Za-z0-9]{2,12})/);
+  if (lead) return lead[1];
+  const parts = t.split(/[\s,·…|]+/).filter(Boolean);
+  return (parts[0] || '').slice(0, 12);
+}
+
 function sortNewsByPins(items, pins) {
   if (!pins.length) return items;
   const pinned = [];
@@ -302,6 +312,7 @@ function renderNewsBrief(data) {
     listEl.innerHTML = `<li class="news-item news-item-empty">${emptyMsg}</li>`;
     return;
   }
+  const showQuickPin = newsCategory === 'stock';
   listEl.innerHTML = items.map((it) => {
     const title = escapeHtml(it.title || '제목 없음');
     const link = it.link ? escapeHtml(it.link) : '';
@@ -312,7 +323,11 @@ function renderNewsBrief(data) {
     const pinCls = matched ? ' news-item-pinned' : '';
     const readCls = it.link && readSet.has(it.link) ? ' news-item-read' : '';
     const pinTag = matched ? `<span class="news-pin-tag">📌 ${escapeHtml(matched)}</span>` : '';
-    return `<li class="news-item${pinCls}${readCls}">${pinTag}${inner}</li>`;
+    const kw = extractPinKeyword(it.title);
+    const quickPin = showQuickPin && kw
+      ? `<button type="button" class="news-item-pin-btn" data-pin-suggest="${escapeHtml(kw)}" aria-label="${escapeHtml(kw)} 핀 추가">📌</button>`
+      : '';
+    return `<li class="news-item${pinCls}${readCls}"><div class="news-item-row"><div class="news-item-body">${pinTag}${inner}</div>${quickPin}</div></li>`;
   }).join('');
 }
 
@@ -417,11 +432,29 @@ function bindNewsMarkAllRead() {
   });
 }
 
+function bindNewsQuickPin() {
+  const list = document.getElementById('newsList');
+  if (!list || list.dataset.quickPinBound) return;
+  list.dataset.quickPinBound = '1';
+  list.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-pin-suggest]');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const kw = btn.dataset.pinSuggest;
+    if (!kw) return;
+    addNewsPin(kw);
+    const data = await loadTodayNews();
+    renderNewsBrief(data);
+  });
+}
+
 function bindNewsReadTracking() {
   const list = document.getElementById('newsList');
   if (!list || list.dataset.readBound) return;
   list.dataset.readBound = '1';
   list.addEventListener('click', (e) => {
+    if (e.target.closest('[data-pin-suggest]')) return;
     const a = e.target.closest('a[href]');
     if (!a) return;
     const href = a.getAttribute('href');
@@ -442,6 +475,7 @@ async function initNewsBrief() {
   bindNewsSearch();
   bindNewsUnreadToggle();
   bindNewsMarkAllRead();
+  bindNewsQuickPin();
   bindNewsReadTracking();
   syncNewsUnreadToggle();
   syncNewsCategoryToggle();
