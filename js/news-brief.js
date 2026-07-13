@@ -118,6 +118,38 @@ function countUnreadNews(items, readSet) {
   return items.filter((it) => it.link && !readSet.has(it.link)).length;
 }
 
+function countAllUnreadNews(data) {
+  if (!data) return 0;
+  const readSet = loadNewsReadSet();
+  const seen = new Set();
+  let unread = 0;
+  for (const key of ['kr', 'us', 'all']) {
+    const items = pickMarketData(data, key)?.items || [];
+    for (const it of items) {
+      if (!it.link || readSet.has(it.link) || seen.has(it.link)) continue;
+      seen.add(it.link);
+      unread += 1;
+    }
+  }
+  return unread;
+}
+
+function syncNewsTabBadge(unread) {
+  const badge = document.getElementById('newsTabBadge');
+  if (!badge) return;
+  if (unread > 0) {
+    badge.textContent = unread > 99 ? '99+' : String(unread);
+    badge.classList.remove('hidden');
+    badge.setAttribute('aria-label', `미읽음 ${unread}건`);
+    badge.removeAttribute('aria-hidden');
+  } else {
+    badge.textContent = '';
+    badge.classList.add('hidden');
+    badge.removeAttribute('aria-label');
+    badge.setAttribute('aria-hidden', 'true');
+  }
+}
+
 function syncNewsUnreadToggle() {
   const btn = document.getElementById('newsUnreadToggle');
   if (!btn) return;
@@ -229,6 +261,8 @@ function renderNewsBrief(data) {
     const titles = { kr: '국내 주식 기사', us: '미국 주식 기사', all: '주요 뉴스' };
     listTitle.textContent = titles[key] || '뉴스';
   }
+
+  syncNewsTabBadge(countAllUnreadNews(data));
 
   if (!marketData?.summary && !(marketData?.items?.length)) {
     card?.classList.add('hidden');
@@ -394,9 +428,10 @@ function bindNewsReadTracking() {
     if (!href) return;
     markNewsArticleRead(href);
     a.closest('.news-item')?.classList.add('news-item-read');
-    if (newsUnreadOnly) {
-      loadTodayNews().then((data) => renderNewsBrief(data));
-    }
+    loadTodayNews().then((data) => {
+      syncNewsTabBadge(countAllUnreadNews(data));
+      if (newsUnreadOnly) renderNewsBrief(data);
+    });
   });
 }
 
