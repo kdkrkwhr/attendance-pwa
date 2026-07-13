@@ -826,6 +826,12 @@ function renderLunchList(data) {
   const filtered = getFilteredLunchPlaces();
 
   const favs = loadLunchFavorites();
+  const headingEl = document.getElementById('lunchListHeading');
+  if (headingEl) {
+    const total = data.places?.length || 0;
+    const favCount = favs.size;
+    headingEl.textContent = favCount > 0 ? `주변 맛집 ${total}곳 · 찜 ${favCount}` : `주변 맛집 ${total}곳`;
+  }
   listEl.innerHTML = filtered.map((place) => {
     const rating = formatRatingLabel(place.rating, place.ratingSource);
     const dist = formatLunchDistance(place.distance_m);
