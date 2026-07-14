@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=150">
-    <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=150">
+  <link rel="stylesheet" href="css/style.css?v=151">
+    <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=151">
   <script>
     (function () {
       try {
@@ -108,6 +108,20 @@
               <div class="progress-fill" id="progressFill"></div>
             </div>
             <p class="progress-meta" id="progressMeta"></p>
+          </div>
+
+          <div class="leave-alert hidden" id="leaveAlert" role="alert" aria-live="assertive">
+            <div class="leave-alert-body">
+              <span class="leave-alert-icon">🕐</span>
+              <div class="leave-alert-texts">
+                <p class="leave-alert-title">퇴근 시간입니다!</p>
+                <p class="leave-alert-desc" id="leaveAlertDesc"></p>
+              </div>
+            </div>
+            <div class="leave-alert-actions">
+              <button type="button" class="btn btn-primary btn-sm" id="btnLeaveAlertCheckOut">퇴근 체크</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="btnLeaveAlertDismiss">닫기</button>
+            </div>
           </div>
 
           <div class="time-panel" id="timeDisplay">
@@ -793,6 +807,7 @@
         <section class="card card-compact" id="featureNotesCard">
           <h2 class="card-title">기능 안내</h2>
           <ul class="feature-notes" id="featureNotesList">
+            <li>오늘 탭 — 퇴근 가능 시각 배너 알림 (뱃지+퇴근 체크 버튼) (v151)</li>
             <li>오늘 탭 — 회사(DMC) 근처 날씨 AI 요약 (매일 06:00 자동 갱신)</li>
             <li>맛집 지도 — 📍 내 위치(얼굴 마커), 첫 진입 시 내 위치 기준 줌</li>
             <li>맛집 지도 — 회사 날씨 칩·마커, 비 예보 시 지도에 비 효과</li>
@@ -904,17 +919,17 @@
     </nav>
   </div>
 
-  <script src="config.js?v=150"></script>
-  <script src="vendor/leaflet/leaflet.js?v=150"></script>
-  <script src="js/util.js?v=150"></script>
-  <script src="js/fortune.js?v=150"></script>
-  <script src="js/saju.js?v=150"></script>
-  <script src="js/lunch-map.js?v=150"></script>
-  <script src="js/user-location.js?v=150"></script>
-  <script src="js/weather-brief.js?v=150"></script>
-  <script src="js/news-brief.js?v=150"></script>
-  <script src="js/hermes-chat.js?v=150"></script>
-  <script src="js/commute-time.js?v=150"></script>
-  <script src="js/app.js?v=150"></script>
+  <script src="config.js?v=151"></script>
+  <script src="vendor/leaflet/leaflet.js?v=151"></script>
+  <script src="js/util.js?v=151"></script>
+  <script src="js/fortune.js?v=151"></script>
+  <script src="js/saju.js?v=151"></script>
+  <script src="js/lunch-map.js?v=151"></script>
+  <script src="js/user-location.js?v=151"></script>
+  <script src="js/weather-brief.js?v=151"></script>
+  <script src="js/news-brief.js?v=151"></script>
+  <script src="js/hermes-chat.js?v=151"></script>
+  <script src="js/commute-time.js?v=151"></script>
+  <script src="js/app.js?v=151"></script>
 </body>
 </html>

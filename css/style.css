@@ -650,6 +650,68 @@ body {
   margin-top: -0.75rem;
 }
 
+/* ── 퇴근 시간 알림 배너 ── */
+.leave-alert {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  border-radius: var(--radius);
+  padding: 0.875rem;
+  margin-bottom: 1rem;
+  animation: leave-alert-fadein 0.4s ease-out;
+  box-shadow: 0 4px 16px rgba(22, 163, 74, 0.3);
+}
+.leave-alert-body {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.leave-alert-icon {
+  font-size: 1.75rem;
+  line-height: 1;
+  animation: leave-alert-bounce 1s ease-in-out infinite;
+}
+.leave-alert-texts {
+  flex: 1;
+}
+.leave-alert-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+}
+.leave-alert-desc {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.85);
+  margin-top: 0.125rem;
+}
+.leave-alert-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.625rem;
+}
+.leave-alert-actions .btn-primary {
+  background: #fff;
+  color: #16a34a;
+  border: none;
+}
+.leave-alert-actions .btn-primary:hover {
+  background: #f0fdf4;
+}
+.leave-alert-actions .btn-ghost {
+  color: rgba(255,255,255,0.85);
+  border: 1px solid rgba(255,255,255,0.3);
+}
+.leave-alert-actions .btn-ghost:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+@keyframes leave-alert-fadein {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes leave-alert-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+
 .time-panel {
   display: flex;
   flex-direction: column;

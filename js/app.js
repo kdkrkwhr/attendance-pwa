@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '150';
+const APP_BUILD = '151';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -679,6 +679,43 @@ function renderProgress(record, previewCheckInISO = null) {
   const base = `순근무 ${(netSoFar / 60).toFixed(1)}/${WORK_HOURS}h · 경과 ${(elapsedMs / 3600000).toFixed(1)}h`;
   const parts = [base, lunchHint, targetHint, targetOutHint, notifyHint, overtimeHint].filter(Boolean);
   metaEl.textContent = parts.join(' · ');
+}
+
+const LEAVE_ALERT_DISMISS_KEY = 'attendance-leave-alert-dismiss';
+
+function renderLeaveAlert(record) {
+  const el = document.getElementById('leaveAlert');
+  const descEl = document.getElementById('leaveAlertDesc');
+  if (!el) return;
+
+  if (!record?.checkIn || record?.checkOut) {
+    el.classList.add('hidden');
+    return;
+  }
+
+  const now = new Date();
+  const leaveTime = calcLeaveTime(record.checkIn);
+  if (now < leaveTime) {
+    el.classList.add('hidden');
+    return;
+  }
+
+  const today = todayKey();
+  if (localStorage.getItem(LEAVE_ALERT_DISMISS_KEY) === today) {
+    el.classList.add('hidden');
+    return;
+  }
+
+  el.classList.remove('hidden');
+  if (descEl) {
+    const overtimeMs = now - leaveTime;
+    if (overtimeMs > 0) {
+      const min = Math.ceil(overtimeMs / 60000);
+      descEl.textContent = `퇴근 가능 시각(${formatTime(leaveTime)})에서 ${formatDuration(min)} 지났어요`;
+    } else {
+      descEl.textContent = `퇴근 가능 시각(${formatTime(leaveTime)})입니다`;
+    }
+  }
 }
 
 // ── Wi-Fi 출근 추정 (Android 앱 연동) ──────────────────────────────────────────
@@ -1697,6 +1734,7 @@ function renderBackupHint() {
 
 function render() {
   renderToday();
+  renderLeaveAlert(getTodayRecord());
   renderFunDate();
   renderSettings();
   renderAppVersion();
@@ -2213,7 +2251,15 @@ function init() {
   document.getElementById('btnWifiApply')?.addEventListener('click', handleWifiApply);
   document.getElementById('btnWifiCheckIn')?.addEventListener('click', handleWifiCheckIn);
   document.getElementById('btnWifiDismiss')?.addEventListener('click', handleWifiDismiss);
-  document.getElementById('btnDrawFortune')?.addEventListener('click', handleDrawFortune);
+    document.getElementById('btnLeaveAlertCheckOut')?.addEventListener('click', () => {
+      localStorage.removeItem(LEAVE_ALERT_DISMISS_KEY);
+      document.getElementById('btnCheckOut')?.click();
+    });
+    document.getElementById('btnLeaveAlertDismiss')?.addEventListener('click', () => {
+      localStorage.setItem(LEAVE_ALERT_DISMISS_KEY, todayKey());
+      renderLeaveAlert(getTodayRecord());
+    });
+    document.getElementById('btnDrawFortune')?.addEventListener('click', handleDrawFortune);
   document.getElementById('btnCoinFlip')?.addEventListener('click', () => {
     if (typeof flipCoin === 'function') flipCoin();
   });
