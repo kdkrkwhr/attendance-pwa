@@ -842,16 +842,18 @@ function renderLunchList(data) {
     if (rating) metaParts.push(rating);
     const memo = place.signatureMenu || place.memo;
     const isFav = favs.has(place.id);
-    return `
-    <div class="lunch-list-item-wrap">
-      <button type="button" class="lunch-fav-btn${isFav ? ' is-fav' : ''}" data-fav-id="${place.id}" aria-label="${isFav ? '찜 해제' : '찜'}">${isFav ? '★' : '☆'}</button>
-      <button type="button" class="lunch-list-item${place.id === lunchRouletteWinnerId ? ' lunch-list-item-picked' : ''}" data-place-id="${place.id}">
-        <span class="lunch-list-name">${place.name}</span>
-        <span class="lunch-list-meta">${metaParts.join(' · ')}</span>
-        ${memo ? `<span class="lunch-list-memo">${memo}</span>` : ''}
-      </button>
-    </div>
-  `;
+	const kakaoUrl = `https://map.kakao.com/link/to/${encodeURIComponent(place.name)},${place.lat},${place.lng}`;
+	return `
+	<div class="lunch-list-item-wrap">
+		<button type="button" class="lunch-fav-btn${isFav ? ' is-fav' : ''}" data-fav-id="${place.id}" aria-label="${isFav ? '찜 해제' : '찜'}">${isFav ? '★' : '☆'}</button>
+          <button type="button" class="lunch-list-item${place.id === lunchRouletteWinnerId ? ' lunch-list-item-picked' : ''}" data-place-id="${place.id}">
+			<span class="lunch-list-name">${place.name}</span>
+			<span class="lunch-list-meta">${metaParts.join(' · ')}</span>
+			${memo ? `<span class="lunch-list-memo">${memo}</span>` : ''}
+		</button>
+		<a href="${kakaoUrl}" target="_blank" rel="noopener noreferrer" class="lunch-dir-btn" title="카카오맵 길찾기" aria-label="카카오맵 길찾기">🗺️</a>
+	</div>
+	`;
   }).join('');
 
   listEl.querySelectorAll('.lunch-fav-btn').forEach((btn) => {

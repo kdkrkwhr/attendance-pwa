@@ -3793,6 +3793,28 @@ body {
   outline: none;
 }
 
+.lunch-dir-btn {
+  flex-shrink: 0;
+  width: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  background: var(--card);
+  border-radius: 12px;
+  font-size: 1rem;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.lunch-dir-btn:hover,
+.lunch-dir-btn:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
 .lunch-list-item-wrap .lunch-list-item {
   flex: 1;
   min-width: 0;
