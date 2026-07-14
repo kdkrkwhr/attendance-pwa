@@ -6,12 +6,14 @@ const NEWS_CATEGORY_KEY = 'attendance-news-category';
 const NEWS_PINS_KEY = 'attendance-news-pins';
 const NEWS_READ_KEY = 'attendance-news-read';
 const NEWS_UNREAD_ONLY_KEY = 'attendance-news-unread-only';
+const NEWS_PIN_ONLY_KEY = 'attendance-news-pin-only';
 const NEWS_PIN_MAX = 8;
 let newsCache = null;
 let newsMarket = localStorage.getItem(NEWS_MARKET_KEY) || 'kr';
 let newsCategory = localStorage.getItem(NEWS_CATEGORY_KEY) || 'stock';
 let newsSearchQuery = '';
 let newsUnreadOnly = localStorage.getItem(NEWS_UNREAD_ONLY_KEY) === '1';
+let newsPinOnly = localStorage.getItem(NEWS_PIN_ONLY_KEY) === '1';
 
 async function loadTodayNews(force = false) {
   if (!force && newsCache) return newsCache;
@@ -128,6 +130,12 @@ function filterNewsByUnread(items, readSet) {
   return items.filter((it) => !it.link || !readSet.has(it.link));
 }
 
+function filterNewsByPins(items, pins) {
+  if (!newsPinOnly || newsCategory !== 'stock') return items;
+  if (!pins.length) return [];
+  return items.filter((it) => pins.some((p) => articleMatchesPin(it, p)));
+}
+
 function countUnreadNews(items, readSet) {
   return items.filter((it) => it.link && !readSet.has(it.link)).length;
 }
@@ -169,6 +177,20 @@ function syncNewsUnreadToggle() {
   if (!btn) return;
   btn.classList.toggle('active', newsUnreadOnly);
   btn.setAttribute('aria-pressed', newsUnreadOnly ? 'true' : 'false');
+}
+
+function syncNewsPinOnlyToggle(pins) {
+  const btn = document.getElementById('newsPinOnlyToggle');
+  if (!btn) return;
+  const list = pins || getActiveNewsPins();
+  const show = newsCategory === 'stock' && list.length > 0;
+  btn.hidden = !show;
+  if (!show && newsPinOnly) {
+    newsPinOnly = false;
+    localStorage.setItem(NEWS_PIN_ONLY_KEY, '0');
+  }
+  btn.classList.toggle('active', newsPinOnly);
+  btn.setAttribute('aria-pressed', newsPinOnly ? 'true' : 'false');
 }
 
 function loadNewsReadSet() {
@@ -282,6 +304,7 @@ function renderNewsBrief(data) {
     card?.classList.add('hidden');
     listCard?.classList.add('hidden');
     empty?.classList.remove('hidden');
+    syncNewsPinOnlyToggle([]);
     return;
   }
 
@@ -293,9 +316,11 @@ function renderNewsBrief(data) {
   const readSet = loadNewsReadSet();
   const sorted = sortNewsByPins(marketData.items || [], pins);
   const searched = filterNewsBySearch(sorted, newsSearchQuery);
-  const items = filterNewsByUnread(searched, readSet);
+  const pinnedOnly = filterNewsByPins(searched, pins);
+  const items = filterNewsByUnread(pinnedOnly, readSet);
   const unread = countUnreadNews(searched, readSet);
   syncNewsMarkAllBtn(unread);
+  syncNewsPinOnlyToggle(pins);
 
   const gen = data?.generatedAt
     ? new Date(data.generatedAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
@@ -312,7 +337,9 @@ function renderNewsBrief(data) {
   listCard?.classList.remove('hidden');
   renderNewsPinBar(sorted);
   if (!items.length) {
-    const emptyMsg = newsUnreadOnly ? '미읽은 기사가 없어요' : '검색 결과가 없어요';
+    let emptyMsg = '검색 결과가 없어요';
+    if (newsPinOnly) emptyMsg = '핀 매칭 기사가 없어요';
+    else if (newsUnreadOnly) emptyMsg = '미읽은 기사가 없어요';
     listEl.innerHTML = `<li class="news-item news-item-empty">${emptyMsg}</li>`;
     return;
   }
@@ -418,6 +445,19 @@ function bindNewsUnreadToggle() {
   });
 }
 
+function bindNewsPinOnlyToggle() {
+  const btn = document.getElementById('newsPinOnlyToggle');
+  if (!btn || btn.dataset.bound) return;
+  btn.dataset.bound = '1';
+  btn.addEventListener('click', async () => {
+    newsPinOnly = !newsPinOnly;
+    localStorage.setItem(NEWS_PIN_ONLY_KEY, newsPinOnly ? '1' : '0');
+    syncNewsPinOnlyToggle();
+    const data = await loadTodayNews();
+    renderNewsBrief(data);
+  });
+}
+
 function bindNewsRefresh() {
   const btn = document.getElementById('newsRefreshBtn');
   if (!btn || btn.dataset.bound) return;
@@ -498,11 +538,13 @@ async function initNewsBrief() {
   bindNewsPinBar();
   bindNewsSearch();
   bindNewsUnreadToggle();
+  bindNewsPinOnlyToggle();
   bindNewsRefresh();
   bindNewsMarkAllRead();
   bindNewsQuickPin();
   bindNewsReadTracking();
   syncNewsUnreadToggle();
+  syncNewsPinOnlyToggle();
   syncNewsCategoryToggle();
   syncNewsMarketToggle();
   const data = await loadTodayNews();
