@@ -7,7 +7,9 @@ const NEWS_PINS_KEY = 'attendance-news-pins';
 const NEWS_READ_KEY = 'attendance-news-read';
 const NEWS_UNREAD_ONLY_KEY = 'attendance-news-unread-only';
 const NEWS_PIN_ONLY_KEY = 'attendance-news-pin-only';
+const NEWS_BOOKMARKS_KEY = 'attendance-news-bookmarks';
 const NEWS_PIN_MAX = 8;
+let newsBookmarkOnly = false;
 let newsCache = null;
 let newsMarket = localStorage.getItem(NEWS_MARKET_KEY) || 'kr';
 let newsCategory = localStorage.getItem(NEWS_CATEGORY_KEY) || 'stock';
@@ -138,6 +140,44 @@ function filterNewsByPins(items, pins) {
 
 function countUnreadNews(items, readSet) {
   return items.filter((it) => it.link && !readSet.has(it.link)).length;
+}
+
+// ── 북마크 ──────────────────────────────────────────────────
+
+function loadNewsBookmarks() {
+  try { return JSON.parse(localStorage.getItem(NEWS_BOOKMARKS_KEY) || '{}'); }
+  catch { return {}; }
+}
+
+function saveNewsBookmarks(bookmarks) {
+  localStorage.setItem(NEWS_BOOKMARKS_KEY, JSON.stringify(bookmarks));
+}
+
+function getTodayBookmarkSet() {
+  const today = new Date().toISOString().slice(0, 10);
+  const all = loadNewsBookmarks();
+  return new Set(Array.isArray(all[today]) ? all[today] : []);
+}
+
+function toggleNewsBookmark(link) {
+  if (!link) return;
+  const today = new Date().toISOString().slice(0, 10);
+  const all = loadNewsBookmarks();
+  const set = new Set(Array.isArray(all[today]) ? all[today] : []);
+  if (set.has(link)) set.delete(link);
+  else set.add(link);
+  all[today] = [...set];
+  saveNewsBookmarks(all);
+}
+
+function filterNewsByBookmarks(items, bookmarkSet) {
+  if (!newsBookmarkOnly) return items;
+  if (!bookmarkSet.size) return [];
+  return items.filter((it) => it.link && bookmarkSet.has(it.link));
+}
+
+function countBookmark(items, bookmarkSet) {
+  return items.filter((it) => it.link && bookmarkSet.has(it.link)).length;
 }
 
 function countAllUnreadNews(data) {
@@ -314,13 +354,16 @@ function renderNewsBrief(data) {
 
   const pins = getActiveNewsPins();
   const readSet = loadNewsReadSet();
+  const bookmarkSet = getTodayBookmarkSet();
   const sorted = sortNewsByPins(marketData.items || [], pins);
   const searched = filterNewsBySearch(sorted, newsSearchQuery);
   const pinnedOnly = filterNewsByPins(searched, pins);
-  const items = filterNewsByUnread(pinnedOnly, readSet);
+  const unreadFiltered = filterNewsByUnread(pinnedOnly, readSet);
+  const items = filterNewsByBookmarks(unreadFiltered, bookmarkSet);
   const unread = countUnreadNews(searched, readSet);
   syncNewsMarkAllBtn(unread);
   syncNewsPinOnlyToggle(pins);
+  syncNewsBookmarkToggle();
 
   const gen = data?.generatedAt
     ? new Date(data.generatedAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
@@ -338,7 +381,8 @@ function renderNewsBrief(data) {
   renderNewsPinBar(sorted);
   if (!items.length) {
     let emptyMsg = '검색 결과가 없어요';
-    if (newsPinOnly) emptyMsg = '핀 매칭 기사가 없어요';
+    if (newsBookmarkOnly) emptyMsg = '북마크한 기사가 없어요';
+    else if (newsPinOnly) emptyMsg = '핀 매칭 기사가 없어요';
     else if (newsUnreadOnly) emptyMsg = '미읽은 기사가 없어요';
     listEl.innerHTML = `<li class="news-item news-item-empty">${emptyMsg}</li>`;
     return;
@@ -358,7 +402,11 @@ function renderNewsBrief(data) {
     const quickPin = showQuickPin && kw
       ? `<button type="button" class="news-item-pin-btn" data-pin-suggest="${escapeHtml(kw)}" aria-label="${escapeHtml(kw)} 핀 추가">📌</button>`
       : '';
-    return `<li class="news-item${pinCls}${readCls}"><div class="news-item-row"><div class="news-item-body">${pinTag}${inner}</div>${quickPin}</div></li>`;
+    const bm = it.link && bookmarkSet.has(it.link);
+    const bookmarkBtn = it.link
+      ? `<button type="button" class="news-item-bookmark-btn${bm ? ' bookmarked' : ''}" data-bookmark="${link}" aria-label="${bm ? '북마크 해제' : '북마크'}">${bm ? '★' : '☆'}</button>`
+      : '';
+    return `<li class="news-item${pinCls}${readCls}"><div class="news-item-row"><div class="news-item-body">${pinTag}${inner}</div><div class="news-item-actions">${bookmarkBtn}${quickPin}</div></div></li>`;
   }).join('');
 }
 
@@ -519,6 +567,7 @@ function bindNewsReadTracking() {
   list.dataset.readBound = '1';
   list.addEventListener('click', (e) => {
     if (e.target.closest('[data-pin-suggest]')) return;
+    if (e.target.closest('[data-bookmark]')) return;
     const a = e.target.closest('a[href]');
     if (!a) return;
     const href = a.getAttribute('href');
@@ -532,6 +581,46 @@ function bindNewsReadTracking() {
   });
 }
 
+function syncNewsBookmarkToggle() {
+  const btn = document.getElementById('newsBookmarkToggle');
+  if (!btn) return;
+  const has = countBookmark(
+    newsCache ? pickMarketData(newsCache, activeNewsKey())?.items || [] : [],
+    getTodayBookmarkSet()
+  ) > 0;
+  btn.hidden = !has;
+  btn.classList.toggle('active', newsBookmarkOnly);
+  btn.setAttribute('aria-pressed', newsBookmarkOnly ? 'true' : 'false');
+}
+
+function bindNewsBookmarkToggle() {
+  const btn = document.getElementById('newsBookmarkToggle');
+  if (!btn || btn.dataset.bound) return;
+  btn.dataset.bound = '1';
+  btn.addEventListener('click', async () => {
+    newsBookmarkOnly = !newsBookmarkOnly;
+    const data = await loadTodayNews();
+    renderNewsBrief(data);
+  });
+}
+
+function bindNewsBookmarkClick() {
+  const list = document.getElementById('newsList');
+  if (!list || list.dataset.bookmarkBound) return;
+  list.dataset.bookmarkBound = '1';
+  list.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-bookmark]');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const link = btn.dataset.bookmark;
+    if (!link) return;
+    toggleNewsBookmark(link);
+    const data = await loadTodayNews();
+    renderNewsBrief(data);
+  });
+}
+
 async function initNewsBrief() {
   renderNewsDate();
   bindNewsToggles();
@@ -539,6 +628,8 @@ async function initNewsBrief() {
   bindNewsSearch();
   bindNewsUnreadToggle();
   bindNewsPinOnlyToggle();
+  bindNewsBookmarkToggle();
+  bindNewsBookmarkClick();
   bindNewsRefresh();
   bindNewsMarkAllRead();
   bindNewsQuickPin();
