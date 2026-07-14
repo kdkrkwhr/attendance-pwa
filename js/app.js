@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '152';
+const APP_BUILD = '153';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -1565,10 +1565,26 @@ function renderMonthSummary() {
   }
 
   const rate = Math.round((days / elapsed) * 100);
-  const avg = completed > 0 ? (totalNet / completed / 60).toFixed(1) : null;
-  const base = `이번 달 ${days}/${elapsed} 평일 출근 (${rate}%)`;
-  el.textContent = avg ? `${base} · 평균 순근무 ${avg}h` : base;
-}
+    const avg = completed > 0 ? (totalNet / completed / 60).toFixed(1) : null;
+    const base = `이번 달 ${days}/${elapsed} 평일 출근 (${rate}%)`;
+    let text = avg ? `${base} · 평균 순근무 ${avg}h` : base;
+
+    const target = (loadSettings().targetCheckIn || '').trim();
+    if (target && /^\d{2}:\d{2}$/.test(target)) {
+      const [th, tm] = target.split(':').map(Number);
+      let lateDays = 0;
+      for (const [key, rec] of Object.entries(records)) {
+        if (!key.startsWith(prefix) || !rec?.checkIn) continue;
+        const ci = parseISO(rec.checkIn);
+        const targetAt = new Date(ci);
+        targetAt.setHours(th, tm, 0, 0);
+        if (ci > targetAt) lateDays += 1;
+      }
+      if (lateDays > 0) text += ` · 지각 ${lateDays}일`;
+    }
+
+    el.textContent = text;
+  }
 
 function renderToday() {
   const record = getTodayRecord();
