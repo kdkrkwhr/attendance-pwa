@@ -413,7 +413,10 @@ function renderNewsBrief(data) {
     const descEl = desc
       ? `<div class="news-item-desc" data-news-desc>${desc}</div>`
       : '';
-    return `<li class="news-item${pinCls}${readCls}"><div class="news-item-row"><div class="news-item-body">${pinTag}${inner}${descEl}</div><div class="news-item-actions">${expandBtn}${bookmarkBtn}${quickPin}</div></div></li>`;
+    const shareBtn = link
+      ? `<button type="button" class="news-item-share-btn" data-share="${link}" aria-label="공유">🔗</button>`
+      : '';
+    return `<li class="news-item${pinCls}${readCls}"><div class="news-item-row"><div class="news-item-body">${pinTag}${inner}${descEl}</div><div class="news-item-actions">${expandBtn}${bookmarkBtn}${shareBtn}${quickPin}</div></div></li>`;
   }).join('');
 }
 
@@ -646,6 +649,34 @@ function bindNewsExpandDesc() {
   });
 }
 
+function bindNewsShareClick() {
+  const list = document.getElementById('newsList');
+  if (!list || list.dataset.shareBound) return;
+  list.dataset.shareBound = '1';
+  list.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-share]');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const url = btn.dataset.share;
+    if (!url) return;
+    const item = btn.closest('.news-item');
+    const title = item?.querySelector('a')?.textContent?.trim() || '뉴스 기사';
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url });
+      } catch (_) { /* user cancelled */ }
+    } else {
+      try {
+        await navigator.clipboard.writeText(url);
+        const orig = btn.textContent;
+        btn.textContent = '✓';
+        setTimeout(() => { btn.textContent = orig; }, 1200);
+      } catch (_) { /* clipboard fail */ }
+    }
+  });
+}
+
 async function initNewsBrief() {
   renderNewsDate();
   bindNewsToggles();
@@ -656,6 +687,7 @@ async function initNewsBrief() {
   bindNewsBookmarkToggle();
   bindNewsBookmarkClick();
   bindNewsExpandDesc();
+  bindNewsShareClick();
   bindNewsRefresh();
   bindNewsMarkAllRead();
   bindNewsQuickPin();
