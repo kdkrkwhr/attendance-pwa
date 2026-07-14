@@ -4666,6 +4666,13 @@ body {
   color: var(--text-muted, #64748b);
 }
 
+.news-copy-btn {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.4rem;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
 .news-brief-summary {
   margin: 0;
   font-size: 0.9375rem;

@@ -591,6 +591,24 @@ function bindNewsReadTracking() {
   });
 }
 
+function bindNewsCopySummary() {
+  const btn = document.getElementById('btnCopyNewsSummary');
+  if (!btn || btn.dataset.bound) return;
+  btn.dataset.bound = '1';
+  btn.addEventListener('click', async () => {
+    const el = document.getElementById('newsBriefSummary');
+    if (!el || !el.textContent) return;
+    try {
+      await navigator.clipboard.writeText(el.textContent);
+      btn.textContent = '✅ 복사됨';
+      setTimeout(() => { btn.textContent = '📋 복사'; }, 2000);
+    } catch {
+      btn.textContent = '❌ 실패';
+      setTimeout(() => { btn.textContent = '📋 복사'; }, 2000);
+    }
+  });
+}
+
 function syncNewsBookmarkToggle() {
   const btn = document.getElementById('newsBookmarkToggle');
   if (!btn) return;
@@ -692,6 +710,7 @@ async function initNewsBrief() {
   bindNewsMarkAllRead();
   bindNewsQuickPin();
   bindNewsReadTracking();
+  bindNewsCopySummary();
   syncNewsUnreadToggle();
   syncNewsPinOnlyToggle();
   syncNewsCategoryToggle();
