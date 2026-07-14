@@ -4785,6 +4785,14 @@ body {
   color: #2563eb;
 }
 
+.news-item-pubdate {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-muted, #64748b);
+  margin-top: 0.15rem;
+  line-height: 1.2;
+}
+
 .news-item-read {
   opacity: 0.55;
 }

@@ -17,6 +17,23 @@ let newsSearchQuery = '';
 let newsUnreadOnly = localStorage.getItem(NEWS_UNREAD_ONLY_KEY) === '1';
 let newsPinOnly = localStorage.getItem(NEWS_PIN_ONLY_KEY) === '1';
 
+/** pubDate 포맷: "07:00" 또는 "어제 23:00" 등 */
+function formatNewsPubDate(pubDateStr) {
+  if (!pubDateStr) return '';
+  try {
+    const d = new Date(pubDateStr);
+    if (isNaN(d.getTime())) return '';
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const pubDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const diffDays = Math.round((today - pubDay) / 86400000);
+    const time = d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false });
+    if (diffDays === 0) return time;
+    if (diffDays === 1) return `어제 ${time}`;
+    return `${d.getMonth() + 1}/${d.getDate()} ${time}`;
+  } catch { return ''; }
+}
+
 async function loadTodayNews(force = false) {
   if (!force && newsCache) return newsCache;
   newsCache = await loadDailyJson('news');
@@ -394,6 +411,8 @@ function renderNewsBrief(data) {
     const inner = link
       ? `<a href="${link}" target="_blank" rel="noopener noreferrer">${title}</a>`
       : title;
+    const pubDateText = formatNewsPubDate(it.pubDate);
+    const pubDateEl = pubDateText ? `<span class="news-item-pubdate">${pubDateText}</span>` : '';
     const matched = pins.find((p) => articleMatchesPin(it, p));
     const pinCls = matched ? ' news-item-pinned' : '';
     const readCls = it.link && readSet.has(it.link) ? ' news-item-read' : '';
@@ -416,7 +435,7 @@ function renderNewsBrief(data) {
     const shareBtn = link
       ? `<button type="button" class="news-item-share-btn" data-share="${link}" aria-label="공유">🔗</button>`
       : '';
-    return `<li class="news-item${pinCls}${readCls}"><div class="news-item-row"><div class="news-item-body">${pinTag}${inner}${descEl}</div><div class="news-item-actions">${expandBtn}${bookmarkBtn}${shareBtn}${quickPin}</div></div></li>`;
+    return `<li class="news-item${pinCls}${readCls}"><div class="news-item-row"><div class="news-item-body">${pinTag}${inner}${pubDateEl}${descEl}</div><div class="news-item-actions">${expandBtn}${bookmarkBtn}${shareBtn}${quickPin}</div></div></li>`;
   }).join('');
 }
 
