@@ -406,7 +406,14 @@ function renderNewsBrief(data) {
     const bookmarkBtn = it.link
       ? `<button type="button" class="news-item-bookmark-btn${bm ? ' bookmarked' : ''}" data-bookmark="${link}" aria-label="${bm ? '북마크 해제' : '북마크'}">${bm ? '★' : '☆'}</button>`
       : '';
-    return `<li class="news-item${pinCls}${readCls}"><div class="news-item-row"><div class="news-item-body">${pinTag}${inner}</div><div class="news-item-actions">${bookmarkBtn}${quickPin}</div></div></li>`;
+    const desc = it.description ? escapeHtml(it.description) : '';
+    const expandBtn = desc
+      ? `<button type="button" class="news-item-expand" data-expand-desc aria-label="요약 보기">⋯</button>`
+      : '';
+    const descEl = desc
+      ? `<div class="news-item-desc" data-news-desc>${desc}</div>`
+      : '';
+    return `<li class="news-item${pinCls}${readCls}"><div class="news-item-row"><div class="news-item-body">${pinTag}${inner}${descEl}</div><div class="news-item-actions">${expandBtn}${bookmarkBtn}${quickPin}</div></div></li>`;
   }).join('');
 }
 
@@ -621,6 +628,24 @@ function bindNewsBookmarkClick() {
   });
 }
 
+function bindNewsExpandDesc() {
+  const list = document.getElementById('newsList');
+  if (!list || list.dataset.expandBound) return;
+  list.dataset.expandBound = '1';
+  list.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-expand-desc]');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const item = btn.closest('.news-item');
+    if (!item) return;
+    const desc = item.querySelector('[data-news-desc]');
+    if (!desc) return;
+    desc.classList.toggle('open');
+    btn.textContent = desc.classList.contains('open') ? '▲' : '⋯';
+  });
+}
+
 async function initNewsBrief() {
   renderNewsDate();
   bindNewsToggles();
@@ -630,6 +655,7 @@ async function initNewsBrief() {
   bindNewsPinOnlyToggle();
   bindNewsBookmarkToggle();
   bindNewsBookmarkClick();
+  bindNewsExpandDesc();
   bindNewsRefresh();
   bindNewsMarkAllRead();
   bindNewsQuickPin();
