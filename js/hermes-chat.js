@@ -659,6 +659,7 @@ function handleChatSubmit(e) {
   const text = input.value;
   input.value = '';
   input.style.height = 'auto';
+  updateChatCharCount();
   sendHermesChatMessage(text);
 }
 
@@ -819,6 +820,13 @@ function handleChatShortcutClick(e) {
   sendHermesChatMessage(btn.dataset.prompt);
 }
 
+function updateChatCharCount() {
+  const input = document.getElementById('chatInput');
+  const el = document.getElementById('chatCharCount');
+  if (!input || !el) return;
+  el.textContent = `${input.value.length}/4000`;
+}
+
 function initHermesChat() {
   if (hermesChatInited) return;
   hermesChatInited = true;
@@ -838,17 +846,19 @@ function initHermesChat() {
   refreshHermesChatFromSheet(true).finally(() => resumePendingHermesRun());
 
   const input = document.getElementById('chatInput');
-  if (input) {
-    const autosize = () => {
-      input.style.height = 'auto';
-      input.style.height = `${Math.min(input.scrollHeight, 112)}px`;
-    };
-    input.addEventListener('input', autosize);
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        handleChatSubmit(e);
-      }
-    });
+    if (input) {
+      updateChatCharCount();
+      const autosize = () => {
+        input.style.height = 'auto';
+        input.style.height = `${Math.min(input.scrollHeight, 112)}px`;
+      };
+      input.addEventListener('input', autosize);
+      input.addEventListener('input', updateChatCharCount);
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          handleChatSubmit(e);
+        }
+      });
+    }
   }
-}
