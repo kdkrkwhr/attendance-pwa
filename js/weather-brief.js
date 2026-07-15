@@ -120,13 +120,21 @@ function renderWeatherPeriods(data) {
     return;
   }
   el.classList.remove('hidden');
+  let prevTemp = null;
   el.innerHTML = periods
     .map((p) => {
       const emoji = weatherEmojiFromPeriod(p);
       const rain = isRainyPeriod(p);
       const pop = p.pop > 0 ? ` · ${p.pop}%` : '';
       const cls = rain ? ' weather-period-rain' : '';
-      return `<li class="${cls.trim()}">${emoji} ${p.time} ${p.temp}°${pop}</li>`;
+      let arrow = '';
+      if (prevTemp != null && p.temp != null) {
+        if (p.temp > prevTemp) arrow = '<span class="temp-arrow temp-up"> ↑</span>';
+        else if (p.temp < prevTemp) arrow = '<span class="temp-arrow temp-down"> ↓</span>';
+        else arrow = '<span class="temp-arrow temp-steady"> →</span>';
+      }
+      prevTemp = p.temp;
+      return `<li class="${cls.trim()}">${emoji} ${p.time} ${p.temp}°${arrow}${pop}</li>`;
     })
     .join('');
 }
