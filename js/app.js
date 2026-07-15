@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '165';
+const APP_BUILD = '166';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -1970,6 +1970,13 @@ function handleResetToday() {
   render();
 }
 
+function handleResetAllData() {
+  if (!confirm('정말 모든 데이터(출퇴근 기록·설정·핀·찜·백업일시)를 영구 삭제할까요?\n이 작업은 되돌릴 수 없습니다.')) return;
+  const keys = Object.keys(localStorage).filter((k) => k.startsWith('attendance-'));
+  keys.forEach((k) => localStorage.removeItem(k));
+  window.location.replace(window.location.href.replace(/#.*$/, '') + '?reset=' + Date.now());
+}
+
 function handleExport(monthOnly = false) {
   const records = loadRecords();
   const name = getUserName();
@@ -2343,6 +2350,7 @@ function renderFeatureChangelog() {
   }
 
   document.getElementById('btnResetToday').addEventListener('click', handleResetToday);
+  document.getElementById('btnResetAllData')?.addEventListener('click', handleResetAllData);
   document.getElementById('btnExport').addEventListener('click', () => handleExport(false));
   document.getElementById('btnExportMonth')?.addEventListener('click', () => handleExport(true));
   document.getElementById('btnBackupData')?.addEventListener('click', handleBackupData);
