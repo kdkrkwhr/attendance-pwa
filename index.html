@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=163">
-    <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=163">
+  <link rel="stylesheet" href="css/style.css?v=164">
+    <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=164">
   <script>
     (function () {
       try {
@@ -200,6 +200,7 @@
             <span class="news-brief-badge">📝 오늘 요약</span>
             <span class="news-brief-meta" id="newsBriefMeta"></span>
             <button type="button" class="btn btn-ghost btn-sm news-copy-btn" id="btnCopyNewsSummary" aria-label="요약 복사" title="요약 복사">📋 복사</button>
+            <button type="button" class="btn btn-ghost btn-sm news-tts-btn" id="btnNewsTTS" aria-label="요약 듣기" title="요약 듣기">🔊 듣기</button>
           </div>
           <div class="news-read-progress hidden" id="newsReadProgress" aria-label="읽음 진행률">
             <div class="news-read-bar-track">
@@ -824,6 +825,7 @@
         <section class="card card-compact" id="featureNotesCard">
           <h2 class="card-title">기능 안내</h2>
           <ul class="feature-notes" id="featureNotesList">
+            <li>News 탭 — AI 요약 TTS 🔊 듣기 버튼 (Web Speech API) (v164)</li>
             <li>설정 탭 — 데이터 상태에 출퇴근 기록 총 일수 표시 (v163)</li>
             <li>News 탭 — 종목 핀 키워드 제목 강조 표시 (v161)</li>
             <li>News 탭 — 기사 읽음 진행률 표시줄·읽은 개수/전체 (v160)</li>
@@ -947,17 +949,17 @@
     </nav>
   </div>
 
-  <script src="config.js?v=163"></script>
-  <script src="vendor/leaflet/leaflet.js?v=163"></script>
-  <script src="js/util.js?v=163"></script>
-  <script src="js/fortune.js?v=163"></script>
-  <script src="js/saju.js?v=163"></script>
-  <script src="js/lunch-map.js?v=163"></script>
-  <script src="js/user-location.js?v=163"></script>
-  <script src="js/weather-brief.js?v=163"></script>
-  <script src="js/news-brief.js?v=163"></script>
-  <script src="js/hermes-chat.js?v=163"></script>
-  <script src="js/commute-time.js?v=163"></script>
-  <script src="js/app.js?v=163"></script>
+  <script src="config.js?v=164"></script>
+  <script src="vendor/leaflet/leaflet.js?v=164"></script>
+  <script src="js/util.js?v=164"></script>
+  <script src="js/fortune.js?v=164"></script>
+  <script src="js/saju.js?v=164"></script>
+  <script src="js/lunch-map.js?v=164"></script>
+  <script src="js/user-location.js?v=164"></script>
+  <script src="js/weather-brief.js?v=164"></script>
+  <script src="js/news-brief.js?v=164"></script>
+  <script src="js/hermes-chat.js?v=164"></script>
+  <script src="js/commute-time.js?v=164"></script>
+  <script src="js/app.js?v=164"></script>
 </body>
 </html>

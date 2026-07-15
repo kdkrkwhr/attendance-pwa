@@ -664,6 +664,48 @@ function bindNewsCopySummary() {
   });
 }
 
+/** news-brief TTS: Web Speech API로 요약 읽어주기 */
+let newsTTSActive = false;
+function stopNewsTTS() {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+  }
+  newsTTSActive = false;
+  const btn = document.getElementById('btnNewsTTS');
+  if (btn) btn.textContent = '🔊 듣기';
+}
+
+function bindNewsTTS() {
+  const btn = document.getElementById('btnNewsTTS');
+  if (!btn || btn.dataset.ttsBound) return;
+  btn.dataset.ttsBound = '1';
+  btn.addEventListener('click', () => {
+    if (newsTTSActive) {
+      stopNewsTTS();
+      return;
+    }
+    const el = document.getElementById('newsBriefSummary');
+    if (!el || !el.textContent) return;
+    if (!('speechSynthesis' in window)) {
+      btn.textContent = '❌ 미지원';
+      setTimeout(() => { btn.textContent = '🔊 듣기'; }, 2000);
+      return;
+    }
+    window.speechSynthesis.cancel(); // 선행 음성 정리
+    const utterance = new SpeechSynthesisUtterance(el.textContent);
+    utterance.lang = 'ko-KR';
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    utterance.onstart = () => {
+      newsTTSActive = true;
+      btn.textContent = '🔊 정지';
+    };
+    utterance.onend = () => { stopNewsTTS(); };
+    utterance.onerror = () => { stopNewsTTS(); };
+    window.speechSynthesis.speak(utterance);
+  });
+}
+
 function syncNewsBookmarkToggle() {
   const btn = document.getElementById('newsBookmarkToggle');
   if (!btn) return;
@@ -766,6 +808,7 @@ async function initNewsBrief() {
   bindNewsQuickPin();
   bindNewsReadTracking();
   bindNewsCopySummary();
+  bindNewsTTS();
   syncNewsUnreadToggle();
   syncNewsPinOnlyToggle();
   syncNewsCategoryToggle();
