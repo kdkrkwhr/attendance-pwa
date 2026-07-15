@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '164';
+const APP_BUILD = '165';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -1686,6 +1686,8 @@ function renderToday() {
     badge.textContent = fieldWork ? '외근 예정' : '미출근';
     badge.className = fieldWork ? 'badge badge-field' : 'badge';
     leaveEl.textContent = previewISO ? formatTime(calcLeaveTime(previewISO)) : '—';
+    const elapsedRow = document.getElementById('elapsedTimeRow');
+    if (elapsedRow) elapsedRow.classList.add('hidden');
     btnIn.classList.remove('hidden');
     btnSave?.classList.add('hidden');
     btnOut.classList.add('hidden');
@@ -1703,6 +1705,8 @@ function renderToday() {
     btnIn.classList.add('hidden');
     btnSave?.classList.toggle('hidden', !checkInTimeDirty);
     btnOut.classList.add('hidden');
+    const elapsedRow = document.getElementById('elapsedTimeRow');
+    if (elapsedRow) elapsedRow.classList.add('hidden');
     renderProgress(record);
     if (typeof renderCommuteCard === 'function') renderCommuteCard();
     return;
@@ -1715,6 +1719,26 @@ function renderToday() {
   btnOut.classList.remove('hidden');
   renderProgress(record);
   if (typeof renderCommuteCard === 'function') renderCommuteCard();
+  updateElapsedTime(record.checkIn);
+}
+
+function formatElapsedTime(checkInISO) {
+  const now = new Date();
+  const checkIn = new Date(checkInISO);
+  const diffMs = Math.max(0, now - checkIn);
+  const totalMin = Math.floor(diffMs / 60000);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (h > 0) return `${h}시간 ${m}분`;
+  return `${m}분`;
+}
+
+function updateElapsedTime(checkInISO) {
+  const row = document.getElementById('elapsedTimeRow');
+  const el = document.getElementById('elapsedTime');
+  if (!row || !el) return;
+  row.classList.remove('hidden');
+  el.textContent = formatElapsedTime(checkInISO);
 }
 
 function renderSettings() {

@@ -736,6 +736,21 @@ body {
   border-color: #bfdbfe;
 }
 
+.time-row-elapsed {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.time-value {
+  font-size: 1.125rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-color);
+  text-align: right;
+  flex: 1;
+  min-width: 0;
+}
+
 .time-label {
   font-size: 0.875rem;
   font-weight: 600;
@@ -1164,6 +1179,11 @@ body {
       border-color: #1d4ed8;
     }
 
+    .time-row-elapsed {
+      background: #064e3b;
+      border-color: #10b981;
+    }
+
     .time-input {
       background: #1e293b;
       color: var(--text);
@@ -1314,6 +1334,11 @@ body {
   .time-row-leave {
     background: #1e3a5f;
     border-color: #1d4ed8;
+  }
+
+  .time-row-elapsed {
+    background: #064e3b;
+    border-color: #10b981;
   }
 
   .time-input {
