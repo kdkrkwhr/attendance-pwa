@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '161';
+const APP_BUILD = '163';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -2225,32 +2225,45 @@ function renderFeatureChangelog() {
     recent.forEach(({ li }) => list.appendChild(li));
   }
 
-  /** 설정 탭 데이터 상태: 날씨·뉴스 마지막 갱신 시각 표시 */
-  async function renderDataStatus() {
-    const weatherEl = document.getElementById('dataStatusWeather');
-    const newsEl = document.getElementById('dataStatusNews');
-    if (!weatherEl || !newsEl) return;
-    try {
-      const wRes = await fetch('./data/weather/latest.json', { cache: 'no-store' });
-      if (wRes.ok) {
-        const w = await wRes.json();
-        if (w.generatedAt) {
-          const t = w.generatedAt.replace('T', ' ').replace(/\+.*$/, '');
-          weatherEl.textContent = `🌤 날씨 — ${t}`;
+  /** 설정 탭 데이터 상태: 날씨·뉴스 마지막 갱신 시각 + 기록 개수 표시 */
+    async function renderDataStatus() {
+      const weatherEl = document.getElementById('dataStatusWeather');
+      const newsEl = document.getElementById('dataStatusNews');
+      const recordsEl = document.getElementById('dataStatusRecords');
+      if (!weatherEl || !newsEl || !recordsEl) return;
+      try {
+        const wRes = await fetch('./data/weather/latest.json', { cache: 'no-store' });
+        if (wRes.ok) {
+          const w = await wRes.json();
+          if (w.generatedAt) {
+            const t = w.generatedAt.replace('T', ' ').replace(/\+.*$/, '');
+            weatherEl.textContent = `🌤 날씨 — ${t}`;
+          }
         }
-      }
-    } catch { weatherEl.textContent = '🌤 날씨 — 불러오기 실패'; }
-    try {
-      const nRes = await fetch('./data/news/latest.json', { cache: 'no-store' });
-      if (nRes.ok) {
-        const n = await nRes.json();
-        if (n.generatedAt) {
-          const t = n.generatedAt.replace('T', ' ').replace(/\+.*$/, '');
-          newsEl.textContent = `📰 뉴스 — ${t}`;
+      } catch { weatherEl.textContent = '🌤 날씨 — 불러오기 실패'; }
+      try {
+        const nRes = await fetch('./data/news/latest.json', { cache: 'no-store' });
+        if (nRes.ok) {
+          const n = await nRes.json();
+          if (n.generatedAt) {
+            const t = n.generatedAt.replace('T', ' ').replace(/\+.*$/, '');
+            newsEl.textContent = `📰 뉴스 — ${t}`;
+          }
         }
+      } catch { newsEl.textContent = '📰 뉴스 — 불러오기 실패'; }
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const records = JSON.parse(raw);
+          const dates = Array.isArray(records) ? records.length : Object.keys(records).length;
+          recordsEl.textContent = `📋 출퇴근 기록 — 총 ${dates}일`;
+        } else {
+          recordsEl.textContent = '📋 출퇴근 기록 — 없음';
+        }
+      } catch {
+        recordsEl.textContent = '📋 출퇴근 기록 — 읽기 실패';
       }
-    } catch { newsEl.textContent = '📰 뉴스 — 불러오기 실패'; }
-  }
+    }
 
   // ── 초기화 ──────────────────────────────────────────
 
