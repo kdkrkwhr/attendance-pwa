@@ -114,6 +114,18 @@ function articleMatchesPin(item, pin) {
   return hay.includes(String(pin).toLowerCase());
 }
 
+/** 핀 키워드를 제목에서 강조 span으로 감싸기 (이미 escapeHtml 처리된 문자열 대상) */
+function highlightPins(text, pins) {
+  if (!pins.length) return text;
+  let result = text;
+  for (const pin of pins) {
+    const escaped = String(pin).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(${escaped})`, 'gi');
+    result = result.replace(regex, '<span class="news-highlight">$1</span>');
+  }
+  return result;
+}
+
 function extractPinKeyword(title) {
   const t = String(title || '').replace(/^\[[^\]]+\]\s*/, '').trim();
   const quoted = t.match(/^["「]([가-힣A-Za-z0-9]{2,12})/);
@@ -430,10 +442,11 @@ function renderNewsBrief(data) {
   const showQuickPin = newsCategory === 'stock';
   listEl.innerHTML = items.map((it) => {
     const title = escapeHtml(it.title || '제목 없음');
+    const highlightedTitle = pins.length ? highlightPins(title, pins) : title;
     const link = it.link ? escapeHtml(it.link) : '';
     const inner = link
-      ? `<a href="${link}" target="_blank" rel="noopener noreferrer">${title}</a>`
-      : title;
+      ? `<a href="${link}" target="_blank" rel="noopener noreferrer">${highlightedTitle}</a>`
+      : highlightedTitle;
     const pubDateText = formatNewsPubDate(it.pubDate);
     const pubDateEl = pubDateText ? `<span class="news-item-pubdate">${pubDateText}</span>` : '';
     const matched = pins.find((p) => articleMatchesPin(it, p));
