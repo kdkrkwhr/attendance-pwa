@@ -4680,6 +4680,12 @@ body {
   color: var(--text);
 }
 
+.news-list-meta {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin: -0.5rem 0 0.5rem;
+}
+
 .news-list {
   margin: 0;
   padding: 0;

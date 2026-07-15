@@ -346,6 +346,7 @@ function renderNewsBrief(data) {
   const metaEl = document.getElementById('newsBriefMeta');
   const listEl = document.getElementById('newsList');
   const listTitle = document.getElementById('newsListTitle');
+  const listCount = document.getElementById('newsListCount');
 
   const key = activeNewsKey();
   const marketData = data ? pickMarketData(data, key) : null;
@@ -389,6 +390,13 @@ function renderNewsBrief(data) {
   if (unread > 0) metaParts.push(`미읽음 ${unread}`);
   if (gen) metaParts.push(`${gen} 갱신`);
   if (metaEl) metaEl.textContent = metaParts.join(' · ');
+
+  if (listCount) {
+    listCount.textContent = items.length
+      ? `${items.length}개` + (items.length < sorted.length ? ` (전체 ${sorted.length}개)` : '')
+      : '';
+  }
+
   if (!sorted.length || !listEl) {
     listCard?.classList.add('hidden');
     return;
