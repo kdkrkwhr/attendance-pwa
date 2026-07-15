@@ -391,6 +391,21 @@ function renderNewsBrief(data) {
   if (gen) metaParts.push(`${gen} 갱신`);
   if (metaEl) metaEl.textContent = metaParts.join(' · ');
 
+  // 읽음 진행률
+  const totalItems = sorted.length;
+  const readCount = totalItems - countUnreadNews(searched, readSet);
+  const progressEl = document.getElementById('newsReadProgress');
+  const barFill = document.getElementById('newsReadBarFill');
+  const barText = document.getElementById('newsReadBarText');
+  if (progressEl && barFill && barText && totalItems > 0) {
+    const pct = Math.round((readCount / totalItems) * 100);
+    barFill.style.width = `${pct}%`;
+    barText.textContent = `${readCount}/${totalItems} (${pct}%)`;
+    progressEl.classList.remove('hidden');
+  } else if (progressEl) {
+    progressEl.classList.add('hidden');
+  }
+
   if (listCount) {
     listCount.textContent = items.length
       ? `${items.length}개` + (items.length < sorted.length ? ` (전체 ${sorted.length}개)` : '')
