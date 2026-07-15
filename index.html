@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=166">
-    <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=166">
+  <link rel="stylesheet" href="css/style.css?v=167">
+    <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=167">
   <script>
     (function () {
       try {
@@ -55,6 +55,7 @@
           <div class="week-heatmap" id="weekHeatmap" aria-label="이번 주 순근무 히트맵"></div>
           <p class="month-summary-text" id="monthSummaryText"></p>
           <p class="month-summary-text yesterday-summary-text" id="yesterdaySummaryText"></p>
+          <p class="month-summary-text checkin-compare-text hidden" id="checkInCompareText"></p>
           <p class="month-summary-text lunch-summary-text hidden" id="lunchSummaryText"></p>
 
           <div class="field-work-row">
@@ -830,6 +831,7 @@
         <section class="card card-compact" id="featureNotesCard">
           <h2 class="card-title">기능 안내</h2>
           <ul class="feature-notes" id="featureNotesList">
+            <li>오늘 탭 — 출근 시각이 지난 평일 평균보다 빠른지/느린지 ⏱ 비교 표시 (v167)</li>
             <li>설정 탭 — 모든 데이터(기록·설정·핀·찜) 일괄 초기화 버튼 (v166)</li>
             <li>News 탭 — AI 요약 TTS 🔊 듣기 버튼 (Web Speech API) (v164)</li>
             <li>오늘 탭 — 출근 후 경과 시간 'X시간 XX분' 표시 (v165)</li>
@@ -956,17 +958,17 @@
     </nav>
   </div>
 
-  <script src="config.js?v=166"></script>
-  <script src="vendor/leaflet/leaflet.js?v=166"></script>
-  <script src="js/util.js?v=166"></script>
-  <script src="js/fortune.js?v=166"></script>
-  <script src="js/saju.js?v=166"></script>
-  <script src="js/lunch-map.js?v=166"></script>
-  <script src="js/user-location.js?v=166"></script>
-  <script src="js/weather-brief.js?v=166"></script>
-  <script src="js/news-brief.js?v=166"></script>
-  <script src="js/hermes-chat.js?v=166"></script>
-  <script src="js/commute-time.js?v=166"></script>
-  <script src="js/app.js?v=166"></script>
+  <script src="config.js?v=167"></script>
+  <script src="vendor/leaflet/leaflet.js?v=167"></script>
+  <script src="js/util.js?v=167"></script>
+  <script src="js/fortune.js?v=167"></script>
+  <script src="js/saju.js?v=167"></script>
+  <script src="js/lunch-map.js?v=167"></script>
+  <script src="js/user-location.js?v=167"></script>
+  <script src="js/weather-brief.js?v=167"></script>
+  <script src="js/news-brief.js?v=167"></script>
+  <script src="js/hermes-chat.js?v=167"></script>
+  <script src="js/commute-time.js?v=167"></script>
+  <script src="js/app.js?v=167"></script>
 </body>
 </html>

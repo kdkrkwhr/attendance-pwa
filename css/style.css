@@ -650,6 +650,15 @@ body {
   margin-top: -0.75rem;
 }
 
+.checkin-compare-text {
+  margin-top: -0.5rem;
+  font-size: 0.825rem;
+  color: var(--text-muted);
+  text-align: right;
+}
+.checkin-compare-text.early { color: var(--color-success, #16a34a); }
+.checkin-compare-text.late { color: var(--color-danger, #dc2626); }
+
 /* ── 퇴근 시간 알림 배너 ── */
 .leave-alert {
   background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);

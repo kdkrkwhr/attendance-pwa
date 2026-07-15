@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '166';
+const APP_BUILD = '167';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -1554,6 +1554,52 @@ function renderYesterdaySummary() {
   }
 }
 
+/** 오늘 출근 시각이 지난 5개 평일 평균 출근 시각보다 빠른지/느린지 표시 */
+function renderCheckInComparison() {
+  const el = document.getElementById('checkInCompareText');
+  if (!el) return;
+
+  const record = getTodayRecord();
+  if (!record?.checkIn) { el.classList.add('hidden'); return; }
+
+  const records = loadRecords();
+  const today = todayKey();
+  const weekdays = [];
+
+  // 지난 30일 중 평일 기록 최대 5개 수집
+  const temp = new Date();
+  for (let i = 0; i < 30 && weekdays.length < 5; i++) {
+    temp.setDate(temp.getDate() - 1);
+    if (temp.getDay() === 0 || temp.getDay() === 6) continue;
+    const k = todayKey(temp);
+    if (k === today) continue;
+    if (records[k]?.checkIn) weekdays.push(records[k].checkIn);
+  }
+
+  if (weekdays.length < 2) { el.classList.add('hidden'); return; }
+
+  const todayMin = parseISO(record.checkIn).getHours() * 60 + parseISO(record.checkIn).getMinutes();
+  const avgMin = Math.round(weekdays.reduce((s, iso) => {
+    const d = parseISO(iso);
+    return s + d.getHours() * 60 + d.getMinutes();
+  }, 0) / weekdays.length);
+
+  const diff = avgMin - todayMin; // 양수=오늘이 더 빠름
+  const absDiff = Math.abs(diff);
+  const minLabel = absDiff < 60 ? `${absDiff}분` : `${Math.floor(absDiff / 60)}시간 ${absDiff % 60}분`;
+
+  el.classList.remove('hidden', 'early', 'late');
+  if (diff > 5) {
+    el.textContent = `⏱ 평균보다 ${minLabel} 일찍 출근했어요`;
+    el.classList.add('early');
+  } else if (diff < -5) {
+    el.textContent = `⏱ 평균보다 ${minLabel} 늦게 출근했어요`;
+    el.classList.add('late');
+  } else {
+    el.textContent = `⏱ 평균 출근 시각과 비슷해요`;
+  }
+}
+
 function countElapsedWeekdaysInMonth(now = new Date()) {
   const y = now.getFullYear();
   const m = now.getMonth();
@@ -1640,6 +1686,7 @@ function renderToday() {
   renderWeekHeatmap();
   renderMonthSummary();
   renderYesterdaySummary();
+  renderCheckInComparison();
   renderLunchSummary();
 
   todayCard?.classList.toggle('card-field-work', fieldWork);
