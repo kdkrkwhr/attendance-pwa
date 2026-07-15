@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '158';
+const APP_BUILD = '159';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -1233,6 +1233,34 @@ async function requestNotificationPermission() {
   return false;
 }
 
+/** 설정 탭 알림 테스트 버튼 */
+async function handleTestNotification() {
+  if (!('Notification' in window)) {
+    alert('이 브라우저는 알림을 지원하지 않습니다.');
+    return;
+  }
+  if (Notification.permission === 'denied') {
+    alert('알림 권한이 거부되었습니다. 브라우저 설정에서 권한을 허용해 주세요.');
+    return;
+  }
+  if (Notification.permission === 'default') {
+    const p = await Notification.requestPermission();
+    if (p !== 'granted') {
+      alert('알림 권한이 필요합니다.');
+      return;
+    }
+  }
+  const now = Date.now();
+  sendNotification('🔔 알림 테스트', '알림이 정상 작동합니다!', 'test-notification-' + now);
+  const el = document.getElementById('btnTestNotification');
+  if (el) {
+    const orig = el.textContent;
+    el.textContent = '✅ 전송됨';
+    el.disabled = true;
+    setTimeout(() => { el.textContent = orig; el.disabled = false; }, 2000);
+  }
+}
+
 function sendNotification(title, body, tag = 'leave-reminder', url = './') {
   if (Notification.permission !== 'granted') return;
 
@@ -2290,7 +2318,8 @@ function renderFeatureChangelog() {
   document.getElementById('btnSyncSheet').addEventListener('click', syncWeekToSheet);
   document.getElementById('btnTestSheet')?.addEventListener('click', testSheetConnection);
   document.getElementById('btnNotifyPermission').addEventListener('click', requestNotificationPermission);
-  document.getElementById('btnClearCache')?.addEventListener('click', hardRefreshApp);
+    document.getElementById('btnTestNotification')?.addEventListener('click', handleTestNotification);
+    document.getElementById('btnClearCache')?.addEventListener('click', hardRefreshApp);
   document.getElementById('btnWifiApply')?.addEventListener('click', handleWifiApply);
   document.getElementById('btnWifiCheckIn')?.addEventListener('click', handleWifiCheckIn);
   document.getElementById('btnWifiDismiss')?.addEventListener('click', handleWifiDismiss);
