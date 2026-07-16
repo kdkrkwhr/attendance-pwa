@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '168';
+const APP_BUILD = '169';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -39,6 +39,7 @@ const DEFAULT_SETTINGS = {
   hermesModel: 'hermes-agent',
   homeAddress: '',
   commuteNotify: true,
+  wakeLock: false,
 };
 
 let tickInterval = null;
@@ -48,6 +49,9 @@ let checkInInputTouched = false;
 let checkInTimeDirty = false;
 let onCompanyNetwork = null;
 let networkCheckAt = 0;
+
+/** Screen Wake Lock sentinel */
+let wakeLockSentinel = null;
 let morningPollInterval = null;
 const NETWORK_CACHE_MS = 60_000;
 // ponytail: IP API 일시 실패 시 직전 OK 캐시 신뢰 (회사망에서 ipify 막히는 경우)
@@ -1817,6 +1821,7 @@ function renderSettings() {
   if (homeAddressEl) homeAddressEl.value = settings.homeAddress || '';
   const commuteNotifyEl = document.getElementById('commuteNotify');
   if (commuteNotifyEl) commuteNotifyEl.checked = settings.commuteNotify !== false;
+  renderWakeLockUI(settings);
   applyTheme(settings.theme || 'system');
   renderBackupHint();
 }
@@ -2123,6 +2128,41 @@ function handleRestoreFile(file) {
   reader.readAsText(file);
 }
 
+// ── Screen Wake Lock ────────────────────────────────────────
+
+async function requestWakeLock() {
+  try {
+    if (wakeLockSentinel) return;
+    if (!('wakeLock' in navigator)) return;
+    wakeLockSentinel = await navigator.wakeLock.request('screen');
+    wakeLockSentinel.addEventListener('release', () => {
+      wakeLockSentinel = null;
+    });
+  } catch (e) {
+    wakeLockSentinel = null;
+  }
+}
+
+function releaseWakeLock() {
+  if (wakeLockSentinel) {
+    wakeLockSentinel.release();
+    wakeLockSentinel = null;
+  }
+}
+
+async function handleWakeLockSetting(enabled) {
+  if (enabled) {
+    await requestWakeLock();
+  } else {
+    releaseWakeLock();
+  }
+}
+
+function renderWakeLockUI(settings) {
+  const el = document.getElementById('wakeLockToggle');
+  if (el) el.checked = settings.wakeLock === true;
+}
+
 function handleSettingsChange() {
   const theme = document.getElementById('themeMode')?.value || 'system';
   const prev = loadSettings();
@@ -2142,6 +2182,7 @@ function handleSettingsChange() {
     hermesModel: (document.getElementById('hermesModel')?.value || 'hermes-agent').trim() || 'hermes-agent',
     homeAddress: (document.getElementById('homeAddress')?.value || '').trim(),
     commuteNotify: document.getElementById('commuteNotify')?.checked !== false,
+    wakeLock: document.getElementById('wakeLockToggle')?.checked === true,
   };
   if (prev.homeAddress !== settings.homeAddress) {
     localStorage.removeItem('attendance-commute-cache');
@@ -2150,6 +2191,7 @@ function handleSettingsChange() {
     }
   }
   saveSettings(settings);
+  handleWakeLockSetting(settings.wakeLock);
   applyTheme(theme);
 
   const sheetEl = document.getElementById('sheetUrl');
@@ -2526,7 +2568,7 @@ function renderFeatureChangelog() {
   });
   switchFunSubTab(loadFunSubTab(), false);
 
-  ['notifyBefore', 'userName', 'targetCheckIn', 'targetCheckOut', 'birthDate', 'sheetUrl', 'themeMode', 'fortuneNotify', 'lunchRouletteNotify', 'hermesBaseUrl', 'hermesApiKey', 'hermesModel', 'homeAddress', 'commuteNotify'].forEach((id) => {
+  ['notifyBefore', 'userName', 'targetCheckIn', 'targetCheckOut', 'birthDate', 'sheetUrl', 'themeMode', 'fortuneNotify', 'lunchRouletteNotify', 'hermesBaseUrl', 'hermesApiKey', 'hermesModel', 'homeAddress', 'commuteNotify', 'wakeLockToggle'].forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
     el.addEventListener('change', handleSettingsChange);
@@ -2539,6 +2581,7 @@ function renderFeatureChangelog() {
     renderDataStatus();
     render();
   updateInstallUI();
+  handleWakeLockSetting(loadSettings().wakeLock);
   refreshNetworkGuard();
   if (typeof syncChatFromSheet === 'function') syncChatFromSheet(true);
   tickInterval = setInterval(render, 30_000);
@@ -2554,6 +2597,9 @@ function renderFeatureChangelog() {
         syncChatFromSheet(true);
         if (typeof resumePendingHermesRun === 'function') resumePendingHermesRun();
       }
+    }
+    if (document.visibilityState === 'visible' && loadSettings().wakeLock) {
+      requestWakeLock();
     }
   });
 
