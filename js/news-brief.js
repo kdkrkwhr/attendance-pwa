@@ -359,7 +359,37 @@ function syncNewsMarketToggle() {
   renderNewsPinBar();
 }
 
+/**
+ * 시장 분위기 표시 (📊 News 탭 상단)
+ */
+function renderNewsMarketMood(data) {
+  const el = document.getElementById('newsMarketMood');
+  if (!el) return;
+  const key = activeNewsKey();
+  const summary = data?.markets?.[key]?.summary || data?.summary;
+  if (!summary || key === 'all') {
+    el.classList.add('hidden');
+    return;
+  }
+  const mood = detectMarketMood(summary);
+  el.textContent = mood;
+  el.className = 'news-market-mood';
+  el.classList.remove('hidden');
+}
+
+function detectMarketMood(text) {
+  const t = text.replace(/\s/g, '');
+  // 급등/강세 → bull
+  if (/급등|폭등|강세|반등|상승[^장]|↑|급반등|급상승|사상최고|신고가|랠리|상한가/.test(t)) return '📈 강세';
+  // 급락/약세 → bear
+  if (/급락|폭락|약세|하락|패닉셀|패닉|추락|↓|급추락|곤두박질|폭망|대폭락|사상최저|신저가|약보합|하한가/.test(t)) return '📉 약세';
+  // 혼조/보합
+  if (/혼조|보합|등락|혼란|변동|약보합|강보합|소강/.test(t)) return '➡️ 혼조';
+  return '➡️ 보합';
+}
+
 function renderNewsBrief(data) {
+  renderNewsMarketMood(data);
   const card = document.getElementById('newsBriefCard');
   const listCard = document.getElementById('newsListCard');
   const empty = document.getElementById('newsEmpty');

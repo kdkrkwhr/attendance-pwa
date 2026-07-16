@@ -4646,6 +4646,13 @@ body {
   color: var(--text-muted, #64748b);
 }
 
+.news-market-mood {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
 .news-market-toggle {
   display: inline-flex;
   gap: 0.35rem;
