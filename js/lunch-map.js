@@ -863,11 +863,15 @@ function populateCategoryFilter(places) {
   if (!filterEl) return;
   const selected = filterEl.value;
   const categories = [...new Set(places.map((p) => p.category))].sort((a, b) => a.localeCompare(b, 'ko'));
-  filterEl.innerHTML = '<option value="all">전체</option><option value="favorites">⭐ 찜</option>';
+  const favs = loadLunchFavorites();
+  const favCount = [...new Set(places.filter((p) => favs.has(p.id)).map((p) => p.category))].length;
+  const totalCount = places.length;
+  filterEl.innerHTML = `<option value="all">전체 (${totalCount})</option><option value="favorites">⭐ 찜 (${favCount})</option>`;
   categories.forEach((cat) => {
+    const cnt = places.filter((p) => p.category === cat).length;
     const opt = document.createElement('option');
     opt.value = cat;
-    opt.textContent = cat;
+    opt.textContent = `${cat} (${cnt})`;
     filterEl.appendChild(opt);
   });
   if ([...filterEl.options].some((opt) => opt.value === selected)) {
