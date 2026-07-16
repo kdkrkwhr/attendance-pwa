@@ -25,6 +25,8 @@ const LUNCH_USER_ZOOM = 17;
 const LUNCH_FAVORITES_KEY = 'attendance-lunch-favorites';
 const LUNCH_ROULETTE_DAY_KEY = 'attendance-lunch-roulette-day';
 const LUNCH_DIARY_KEY = 'attendance-lunch-diary';
+const LUNCH_DIARY_HISTORY_KEY = 'attendance-lunch-diary-history';
+const LUNCH_DIARY_HISTORY_MAX = 30;
 
 function loadLunchDiaryText() {
   try {
@@ -34,15 +36,65 @@ function loadLunchDiaryText() {
   return '';
 }
 
+function loadLunchDiaryHistory() {
+  try {
+    return JSON.parse(localStorage.getItem(LUNCH_DIARY_HISTORY_KEY) || '[]');
+  } catch { return []; }
+}
+
+function saveLunchDiaryHistory(history) {
+  localStorage.setItem(LUNCH_DIARY_HISTORY_KEY, JSON.stringify(history));
+}
+
 function saveLunchDiary(text) {
   const t = String(text || '').trim();
   if (!t) {
     localStorage.removeItem(LUNCH_DIARY_KEY);
     if (typeof renderLunchSummary === 'function') renderLunchSummary();
+    renderLunchDiaryHistory();
     return;
   }
   localStorage.setItem(LUNCH_DIARY_KEY, JSON.stringify({ date: todayKey(), text: t }));
   if (typeof renderLunchSummary === 'function') renderLunchSummary();
+
+  // push to history archive
+  const history = loadLunchDiaryHistory();
+  const today = todayKey();
+  const existingIdx = history.findIndex(e => e.date === today);
+  if (existingIdx >= 0) {
+    history[existingIdx] = { date: today, text: t };
+  } else {
+    history.push({ date: today, text: t });
+  }
+  // keep only newest N
+  history.sort((a, b) => (a.date < b.date ? 1 : -1));
+  if (history.length > LUNCH_DIARY_HISTORY_MAX) history.length = LUNCH_DIARY_HISTORY_MAX;
+  saveLunchDiaryHistory(history);
+  renderLunchDiaryHistory();
+}
+
+function renderLunchDiaryHistory() {
+  const list = document.getElementById('lunchDiaryHistoryList');
+  const container = document.getElementById('lunchDiaryHistory');
+  if (!list || !container) return;
+
+  const history = loadLunchDiaryHistory().filter(e => e.date !== todayKey()).slice(0, 7);
+  if (!history.length) {
+    container.classList.add('hidden');
+    return;
+  }
+  container.classList.remove('hidden');
+  list.innerHTML = history.map(e => {
+    const dateStr = e.date.replace(/^\d{4}-/, '').replace(/-/g, '/');
+    return `<li class="lunch-diary-history-item"><span class="lunch-diary-history-date">${dateStr}</span><span class="lunch-diary-history-text">${escapeHtml(e.text)}</span></li>`;
+  }).join('');
+}
+
+function initLunchDiaryHistory() {
+  const container = document.getElementById('lunchDiaryHistory');
+  if (!container || container.dataset.bound) return;
+  container.dataset.bound = '1';
+  renderLunchDiaryHistory();
 }
 
 function setLunchDiaryFromRoulette(placeName) {
@@ -1090,6 +1142,7 @@ function bindLunchMapControls() {
 bindLunchMapControls();
 bindLunchSheetControls();
 initLunchDiary();
+initLunchDiaryHistory();
 
 const LUNCH_ROULETTE_NOTIFY_HOUR = 11;
 const LUNCH_ROULETTE_NOTIFY_MINUTE = 20;

@@ -3822,6 +3822,49 @@ body {
   outline-offset: 1px;
 }
 
+.lunch-diary-history {
+  margin-top: 0.4rem;
+  padding: 0.5rem 0.4rem 0.3rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.lunch-diary-history-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-muted, #64748b);
+  margin-bottom: 0.3rem;
+}
+
+.lunch-diary-history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.lunch-diary-history-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.2rem 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.lunch-diary-history-date {
+  flex-shrink: 0;
+  min-width: 2.4rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+}
+
+.lunch-diary-history-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text, #1e293b);
+}
+
 .lunch-list-item-picked {
   border-color: #f59e0b !important;
   background: #fffbeb !important;
