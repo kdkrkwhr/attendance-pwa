@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '169';
+const APP_BUILD = '170';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -2087,7 +2087,7 @@ function handleBackupData() {
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `출퇴근백업_${todayKey()}.json`;
+  a.download = `출퇴근백업_v${APP_BUILD}_${todayKey()}.json`;
   a.click();
   URL.revokeObjectURL(a.href);
   localStorage.setItem(BACKUP_AT_KEY, new Date().toISOString());
