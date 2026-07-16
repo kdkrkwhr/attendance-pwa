@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '174';
+const APP_BUILD = '175';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -2383,6 +2383,50 @@ function renderFeatureChangelog() {
       } catch {
         recordsEl.textContent = '📋 출퇴근 기록 — 읽기 실패';
       }
+      // ── 이번 달 통계 ──
+      try {
+        const monthlyEl = document.getElementById('dataStatusMonthly');
+        if (!monthlyEl) return;
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) { monthlyEl.textContent = ''; return; }
+        const records = JSON.parse(raw);
+        const now = new Date();
+        const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        let workDays = 0;
+        let totalCheckInMin = 0;
+        let totalCheckOutMin = 0;
+        let totalNetMin = 0;
+        let outCount = 0;
+        for (let d = 1; d <= daysInMonth; d++) {
+          const key = `${ym}-${String(d).padStart(2, '0')}`;
+          const rec = records[key];
+          if (!rec?.checkIn) continue;
+          const dow = new Date(now.getFullYear(), now.getMonth(), d).getDay();
+          if (dow === 0 || dow === 6) continue;
+          workDays++;
+          const ci = parseISO(rec.checkIn);
+          totalCheckInMin += ci.getHours() * 60 + ci.getMinutes();
+          if (rec.checkOut) {
+            const co = parseISO(rec.checkOut);
+            totalCheckOutMin += co.getHours() * 60 + co.getMinutes();
+            outCount++;
+            totalNetMin += calcNetWorkMinutes(rec.checkIn, rec.checkOut);
+          }
+        }
+        if (workDays === 0) {
+          monthlyEl.textContent = '';
+          return;
+        }
+        const avgIn = workDays > 0 ? Math.round(totalCheckInMin / workDays) : 0;
+        const avgOut = outCount > 0 ? Math.round(totalCheckOutMin / outCount) : 0;
+        const avgNet = workDays > 0 ? Math.round(totalNetMin / workDays) : 0;
+        const avgInStr = `${String(Math.floor(avgIn / 60)).padStart(2, '0')}:${String(avgIn % 60).padStart(2, '0')}`;
+        const avgOutStr = outCount > 0 ? `${String(Math.floor(avgOut / 60)).padStart(2, '0')}:${String(avgOut % 60).padStart(2, '0')}` : '-';
+        const avgNetH = Math.floor(avgNet / 60);
+        const avgNetM = avgNet % 60;
+        monthlyEl.textContent = `📊 이번 달 — ${workDays}일 출근 · 평균 ${avgInStr} 출근 / ${avgOutStr} 퇴근 · 순 ${avgNetH}h${avgNetM}m`;
+      } catch { /* monthly stats silent fail */ }
     }
 
   // ── 초기화 ──────────────────────────────────────────
