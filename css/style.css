@@ -3882,6 +3882,23 @@ body {
   flex-shrink: 0;
 }
 
+.lunch-search-input {
+  font-size: 0.75rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  width: 7rem;
+  flex-shrink: 1;
+  min-width: 0;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.lunch-search-input:focus {
+  border-color: var(--primary, #1a56db);
+}
+
 .lunch-map-status {
   font-size: 0.75rem;
   color: var(--text-muted);

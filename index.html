@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=175">
-    <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=175">
+  <link rel="stylesheet" href="css/style.css?v=176">
+    <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=176">
   <script>
     (function () {
       try {
@@ -603,6 +603,7 @@
             </div>
             <div class="lunch-float-bar">
               <p class="lunch-float-desc" id="lunchMapDesc">불러오는 중…</p>
+              <input type="search" id="lunchNameFilter" class="lunch-search-input" placeholder="식당 이름 검색" maxlength="30" autocomplete="off">
               <select id="lunchCategoryFilter" class="lunch-map-filter" aria-label="카테고리 필터">
                 <option value="all">전체</option>
               </select>
@@ -841,7 +842,8 @@
         <section class="card card-compact" id="featureNotesCard">
           <h2 class="card-title">기능 안내</h2>
           <ul class="feature-notes" id="featureNotesList">
-            <li>설정 탭 — 이번 달 근무 통계 (출근일·평균 출퇴근·순근무) (v175)</li>
+          <li>맛집 탭 — 식당 이름 검색 필터 (실시간 입력) (v176)</li>
+          <li>설정 탭 — 이번 달 근무 통계 (출근일·평균 출퇴근·순근무) (v175)</li>
             <li>오늘 탭 — 시간별 날씨에 현재 시각 period 하이라이트 표시 (v172)</li>
             <li>맛집 탭 — 점심 기록 히스토리 (최근 7일) 자동 저장·표시 (v174)</li>
             <li>News 탭 — 뉴스 요약 기반 시장 분위기(강세·약세·혼조) 📊 표시 (v173)</li>
@@ -976,17 +978,17 @@
     </nav>
   </div>
 
-  <script src="config.js?v=175"></script>
-  <script src="vendor/leaflet/leaflet.js?v=175"></script>
-  <script src="js/util.js?v=175"></script>
-  <script src="js/fortune.js?v=175"></script>
-  <script src="js/saju.js?v=175"></script>
-  <script src="js/lunch-map.js?v=175"></script>
-  <script src="js/user-location.js?v=175"></script>
-  <script src="js/weather-brief.js?v=175"></script>
-  <script src="js/news-brief.js?v=175"></script>
-  <script src="js/hermes-chat.js?v=175"></script>
-  <script src="js/commute-time.js?v=175"></script>
-  <script src="js/app.js?v=175"></script>
+  <script src="config.js?v=176"></script>
+  <script src="vendor/leaflet/leaflet.js?v=176"></script>
+  <script src="js/util.js?v=176"></script>
+  <script src="js/fortune.js?v=176"></script>
+  <script src="js/saju.js?v=176"></script>
+  <script src="js/lunch-map.js?v=176"></script>
+  <script src="js/user-location.js?v=176"></script>
+  <script src="js/weather-brief.js?v=176"></script>
+  <script src="js/news-brief.js?v=176"></script>
+  <script src="js/hermes-chat.js?v=176"></script>
+  <script src="js/commute-time.js?v=176"></script>
+  <script src="js/app.js?v=176"></script>
 </body>
 </html>

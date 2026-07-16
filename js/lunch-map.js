@@ -727,12 +727,17 @@ function getFilteredLunchPlaces() {
   if (!lunchMapData) return [];
   const filterEl = document.getElementById('lunchCategoryFilter');
   const selected = filterEl?.value || 'all';
+  const searchEl = document.getElementById('lunchNameFilter');
+  const query = (searchEl?.value || '').trim().toLowerCase();
   const favs = loadLunchFavorites();
   let places = lunchMapData.places;
   if (selected === 'favorites') {
     places = places.filter((p) => favs.has(p.id));
   } else if (selected !== 'all') {
     places = places.filter((p) => p.category === selected);
+  }
+  if (query) {
+    places = places.filter((p) => p.name.toLowerCase().includes(query));
   }
   return [...places].sort((a, b) => {
     const af = favs.has(a.id) ? 0 : 1;
@@ -1128,6 +1133,7 @@ function bindLunchSheetControls() {
 
 function bindLunchMapControls() {
   document.getElementById('lunchCategoryFilter')?.addEventListener('change', handleLunchCategoryFilter);
+  document.getElementById('lunchNameFilter')?.addEventListener('input', handleLunchCategoryFilter);
   document.getElementById('btnLunchRoulette')?.addEventListener('click', spinLunchRoulette);
   document.getElementById('btnLunchRouletteMap')?.addEventListener('click', () => {
     if (lunchRouletteWinnerId) focusLunchPlace(lunchRouletteWinnerId);
