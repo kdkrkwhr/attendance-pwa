@@ -729,6 +729,38 @@ async function handleChatCopyLast() {
   }
 }
 
+function handleChatTts() {
+  const text = getLastAssistantReply();
+  if (!text) {
+    setChatStatus('읽을 응답이 없어요', 'info');
+    return;
+  }
+  if (!('speechSynthesis' in window)) {
+    setChatStatus('이 브라우저는 TTS를 지원하지 않아요', 'error');
+    return;
+  }
+  if (window.speechSynthesis.speaking) {
+    window.speechSynthesis.cancel();
+    setChatStatus('', '');
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text.replace(/<[^>]*>/g, ''));
+  utterance.lang = 'ko-KR';
+  utterance.rate = 1.0;
+  utterance.pitch = 1.0;
+  utterance.onstart = () => {
+    setChatStatus('🔊 음성 출력 중…', 'info');
+  };
+  utterance.onend = () => {
+    setChatStatus('', '');
+  };
+  utterance.onerror = () => {
+    setChatStatus('음성 출력 실패', 'error');
+  };
+  window.speechSynthesis.speak(utterance);
+}
+
 function handleChatGoSettings() {
   if (typeof switchTab === 'function') switchTab('settings');
   document.getElementById('hermesBaseUrl')?.focus();
@@ -839,6 +871,7 @@ function initHermesChat() {
   document.getElementById('chatForm')?.addEventListener('submit', handleChatSubmit);
   document.getElementById('btnChatResendLast')?.addEventListener('click', handleChatResendLast);
   document.getElementById('btnChatCopyLast')?.addEventListener('click', handleChatCopyLast);
+  document.getElementById('btnChatTts')?.addEventListener('click', handleChatTts);
   document.getElementById('btnChatClear')?.addEventListener('click', handleChatClear);
   document.getElementById('btnChatGoSettings')?.addEventListener('click', handleChatGoSettings);
   document.getElementById('btnHermesTest')?.addEventListener('click', testHermesConnection);
