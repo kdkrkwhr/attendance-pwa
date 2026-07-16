@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '175';
+const APP_BUILD = '177';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -2427,6 +2427,22 @@ function renderFeatureChangelog() {
         const avgNetM = avgNet % 60;
         monthlyEl.textContent = `📊 이번 달 — ${workDays}일 출근 · 평균 ${avgInStr} 출근 / ${avgOutStr} 퇴근 · 순 ${avgNetH}h${avgNetM}m`;
       } catch { /* monthly stats silent fail */ }
+    function getStorageSizeKB() {
+      let chars = 0;
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        const v = localStorage.getItem(k);
+        chars += k.length + v.length;
+      }
+      return Math.round((chars * 2) / 1024);
+    }
+    try {
+      const storageEl = document.getElementById('dataStatusStorage');
+      if (storageEl) {
+        const kb = getStorageSizeKB();
+        storageEl.textContent = `💾 저장소 — ${localStorage.length}개 키 · 약 ${kb}KB`;
+      }
+    } catch { /* storage size silent fail */ }
     }
 
   // ── 초기화 ──────────────────────────────────────────
