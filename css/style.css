@@ -5035,6 +5035,11 @@ body {
   font-weight: 500;
 }
 
+.news-search-highlight {
+  background: linear-gradient(180deg, transparent 55%, rgba(37, 99, 235, 0.20) 55%);
+  font-weight: 600;
+}
+
 .news-empty-text {
   margin: 0;
   text-align: center;

@@ -126,6 +126,15 @@ function highlightPins(text, pins) {
   return result;
 }
 
+/** 검색어를 제목에서 강조 span으로 감싸기 (이미 escapeHtml 처리된 문자열 대상) */
+function highlightSearchQuery(text) {
+  const q = String(newsSearchQuery || '').trim();
+  if (!q) return text;
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${escaped})`, 'gi');
+  return text.replace(regex, '<span class="news-highlight news-search-highlight">$1</span>');
+}
+
 function extractPinKeyword(title) {
   const t = String(title || '').replace(/^\[[^\]]+\]\s*/, '').trim();
   const quoted = t.match(/^["「]([가-힣A-Za-z0-9]{2,12})/);
@@ -442,11 +451,12 @@ function renderNewsBrief(data) {
   const showQuickPin = newsCategory === 'stock';
   listEl.innerHTML = items.map((it) => {
     const title = escapeHtml(it.title || '제목 없음');
-    const highlightedTitle = pins.length ? highlightPins(title, pins) : title;
+    const highlightedTitle = (pins.length ? highlightPins(title, pins) : title);
+    const searchHighlightedTitle = newsSearchQuery ? highlightSearchQuery(highlightedTitle) : highlightedTitle;
     const link = it.link ? escapeHtml(it.link) : '';
     const inner = link
-      ? `<a href="${link}" target="_blank" rel="noopener noreferrer">${highlightedTitle}</a>`
-      : highlightedTitle;
+      ? `<a href="${link}" target="_blank" rel="noopener noreferrer">${searchHighlightedTitle}</a>`
+      : searchHighlightedTitle;
     const pubDateText = formatNewsPubDate(it.pubDate);
     const pubDateEl = pubDateText ? `<span class="news-item-pubdate">${pubDateText}</span>` : '';
     const matched = pins.find((p) => articleMatchesPin(it, p));
