@@ -101,7 +101,14 @@ function renderWeatherBrief(data) {
     : '';
   const loc = data.location || '회사';
   const gen = data.generatedAt
-    ? new Date(data.generatedAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+    ? (function () {
+        const diffMs = Date.now() - new Date(data.generatedAt).getTime();
+        const diffMin = Math.floor(diffMs / 60000);
+        if (diffMin < 1) return '방금';
+        if (diffMin < 60) return `${diffMin}분 전`;
+        const diffH = Math.floor(diffMin / 60);
+        return `${diffH}시간 전`;
+      })()
     : '';
   if (metaEl) {
     metaEl.textContent = [loc, range, gen ? `${gen} 갱신` : ''].filter(Boolean).join(' · ');
