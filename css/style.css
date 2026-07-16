@@ -4607,6 +4607,17 @@ body {
   font-weight: 600;
 }
 
+.weather-brief-periods li.weather-period-now {
+  border-color: var(--primary, #1a56db);
+  background: rgba(26, 86, 219, 0.08);
+  font-weight: 700;
+  box-shadow: 0 0 0 1px var(--primary, #1a56db);
+}
+
+[data-theme="dark"] .weather-brief-periods li.weather-period-now {
+  background: rgba(26, 86, 219, 0.18);
+}
+
 .temp-arrow { font-size: 0.7rem; }
 .temp-up { color: #ef4444; }
 .temp-down { color: #3b82f6; }
