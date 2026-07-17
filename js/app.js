@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '181';
+const APP_BUILD = '182';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -2471,6 +2471,19 @@ function renderFeatureChangelog() {
         storageEl.textContent = `💾 저장소 — ${localStorage.length}개 키 · 약 ${kb}KB`;
       }
     } catch { /* storage size silent fail */ }
+    // ── 서비스워커 상태 ──
+    try {
+      const swEl = document.getElementById('dataStatusSw');
+      if (swEl) {
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          const swUrl = navigator.serviceWorker.controller.scriptURL;
+          const swBuildMatch = swUrl.match(/build[=/](\d+)/);
+          swEl.textContent = `🔄 SW — ${APP_BUILD === (swBuildMatch?.[1]) ? '일치' : '갱신 대기'} (v${APP_BUILD})`;
+        } else {
+          swEl.textContent = `🔄 SW — 미등록`;
+        }
+      }
+    } catch { /* sw status silent fail */ }
     }
 
   // ── 초기화 ──────────────────────────────────────────
