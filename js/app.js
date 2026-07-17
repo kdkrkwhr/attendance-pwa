@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '180';
+const APP_BUILD = '181';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -1739,6 +1739,8 @@ function renderToday() {
     leaveEl.textContent = previewISO ? formatTime(calcLeaveTime(previewISO)) : '—';
     const elapsedRow = document.getElementById('elapsedTimeRow');
     if (elapsedRow) elapsedRow.classList.add('hidden');
+    const afterLeaveRow = document.getElementById('afterLeaveRow');
+    if (afterLeaveRow) afterLeaveRow.classList.add('hidden');
     btnIn.classList.remove('hidden');
     btnSave?.classList.add('hidden');
     btnOut.classList.add('hidden');
@@ -1758,6 +1760,7 @@ function renderToday() {
     btnOut.classList.add('hidden');
     const elapsedRow = document.getElementById('elapsedTimeRow');
     if (elapsedRow) elapsedRow.classList.add('hidden');
+    renderAfterLeaveTime(record);
     renderProgress(record);
     if (typeof renderCommuteCard === 'function') renderCommuteCard();
     return;
@@ -1768,6 +1771,8 @@ function renderToday() {
   btnIn.classList.add('hidden');
   btnSave?.classList.toggle('hidden', !checkInTimeDirty);
   btnOut.classList.remove('hidden');
+  const afterLeaveRow = document.getElementById('afterLeaveRow');
+  if (afterLeaveRow) afterLeaveRow.classList.add('hidden');
   renderProgress(record);
   if (typeof renderCommuteCard === 'function') renderCommuteCard();
   updateElapsedTime(record.checkIn);
@@ -1790,6 +1795,29 @@ function updateElapsedTime(checkInISO) {
   if (!row || !el) return;
   row.classList.remove('hidden');
   el.textContent = formatElapsedTime(checkInISO);
+}
+
+function formatAfterLeaveTime(checkOutISO) {
+  const now = new Date();
+  const checkOut = new Date(checkOutISO);
+  const diffMs = Math.max(0, now - checkOut);
+  const totalMin = Math.floor(diffMs / 60000);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (h > 0) return `${h}시간 ${m}분`;
+  return `${m}분`;
+}
+
+function renderAfterLeaveTime(record) {
+  const row = document.getElementById('afterLeaveRow');
+  const el = document.getElementById('afterLeaveTime');
+  if (!row || !el) return;
+  if (record?.checkOut) {
+    row.classList.remove('hidden');
+    el.textContent = formatAfterLeaveTime(record.checkOut);
+  } else {
+    row.classList.add('hidden');
+  }
 }
 
 function renderSettings() {

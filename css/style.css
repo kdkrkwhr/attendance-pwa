@@ -750,6 +750,11 @@ body {
   border-color: #bbf7d0;
 }
 
+.time-row-after-leave {
+  background: #fff7ed;
+  border-color: #fed7aa;
+}
+
 .time-value {
   font-size: 1.125rem;
   font-weight: 600;
@@ -1193,6 +1198,11 @@ body {
       border-color: #10b981;
     }
 
+    .time-row-after-leave {
+      background: #431407;
+      border-color: #d97706;
+    }
+
     .time-input {
       background: #1e293b;
       color: var(--text);
@@ -1348,6 +1358,11 @@ body {
   .time-row-elapsed {
     background: #064e3b;
     border-color: #10b981;
+  }
+
+  .time-row-after-leave {
+    background: #431407;
+    border-color: #d97706;
   }
 
   .time-input {
