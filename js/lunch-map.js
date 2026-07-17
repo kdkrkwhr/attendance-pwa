@@ -71,6 +71,7 @@ function saveLunchDiary(text) {
   if (history.length > LUNCH_DIARY_HISTORY_MAX) history.length = LUNCH_DIARY_HISTORY_MAX;
   saveLunchDiaryHistory(history);
   renderLunchDiaryHistory();
+  updateLunchDiaryStats();
 }
 
 function renderLunchDiaryHistory() {
@@ -88,6 +89,49 @@ function renderLunchDiaryHistory() {
     const dateStr = e.date.replace(/^\d{4}-/, '').replace(/-/g, '/');
     return `<li class="lunch-diary-history-item"><span class="lunch-diary-history-date">${dateStr}</span><span class="lunch-diary-history-text">${escapeHtml(e.text)}</span></li>`;
   }).join('');
+  updateLunchDiaryStats();
+}
+
+function updateLunchDiaryStats() {
+  const container = document.getElementById('lunchDiaryStats');
+  const textEl = document.getElementById('lunchDiaryStatsText');
+  if (!container || !textEl) return;
+
+  const history = loadLunchDiaryHistory();
+  const today = todayKey();
+  // include today's entry if exists
+  const todayEntry = history.find(e => e.date === today);
+  const allEntries = todayEntry ? history : history.concat(todayEntry ? [todayEntry] : []);
+
+  // get this week's Monday
+  const now = new Date();
+  const dayOfWeek = now.getDay(); // 0=Sun, 1=Mon...
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+  const mondayKey = formatDateKey(monday);
+
+  const weekEntries = allEntries.filter(e => e.date >= mondayKey && e.date <= today);
+  if (!weekEntries.length) {
+    container.classList.add('hidden');
+    return;
+  }
+
+  container.classList.remove('hidden');
+  const count = weekEntries.length;
+
+  // find most frequent place
+  const freq = {};
+  weekEntries.forEach(e => {
+    const t = e.text.trim();
+    if (t) freq[t] = (freq[t] || 0) + 1;
+  });
+  const sorted = Object.entries(freq).sort((a, b) => b[1] - a[1]);
+  let topText = '';
+  if (sorted.length && sorted[0][1] > 1) {
+    topText = ` · 가장 많이: ${escapeHtml(sorted[0][0])} (${sorted[0][1]}회)`;
+  }
+
+  textEl.textContent = `이번 주 ${count}회 식사 기록${topText}`;
 }
 
 function initLunchDiaryHistory() {
