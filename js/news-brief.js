@@ -208,6 +208,17 @@ function toggleNewsBookmark(link) {
   saveNewsBookmarks(all);
 }
 
+function sortNewsByBookmarks(items, bookmarkSet) {
+  if (!bookmarkSet.size || newsBookmarkOnly) return items;
+  const bm = [];
+  const rest = [];
+  items.forEach((it) => {
+    if (it.link && bookmarkSet.has(it.link)) bm.push(it);
+    else rest.push(it);
+  });
+  return [...bm, ...rest];
+}
+
 function filterNewsByBookmarks(items, bookmarkSet) {
   if (!newsBookmarkOnly) return items;
   if (!bookmarkSet.size) return [];
@@ -425,7 +436,8 @@ function renderNewsBrief(data) {
   const readSet = loadNewsReadSet();
   const bookmarkSet = getTodayBookmarkSet();
   const sorted = sortNewsByPins(marketData.items || [], pins);
-  const searched = filterNewsBySearch(sorted, newsSearchQuery);
+  const bmSorted = sortNewsByBookmarks(sorted, bookmarkSet);
+  const searched = filterNewsBySearch(bmSorted, newsSearchQuery);
   const pinnedOnly = filterNewsByPins(searched, pins);
   const unreadFiltered = filterNewsByUnread(pinnedOnly, readSet);
   const items = filterNewsByBookmarks(unreadFiltered, bookmarkSet);
