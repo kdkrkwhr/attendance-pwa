@@ -866,19 +866,94 @@ function bindChatViewport() {
   sync();
 }
 
+const CHAT_CUSTOM_SHORTCUTS_KEY = 'attendance-chat-shortcuts';
+
+function getCustomShortcuts() {
+  try {
+    const arr = JSON.parse(localStorage.getItem(CHAT_CUSTOM_SHORTCUTS_KEY) || '[]');
+    return Array.isArray(arr) ? arr.filter((s) => s && s.prompt) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCustomShortcuts(list) {
+  try {
+    localStorage.setItem(CHAT_CUSTOM_SHORTCUTS_KEY, JSON.stringify(list.slice(0, 20)));
+  } catch {}
+}
+
+function addCustomShortcut(label, prompt) {
+  const list = getCustomShortcuts();
+  list.push({ label: label || prompt, prompt });
+  saveCustomShortcuts(list);
+}
+
+function removeCustomShortcut(index) {
+  const list = getCustomShortcuts();
+  list.splice(index, 1);
+  saveCustomShortcuts(list);
+}
+
 function renderChatShortcuts() {
   const bar = document.getElementById('chatShortcuts');
   if (!bar) return;
-  bar.innerHTML = CHAT_SHORTCUTS.map(
+  const custom = getCustomShortcuts();
+  let html = CHAT_SHORTCUTS.map(
     (s) =>
       `<button type="button" class="chat-shortcut" data-prompt="${escapeHtml(s.prompt)}">${escapeHtml(s.label)}</button>`
   ).join('');
+  html += custom.map((s, i) =>
+    `<span class="chat-shortcut-wrap">` +
+      `<button type="button" class="chat-shortcut chat-shortcut-custom" data-prompt="${escapeHtml(s.prompt)}">${escapeHtml(s.label)}</button>` +
+      `<button type="button" class="chat-shortcut-remove" data-remove-custom="${i}" title="삭제" aria-label="단축 삭제">✕</button>` +
+    `</span>`
+  ).join('');
+  html += `<button type="button" class="chat-shortcut chat-shortcut-add" id="chatShortcutAddBtn">＋ 추가</button>`;
+  bar.innerHTML = html;
+}
+
+function showChatShortcutAddForm(show) {
+  const form = document.getElementById('chatShortcutAddForm');
+  if (!form) return;
+  form.classList.toggle('hidden', !show);
+  if (show) {
+    const label = document.getElementById('chatCustomLabel');
+    const prompt = document.getElementById('chatCustomPrompt');
+    if (label) label.value = '';
+    if (prompt) prompt.value = '';
+    prompt?.focus();
+  }
 }
 
 function handleChatShortcutClick(e) {
+  const addBtn = e.target.closest('#chatShortcutAddBtn');
+  if (addBtn) {
+    showChatShortcutAddForm(true);
+    return;
+  }
+  const removeBtn = e.target.closest('[data-remove-custom]');
+  if (removeBtn) {
+    removeCustomShortcut(Number(removeBtn.dataset.removeCustom));
+    renderChatShortcuts();
+    return;
+  }
   const btn = e.target.closest('[data-prompt]');
   if (!btn || chatReplyInFlight) return;
+  showChatShortcutAddForm(false);
   sendHermesChatMessage(btn.dataset.prompt);
+}
+
+function handleChatCustomSave() {
+  const label = (document.getElementById('chatCustomLabel')?.value || '').trim();
+  const prompt = (document.getElementById('chatCustomPrompt')?.value || '').trim();
+  if (!prompt) {
+    document.getElementById('chatCustomPrompt')?.focus();
+    return;
+  }
+  addCustomShortcut(label, prompt);
+  renderChatShortcuts();
+  showChatShortcutAddForm(false);
 }
 
 function updateChatCharCount() {
@@ -897,6 +972,8 @@ function initHermesChat() {
   renderChatShortcuts();
 
   document.getElementById('chatShortcuts')?.addEventListener('click', handleChatShortcutClick);
+  document.getElementById('btnChatCustomSave')?.addEventListener('click', handleChatCustomSave);
+  document.getElementById('btnChatCustomCancel')?.addEventListener('click', () => showChatShortcutAddForm(false));
   document.getElementById('chatForm')?.addEventListener('submit', handleChatSubmit);
   document.getElementById('btnChatResendLast')?.addEventListener('click', handleChatResendLast);
   document.getElementById('btnChatCopyLast')?.addEventListener('click', handleChatCopyLast);
