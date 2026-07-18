@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '192';
+const APP_BUILD = '193';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -1683,7 +1683,26 @@ function renderMonthSummary() {
         if (d > today) left += 1;
       }
     }
-    leftEl.textContent = `📅 이번 달 남은 근무일 ${left}일 (주말 제외 · 총 ${total}일)`;
+    // 이번 달 잔여 필요 근무시간 (목표 8h × 평일) — v193
+    let workedMin = 0;
+    const mPrefix = `${y}-${String(m + 1).padStart(2, '0')}`;
+    const mRecords = loadRecords();
+    for (const [key, rec] of Object.entries(mRecords)) {
+      if (key.startsWith(mPrefix) && rec?.checkIn && rec?.checkOut) {
+        workedMin += calcNetWorkMinutes(rec.checkIn, rec.checkOut);
+      }
+    }
+    const targetMin = total * 8 * 60;
+    const remainMin = targetMin - workedMin;
+    let hourTxt;
+    if (remainMin <= 0) {
+      hourTxt = `목표 달성 +${(Math.abs(remainMin) / 60).toFixed(1)}h`;
+    } else {
+      const h = Math.floor(remainMin / 60);
+      const mm = remainMin % 60;
+      hourTxt = `잔여 필요 ${h}h${mm ? mm + 'm' : ''}`;
+    }
+    leftEl.textContent = `📅 이번 달 남은 근무일 ${left}일 (주말 제외 · 총 ${total}일) · ${hourTxt}`;
   }
 
   const now = new Date();
