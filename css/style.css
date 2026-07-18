@@ -5434,3 +5434,48 @@ body {
   opacity: 1;
 }
 
+/* 이번 달 출근 달력 (v187) */
+.month-cal-card .month-cal { margin-top: 6px; }
+.month-cal-dow,
+.month-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.month-cal-dow span {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.month-cal-cell {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  border-radius: 8px;
+  background: var(--surface-muted);
+  color: var(--text);
+}
+.month-cal-cell i {
+  position: absolute;
+  bottom: 2px;
+  font-style: normal;
+  font-size: 9px;
+  line-height: 1;
+  opacity: 0.7;
+}
+.month-cal-cell.is-weekend { opacity: 0.7; }
+.month-cal-cell.is-work {
+  background: var(--primary);
+  color: #fff;
+}
+.month-cal-cell.is-work i { opacity: 0.85; }
+.month-cal-cell.is-today {
+  outline: 2px solid var(--warning);
+  outline-offset: -2px;
+  font-weight: 700;
+}
+.month-cal-empty { background: transparent !important; opacity: 1 !important; }
+

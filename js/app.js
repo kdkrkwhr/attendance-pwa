@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '186';
+const APP_BUILD = '187';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -1677,6 +1677,54 @@ function renderMonthSummary() {
     el.textContent = text;
   }
 
+// 이번 달 출근 달력 (미니) — v187
+function renderMonthCalendar() {
+  const card = document.getElementById('monthCalCard');
+  const grid = document.getElementById('monthCal');
+  const legend = document.getElementById('monthCalLegend');
+  if (!card || !grid) return;
+
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  const records = loadRecords();
+  const today = todayKey();
+
+  const startDow = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+
+  const dowLabels = ['일', '월', '화', '수', '목', '금', '토'];
+  let html = '<div class="month-cal-dow">';
+  for (const d of dowLabels) html += `<span>${d}</span>`;
+  html += '</div><div class="month-cal-grid">';
+
+  for (let i = 0; i < startDow; i++) {
+    html += '<span class="month-cal-cell month-cal-empty"></span>';
+  }
+
+  let workDays = 0;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const mm = String(m + 1).padStart(2, '0');
+    const dd = String(d).padStart(2, '0');
+    const key = `${y}-${mm}-${dd}`;
+    const has = !!(records[key] && records[key].checkIn);
+    if (has) workDays += 1;
+    const dow = new Date(y, m, d).getDay();
+    const cls = ['month-cal-cell'];
+    if (has) cls.push('is-work');
+    if (key === today) cls.push('is-today');
+    if (dow === 0 || dow === 6) cls.push('is-weekend');
+    const mark = has ? '✓' : (key === today ? '오늘' : '·');
+    html += `<span class="${cls.join(' ')}" title="${key}${has ? ' · 출근' : ''}">${d}<i>${mark}</i></span>`;
+  }
+  html += '</div>';
+  grid.innerHTML = html;
+
+  card.classList.remove('hidden');
+  const elapsed = countElapsedWeekdaysInMonth(now);
+  legend.textContent = `✓ ${workDays}일 출근 · 평일 ${elapsed}일 경과`;
+}
+
 function renderToday() {
   const record = getTodayRecord();
   const now = new Date();
@@ -1702,6 +1750,7 @@ function renderToday() {
   renderWeekStrip();
   renderWeekHeatmap();
   renderMonthSummary();
+  renderMonthCalendar();
   renderYesterdaySummary();
   renderCheckInComparison();
   renderLunchSummary();
