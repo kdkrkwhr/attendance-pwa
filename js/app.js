@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '188';
+const APP_BUILD = '189';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -1532,10 +1532,44 @@ async function copyTodaySummary() {
   }
 }
 
+async function shareTodaySummary() {
+  const text = buildTodaySummaryText();
+  if (!text) {
+    setSyncStatus('출근 기록이 없어요.', 'err');
+    return;
+  }
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: '출퇴근 요약', text });
+      return;
+    } catch (_) { /* 사용자가 공유 취소 → 클립보드로 폴백 */ }
+  }
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+    }
+    setSyncStatus('근무 요약을 복사했어요.', 'ok');
+  } catch {
+    setSyncStatus('공유에 실패했어요.', 'err');
+  }
+}
+
 function updateCopyTodaySummaryBtn(record) {
   const btn = document.getElementById('btnCopyTodaySummary');
   if (!btn) return;
   btn.classList.toggle('hidden', !record?.checkIn);
+  const share = document.getElementById('btnShareTodaySummary');
+  if (share) share.classList.toggle('hidden', !record?.checkIn);
 }
 
 function renderLunchSummary() {
@@ -2584,6 +2618,7 @@ function renderFeatureChangelog() {
   });
   document.getElementById('btnCheckOut').addEventListener('click', handleCheckOut);
   document.getElementById('btnCopyTodaySummary')?.addEventListener('click', copyTodaySummary);
+  document.getElementById('btnShareTodaySummary')?.addEventListener('click', shareTodaySummary);
   document.getElementById('fieldWorkToggle')?.addEventListener('change', handleFieldWorkToggle);
   document.getElementById('btnFieldCheckOut')?.addEventListener('click', handleFieldCheckOut);
   document.getElementById('btnFieldMemoCancel')?.addEventListener('click', handleFieldMemoCancel);
