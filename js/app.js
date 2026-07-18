@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '191';
+const APP_BUILD = '192';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -1666,6 +1666,25 @@ function countElapsedWeekdaysInMonth(now = new Date()) {
 function renderMonthSummary() {
   const el = document.getElementById('monthSummaryText');
   if (!el) return;
+
+  // 이번 달 남은 근무일(주말 제외 평일) 수 — v192
+  const leftEl = document.getElementById('monthWorkdaysLeft');
+  if (leftEl) {
+    const t = new Date();
+    const y = t.getFullYear();
+    const m = t.getMonth();
+    const today = t.getDate();
+    const dim = new Date(y, m + 1, 0).getDate();
+    let left = 0, total = 0;
+    for (let d = 1; d <= dim; d++) {
+      const dow = new Date(y, m, d).getDay();
+      if (dow !== 0 && dow !== 6) {
+        total += 1;
+        if (d > today) left += 1;
+      }
+    }
+    leftEl.textContent = `📅 이번 달 남은 근무일 ${left}일 (주말 제외 · 총 ${total}일)`;
+  }
 
   const now = new Date();
   const records = loadRecords();
