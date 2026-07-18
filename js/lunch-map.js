@@ -957,6 +957,7 @@ function renderLunchList(data) {
 			${memo ? `<span class="lunch-list-memo">${memo}</span>` : ''}
 		</button>
 		<a href="${kakaoUrl}" target="_blank" rel="noopener noreferrer" class="lunch-dir-btn" title="카카오맵 길찾기" aria-label="카카오맵 길찾기">🗺️</a>
+		<button type="button" class="lunch-share-btn" data-share-id="${place.id}" aria-label="식당 공유" title="공유">📤</button>
 	</div>
 	`;
   }).join('');
@@ -971,6 +972,39 @@ function renderLunchList(data) {
   listEl.querySelectorAll('.lunch-list-item').forEach((btn) => {
     btn.addEventListener('click', () => focusLunchPlace(btn.dataset.placeId));
   });
+  listEl.querySelectorAll('.lunch-share-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      shareLunchPlace(btn.dataset.shareId);
+    });
+  });
+}
+
+function shareLunchPlace(placeId) {
+  const place = (lunchMapData?.places || []).find((p) => p.id === placeId);
+  if (!place) return;
+  const kakaoUrl = `https://map.kakao.com/link/to/${encodeURIComponent(place.name)},${place.lat},${place.lng}`;
+  const text = `${place.name} (${place.category || '맛집'}) · ${kakaoUrl}`;
+  if (navigator.share) {
+    navigator.share({ title: place.name, text: place.name, url: kakaoUrl }).catch(() => {});
+    return;
+  }
+  const flash = () => {
+    const btn = document.querySelector(`.lunch-share-btn[data-share-id="${placeId}"]`);
+    if (!btn) return;
+    const old = btn.textContent;
+    btn.textContent = '✅';
+    setTimeout(() => { btn.textContent = old; }, 1500);
+  };
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(flash).catch(flash);
+    } else {
+      flash();
+    }
+  } catch (e) {
+    flash();
+  }
 }
 
 function renderLunchMapMarkers(data) {

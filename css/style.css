@@ -4006,6 +4006,30 @@ body {
   outline: none;
 }
 
+.lunch-share-btn {
+  flex-shrink: 0;
+  width: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  background: var(--card);
+  border-radius: 12px;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-family: inherit;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.lunch-share-btn:hover,
+.lunch-share-btn:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent);
+  outline: none;
+}
+
 .lunch-list-item-wrap .lunch-list-item {
   flex: 1;
   min-width: 0;
