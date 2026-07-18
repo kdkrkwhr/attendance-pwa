@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '183';
+const APP_BUILD = '184';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -1230,11 +1230,23 @@ async function requestNotificationPermission() {
     return false;
   }
   const perm = await Notification.requestPermission();
+  updateNotifyStatusLine();
   if (perm === 'granted') {
     new Notification('출퇴근 체크', { body: '퇴근 알림이 설정되었습니다.' });
     return true;
   }
   return false;
+}
+
+/** 설정 탭 — 알림 권한 상태를 데이터 상태 카드에 표시 */
+function updateNotifyStatusLine() {
+  const el = document.getElementById('dataStatusNotify');
+  if (!el) return;
+  if (!('Notification' in window)) { el.textContent = '🔔 알림 — 브라우저 미지원'; return; }
+  const p = Notification.permission;
+  if (p === 'granted') el.textContent = '🔔 알림 권한 — ✅ 허용됨';
+  else if (p === 'denied') el.textContent = '🔔 알림 권한 — ⛔ 거부됨 (브라우저 설정에서 해제)';
+  else el.textContent = '🔔 알림 권한 — ⚠️ 미설정 (위 "알림 권한 허용" 클릭)';
 }
 
 /** 설정 탭 알림 테스트 버튼 */
@@ -1249,6 +1261,7 @@ async function handleTestNotification() {
   }
   if (Notification.permission === 'default') {
     const p = await Notification.requestPermission();
+    updateNotifyStatusLine();
     if (p !== 'granted') {
       alert('알림 권한이 필요합니다.');
       return;
@@ -2484,6 +2497,7 @@ function renderFeatureChangelog() {
         }
       }
     } catch { /* sw status silent fail */ }
+    updateNotifyStatusLine();
     }
 
   // ── 초기화 ──────────────────────────────────────────
