@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '193';
+const APP_BUILD = '194';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -443,17 +443,26 @@ function calcNetWorkSoFar(checkInISO, endISO = new Date().toISOString()) {
   return Math.min(WORK_HOURS * 60, Math.max(0, elapsed - LUNCH_MINUTES));
 }
 
+function resolveTheme(theme) {
+  if (theme === 'auto-time') {
+    const h = new Date().getHours();
+    return h >= 6 && h < 18 ? 'light' : 'dark';
+  }
+  return theme;
+}
+
 function applyTheme(theme) {
   const root = document.documentElement;
-  if (theme === 'light' || theme === 'dark') {
-    root.setAttribute('data-theme', theme);
+  const resolved = resolveTheme(theme);
+  if (resolved === 'light' || resolved === 'dark') {
+    root.setAttribute('data-theme', resolved);
   } else {
     root.removeAttribute('data-theme');
   }
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) {
-    let isDark = theme === 'dark';
-    if (theme === 'system' || !theme) {
+    let isDark = resolved === 'dark';
+    if (resolved === 'system' || !resolved) {
       isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     }
     meta.content = isDark ? '#0f172a' : '#1a56db';
@@ -2843,6 +2852,11 @@ function renderFeatureChangelog() {
   });
 
   applyTheme(loadSettings().theme || 'system');
+
+  setInterval(() => {
+    const t = loadSettings().theme;
+    if (t === 'auto-time') applyTheme('auto-time');
+  }, 60000);
 
   renderFeatureChangelog();
     renderDataStatus();
