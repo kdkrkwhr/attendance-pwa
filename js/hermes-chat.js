@@ -671,6 +671,35 @@ function handleChatClear() {
   setChatStatus('', '');
 }
 
+function handleChatExport() {
+  const messages = loadChatMessages();
+  if (!messages.length) {
+    setChatStatus('내보낼 기록이 없어요', 'info');
+    return;
+  }
+  const roleLabel = { user: '나', assistant: 'AI', system: '시스템' };
+  const blocks = messages.map((m) => {
+    const when = m.at ? new Date(m.at).toLocaleString('ko-KR') : '';
+    const who = roleLabel[m.role] || m.role || '';
+    return `[${who}]${when ? ' ' + when : ''}\n${m.content || ''}`;
+  });
+  const header = `AI 채팅 기록 (${new Date().toLocaleString('ko-KR')})\n${'='.repeat(40)}\n\n`;
+  const text = header + blocks.join('\n\n') + '\n';
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const stamp = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `AI채팅기록_${stamp}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  setChatStatus('기록을 파일로 저장했어요', 'ok');
+}
+
 function getLastUserMessage() {
   const messages = loadChatMessages();
   for (let i = messages.length - 1; i >= 0; i -= 1) {
@@ -873,6 +902,7 @@ function initHermesChat() {
   document.getElementById('btnChatCopyLast')?.addEventListener('click', handleChatCopyLast);
   document.getElementById('btnChatTts')?.addEventListener('click', handleChatTts);
   document.getElementById('btnChatClear')?.addEventListener('click', handleChatClear);
+  document.getElementById('btnChatExport')?.addEventListener('click', handleChatExport);
   document.getElementById('btnChatGoSettings')?.addEventListener('click', handleChatGoSettings);
   document.getElementById('btnHermesTest')?.addEventListener('click', testHermesConnection);
 
