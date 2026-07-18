@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=189">
-    <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=189">
+  <link rel="stylesheet" href="css/style.css?v=190">
+    <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=190">
   <script>
     (function () {
       try {
@@ -51,6 +51,9 @@
           <div class="week-strip" id="weekStrip" aria-label="이번 주 출근 현황">
             <div class="week-strip-dots" id="weekStripDots"></div>
             <span class="week-strip-text" id="weekStripText"></span>
+          </div>
+          <div class="daily-note" id="dailyNoteBox">
+            <input type="text" id="dailyNoteInput" class="text-input" placeholder="오늘의 한마디 (이 기기에만 저장)" maxlength="80" autocomplete="off" enterkeyhint="done">
           </div>
           <div class="week-heatmap" id="weekHeatmap" aria-label="이번 주 순근무 히트맵"></div>
           <p class="month-summary-text" id="monthSummaryText"></p>
@@ -867,6 +870,7 @@
         <section class="card card-compact" id="featureNotesCard">
           <h2 class="card-title">기능 안내</h2>
           <ul class="feature-notes" id="featureNotesList">
+          <li>오늘 탭 — 데일리 한 줄 메모 「오늘의 한마디」 (날짜별 저장·이 기기에만) (v190)</li>
           <li>오늘 탭 — 근무 요약 '공유' 버튼 (Web Share API·미지원 시 클립보드 복사) (v189)</li>
           <li>AI 채팅 탭 — 나만의 빠른 질문 추가·삭제 (localStorage 저장) (v188)</li>
           <li>오늘 탭 — 이번 달 출근 달력 미니뷰 (출근일 ✓·오늘 하이라이트) (v187)</li>
@@ -1016,17 +1020,17 @@
     </nav>
   </div>
 
-  <script src="config.js?v=189"></script>
-  <script src="vendor/leaflet/leaflet.js?v=189"></script>
-  <script src="js/util.js?v=189"></script>
-  <script src="js/fortune.js?v=189"></script>
-  <script src="js/saju.js?v=189"></script>
-  <script src="js/lunch-map.js?v=189"></script>
-  <script src="js/user-location.js?v=189"></script>
-  <script src="js/weather-brief.js?v=189"></script>
-  <script src="js/news-brief.js?v=189"></script>
-  <script src="js/hermes-chat.js?v=189"></script>
-  <script src="js/commute-time.js?v=189"></script>
-  <script src="js/app.js?v=189"></script>
+  <script src="config.js?v=190"></script>
+  <script src="vendor/leaflet/leaflet.js?v=190"></script>
+  <script src="js/util.js?v=190"></script>
+  <script src="js/fortune.js?v=190"></script>
+  <script src="js/saju.js?v=190"></script>
+  <script src="js/lunch-map.js?v=190"></script>
+  <script src="js/user-location.js?v=190"></script>
+  <script src="js/weather-brief.js?v=190"></script>
+  <script src="js/news-brief.js?v=190"></script>
+  <script src="js/hermes-chat.js?v=190"></script>
+  <script src="js/commute-time.js?v=190"></script>
+  <script src="js/app.js?v=190"></script>
 </body>
 </html>

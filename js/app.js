@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '189';
+const APP_BUILD = '190';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -1759,6 +1759,31 @@ function renderMonthCalendar() {
   legend.textContent = `✓ ${workDays}일 출근 · 평일 ${elapsed}일 경과`;
 }
 
+const DAILY_NOTE_KEY = (day) => `attendance-daily-note-${day || todayKey()}`;
+
+function loadDailyNote() {
+  try {
+    return localStorage.getItem(DAILY_NOTE_KEY()) || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+function saveDailyNote(value) {
+  try {
+    const v = (value || '').trim();
+    const key = DAILY_NOTE_KEY();
+    if (v) localStorage.setItem(key, v);
+    else localStorage.removeItem(key);
+  } catch (e) { /* ignore */ }
+}
+
+function renderDailyNote() {
+  const input = document.getElementById('dailyNoteInput');
+  if (!input || document.activeElement === input) return;
+  input.value = loadDailyNote();
+}
+
 function renderToday() {
   const record = getTodayRecord();
   const now = new Date();
@@ -1788,6 +1813,7 @@ function renderToday() {
   renderYesterdaySummary();
   renderCheckInComparison();
   renderLunchSummary();
+  renderDailyNote();
 
   todayCard?.classList.toggle('card-field-work', fieldWork);
   fieldBadge?.classList.toggle('hidden', !fieldWork);
@@ -2636,6 +2662,10 @@ function renderFeatureChangelog() {
       }
     });
   }
+
+  document.getElementById('dailyNoteInput')?.addEventListener('input', (e) => {
+    saveDailyNote(e.target.value);
+  });
 
   document.getElementById('btnResetToday').addEventListener('click', handleResetToday);
   document.getElementById('btnResetAllData')?.addEventListener('click', handleResetAllData);
