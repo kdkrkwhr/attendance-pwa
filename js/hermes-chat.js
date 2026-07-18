@@ -271,6 +271,32 @@ function renderHermesChatFrom(messages) {
 
   const resendBtn = document.getElementById('btnChatResendLast');
   if (resendBtn) resendBtn.disabled = !getLastUserMessage() || chatReplyInFlight;
+  applyChatSearch();
+}
+
+function applyChatSearch() {
+  const input = document.getElementById('chatSearch');
+  const listEl = document.getElementById('chatMessages');
+  const countEl = document.getElementById('chatSearchCount');
+  if (!input || !listEl) return;
+  const q = input.value.trim().toLowerCase();
+  const bubbles = listEl.querySelectorAll('.chat-bubble');
+  if (!q) {
+    bubbles.forEach((b) => b.classList.remove('chat-bubble-filtered'));
+    if (countEl) { countEl.classList.add('hidden'); countEl.textContent = ''; }
+    return;
+  }
+  let shown = 0;
+  bubbles.forEach((b) => {
+    const txt = (b.querySelector('.chat-bubble-text')?.textContent || '').toLowerCase();
+    const match = txt.includes(q);
+    b.classList.toggle('chat-bubble-filtered', !match);
+    if (match) shown += 1;
+  });
+  if (countEl) {
+    countEl.textContent = bubbles.length ? `${shown} / ${bubbles.length}` : '';
+    countEl.classList.toggle('hidden', bubbles.length === 0);
+  }
 }
 
 function setChatStatus(text, kind) {
@@ -982,6 +1008,7 @@ function initHermesChat() {
   document.getElementById('btnChatExport')?.addEventListener('click', handleChatExport);
   document.getElementById('btnChatGoSettings')?.addEventListener('click', handleChatGoSettings);
   document.getElementById('btnHermesTest')?.addEventListener('click', testHermesConnection);
+  document.getElementById('chatSearch')?.addEventListener('input', applyChatSearch);
 
   refreshHermesChatFromSheet(true).finally(() => resumePendingHermesRun());
 
