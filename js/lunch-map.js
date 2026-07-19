@@ -854,6 +854,14 @@ function getFilteredLunchPlaces() {
       if (rb !== ra) return rb - ra;
       return a.name.localeCompare(b.name, 'ko');
     };
+  } else if (lunchListSort === 'price') {
+    const floor = (v) => { const m = String(v || '').match(/(\d+)/); return m ? Number(m[1]) : Infinity; };
+    secondary = (a, b) => {
+      const pa = floor(a.avg_price);
+      const pb = floor(b.avg_price);
+      if (pa !== pb) return pa - pb;
+      return a.name.localeCompare(b.name, 'ko');
+    };
   } else {
     secondary = (a, b) => {
       const da = a.distance_m ?? Infinity;
