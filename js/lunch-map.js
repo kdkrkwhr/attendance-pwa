@@ -177,6 +177,53 @@ function toggleLunchFavorite(placeId) {
   if (favs.has(placeId)) favs.delete(placeId);
   else favs.add(placeId);
   saveLunchFavorites(favs);
+  renderLunchFavBar();
+}
+
+async function renderLunchFavBar() {
+  const bar = document.getElementById('lunchFavBar');
+  if (!bar) return;
+  const favs = loadLunchFavorites();
+  if (!favs.size) {
+    bar.classList.add('hidden');
+    bar.innerHTML = '';
+    return;
+  }
+  let data = lunchMapData;
+  if (!data) {
+    try {
+      data = await loadLunchMapData();
+    } catch {
+      bar.classList.add('hidden');
+      return;
+    }
+  }
+  const items = [];
+  favs.forEach((id) => {
+    const place = data?.places?.find((p) => p.id === id);
+    if (place) items.push({ id, name: place.name });
+  });
+  if (!items.length) {
+    bar.classList.add('hidden');
+    bar.innerHTML = '';
+    return;
+  }
+  bar.innerHTML = items
+    .map((it) => `<button type="button" class="lunch-fav-chip" data-fav-id="${escapeHtml(it.id)}">★ ${escapeHtml(it.name)}</button>`)
+    .join('');
+  bar.classList.remove('hidden');
+  bar.querySelectorAll('.lunch-fav-chip').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.favId;
+      if (typeof focusLunchPlace === 'function') focusLunchPlace(id);
+      const filter = document.getElementById('lunchNameFilter');
+      if (filter) {
+        filter.value = '';
+        filter.dispatchEvent(new Event('input', { bubbles: true }));
+        filter.focus();
+      }
+    });
+  });
 }
 
 function getLunchMapConfig() {

@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=200">
-    <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=200">
+  <link rel="stylesheet" href="css/style.css?v=201">
+    <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=201">
   <script>
     (function () {
       try {
@@ -635,6 +635,7 @@
                 <option value="rating">평점순</option>
               </select>
             </div>
+            <div class="lunch-fav-bar hidden" id="lunchFavBar" aria-label="찜 식당 빠른 접근"></div>
             <p class="lunch-map-status hidden" id="lunchMapStatus"></p>
             <button type="button" class="btn btn-ghost btn-sm lunch-btn-retry hidden" id="btnLunchMapRetry">다시 불러오기</button>
           </div>
@@ -898,6 +899,7 @@
         <section class="card card-compact" id="featureNotesCard">
           <h2 class="card-title">기능 안내</h2>
           <ul class="feature-notes" id="featureNotesList">
+          <li>맛집 탭 — 찜(★) 식당 빠른 접근 바: 탭하면 지도에서 해당 식당으로 이동 (v201)</li>
           <li>오늘 탭 — 이번 주 초과근무(야근) 합계 한 줄 표시 (v200)</li>
           <li>맛집 탭 — 목록 정렬 기준 선택(거리순·이름순·평점순), 찜은 항상 상단 고정 (v199)</li>
           <li>AI 채팅 탭 — 입력창 ↑/↓ 화살표로 이전에 보낸 질문 불러오기 (v198)</li>
@@ -1058,18 +1060,18 @@
     </nav>
   </div>
 
-  <script src="config.js?v=200"></script>
-  <script src="vendor/leaflet/leaflet.js?v=200"></script>
-  <script src="js/util.js?v=200"></script>
-  <script src="js/fortune.js?v=200"></script>
-  <script src="js/saju.js?v=200"></script>
-  <script src="js/lunch-map.js?v=200"></script>
-  <script src="js/user-location.js?v=200"></script>
-  <script src="js/weather-brief.js?v=200"></script>
-  <script src="js/news-brief.js?v=200"></script>
-  <script src="js/hermes-chat.js?v=200"></script>
-  <script src="js/commute-time.js?v=200"></script>
-  <script src="js/app.js?v=200"></script>
+  <script src="config.js?v=201"></script>
+  <script src="vendor/leaflet/leaflet.js?v=201"></script>
+  <script src="js/util.js?v=201"></script>
+  <script src="js/fortune.js?v=201"></script>
+  <script src="js/saju.js?v=201"></script>
+  <script src="js/lunch-map.js?v=201"></script>
+  <script src="js/user-location.js?v=201"></script>
+  <script src="js/weather-brief.js?v=201"></script>
+  <script src="js/news-brief.js?v=201"></script>
+  <script src="js/hermes-chat.js?v=201"></script>
+  <script src="js/commute-time.js?v=201"></script>
+  <script src="js/app.js?v=201"></script>
   <script>
     (function () {
       var sel = document.getElementById('fontScale');
