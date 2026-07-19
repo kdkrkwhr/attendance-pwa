@@ -21,6 +21,7 @@ let lunchMapInitialViewDone = false;
 let lunchWeatherMarker = null;
 let lunchWeatherData = null;
 let lunchListSort = 'distance';
+let lunchRadiusOverride = null;
 
 const LUNCH_USER_ZOOM = 17;
 const LUNCH_FAVORITES_KEY = 'attendance-lunch-favorites';
@@ -231,11 +232,20 @@ function getLunchMapConfig() {
 }
 
 function getLunchRadiusM(data) {
+  if (Number.isFinite(lunchRadiusOverride) && lunchRadiusOverride > 0) return lunchRadiusOverride;
   const metaR = Number(data?.meta?.radius_m);
   if (Number.isFinite(metaR) && metaR > 0) return metaR;
   const cfgR = Number(getLunchMapConfig().radiusM);
   if (Number.isFinite(cfgR) && cfgR > 0) return cfgR;
   return LUNCH_RADIUS_M;
+}
+
+/** 반경 오버라이드(사용자 선택)를 반영해 실제 표시할 식당 목록을 반환 */
+function getRadiusFilteredPlaces() {
+  if (!lunchMapData) return [];
+  const radius = getLunchRadiusM(lunchMapData);
+  const all = lunchMapData.allFoodPlaces || lunchMapData.places || [];
+  return all.filter((p) => (p.distance_m ?? Infinity) <= radius);
 }
 
 function haversineM(lat1, lon1, lat2, lon2) {
@@ -459,15 +469,15 @@ function normalizeRestaurantData(raw) {
     }
   }
 
-  const places = spreadMapDisplayCoords(
-    filterPlacesByOfficeRadius(
-      sourcePlaces.map((place, index) => normalizePlace(place, index, 'dmc')).filter(Boolean),
-      office,
-      getLunchRadiusM({ meta }),
-    ),
-  );
+  const normalized = sourcePlaces.map((place, index) => normalizePlace(place, index, 'dmc')).filter(Boolean);
+  const foodPlaces = normalized.filter(isFoodPlace).map((place) => {
+    const dist = office ? haversineM(office.lat, office.lng, place.lat, place.lng) : Infinity;
+    return { ...place, distance_m: Math.round(dist * 10) / 10 };
+  });
+  const spread = spreadMapDisplayCoords(foodPlaces);
+  const places = filterPlacesByOfficeRadius(spread, office, getLunchRadiusM({ meta }));
 
-  return { office, places, meta };
+  return { office, places, allFoodPlaces: spread, meta };
 }
 
 async function loadLunchMapData() {
@@ -509,7 +519,8 @@ function updateLunchMapDesc(data) {
   if (!descEl) return;
   const anchor = data.meta?.anchor || data.office?.name || 'DMC';
   const radius = getLunchRadiusM(data);
-  descEl.textContent = `${anchor} · ${data.places.length}곳 · ${radius}m`;
+  const shown = getRadiusFilteredPlaces().length;
+  descEl.textContent = `${anchor} · ${shown}곳 · ${radius}m`;
 }
 
 function getMapCenter(data) {
@@ -822,7 +833,7 @@ function getFilteredLunchPlaces() {
   const searchEl = document.getElementById('lunchNameFilter');
   const query = (searchEl?.value || '').trim().toLowerCase();
   const favs = loadLunchFavorites();
-  let places = lunchMapData.places;
+  let places = lunchMapData.allFoodPlaces || lunchMapData.places;
   if (selected === 'favorites') {
     places = places.filter((p) => favs.has(p.id));
   } else if (selected !== 'all') {
@@ -831,6 +842,8 @@ function getFilteredLunchPlaces() {
   if (query) {
     places = places.filter((p) => p.name.toLowerCase().includes(query));
   }
+  const radius = getLunchRadiusM(lunchMapData);
+  places = places.filter((p) => (p.distance_m ?? Infinity) <= radius);
   let secondary;
   if (lunchListSort === 'name') {
     secondary = (a, b) => a.name.localeCompare(b.name, 'ko');
@@ -863,6 +876,17 @@ function handleLunchSortFilter() {
   if (lunchMapData) renderLunchList(lunchMapData);
 }
 
+function handleLunchRadiusFilter() {
+  const el = document.getElementById('lunchRadiusFilter');
+  const val = el?.value;
+  lunchRadiusOverride = val && val !== 'all' ? Number(val) : 5000;
+  if (lunchMapData) {
+    renderLunchList(lunchMapData);
+    renderLunchMapMarkers(lunchMapData);
+    updateLunchMapDesc(lunchMapData);
+  }
+}
+
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -888,7 +912,7 @@ function tryRestoreLunchRouletteToday() {
     return false;
   }
   if (saved?.date !== todayKey() || !saved.placeId) return false;
-  const place = lunchMapData.places.find((p) => p.id === saved.placeId);
+  const place = (lunchMapData.allFoodPlaces || lunchMapData.places).find((p) => p.id === saved.placeId);
   if (!place) return false;
   setRouletteDisplay(place.name, false);
   showRouletteResult(place, false);
@@ -960,7 +984,7 @@ async function spinLunchRoulette() {
 
 function focusLunchPlace(placeId) {
   if (!lunchMapInstance || !lunchMapData) return;
-  const place = lunchMapData.places.find((p) => p.id === placeId);
+  const place = (lunchMapData.allFoodPlaces || lunchMapData.places || []).find((p) => p.id === placeId);
   if (!place) return;
   const lat = place.displayLat ?? place.lat;
   const lng = place.displayLng ?? place.lng;
@@ -996,15 +1020,18 @@ function renderLunchList(data) {
   const listEl = document.getElementById('lunchList');
   if (!listEl) return;
 
-  populateCategoryFilter(data.places);
+  populateCategoryFilter(data.allFoodPlaces || data.places);
   const filtered = getFilteredLunchPlaces();
 
   const favs = loadLunchFavorites();
   const headingEl = document.getElementById('lunchListHeading');
   if (headingEl) {
-    const total = data.places?.length || 0;
+    const total = (data.allFoodPlaces?.length) || (data.places?.length) || 0;
+    const shown = filtered.length;
     const favCount = favs.size;
-    headingEl.textContent = favCount > 0 ? `주변 맛집 ${total}곳 · 찜 ${favCount}` : `주변 맛집 ${total}곳`;
+    headingEl.textContent = favCount > 0
+      ? `주변 맛집 ${shown}/${total}곳 · 찜 ${favCount}`
+      : `주변 맛집 ${shown}/${total}곳`;
   }
   listEl.innerHTML = filtered.map((place) => {
     const rating = formatRatingLabel(place.rating, place.ratingSource);
@@ -1050,7 +1077,7 @@ function renderLunchList(data) {
 }
 
 function shareLunchPlace(placeId) {
-  const place = (lunchMapData?.places || []).find((p) => p.id === placeId);
+  const place = (lunchMapData?.allFoodPlaces || lunchMapData?.places || []).find((p) => p.id === placeId);
   if (!place) return;
   const kakaoUrl = `https://map.kakao.com/link/to/${encodeURIComponent(place.name)},${place.lat},${place.lng}`;
   const text = `${place.name} (${place.category || '맛집'}) · ${kakaoUrl}`;
@@ -1106,7 +1133,7 @@ function renderLunchMapMarkers(data) {
     lunchMapMarkers.push(officeMarker);
   }
 
-  data.places.forEach((place) => {
+  getRadiusFilteredPlaces().forEach((place) => {
     const lat = place.displayLat ?? place.lat;
     const lng = place.displayLng ?? place.lng;
     const marker = L.marker([lat, lng], {
@@ -1286,6 +1313,7 @@ function bindLunchMapControls() {
   document.getElementById('lunchCategoryFilter')?.addEventListener('change', handleLunchCategoryFilter);
   document.getElementById('lunchNameFilter')?.addEventListener('input', handleLunchCategoryFilter);
   document.getElementById('lunchSortFilter')?.addEventListener('change', handleLunchSortFilter);
+  document.getElementById('lunchRadiusFilter')?.addEventListener('change', handleLunchRadiusFilter);
   document.getElementById('btnLunchRoulette')?.addEventListener('click', spinLunchRoulette);
   document.getElementById('btnLunchRouletteMap')?.addEventListener('click', () => {
     if (lunchRouletteWinnerId) focusLunchPlace(lunchRouletteWinnerId);
