@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '204';
+const APP_BUILD = '205';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -2084,6 +2084,27 @@ function renderBackupHint() {
   }
 }
 
+function renderTitleClock() {
+  const record = getTodayRecord();
+  if (!record?.checkIn || record?.checkOut) {
+    if (document.title !== '출퇴근 체크') document.title = '출퇴근 체크';
+    return;
+  }
+  const now = new Date();
+  const leaveTime = calcLeaveTime(record.checkIn);
+  const diffMs = leaveTime - now;
+  let label;
+  if (diffMs > 0) {
+    const min = Math.ceil(diffMs / 60000);
+    const h = Math.floor(min / 60);
+    label = h > 0 ? `퇴근까지 ${formatDuration(min)}` : `퇴근까지 ${min}분`;
+  } else {
+    const ot = Math.ceil(-diffMs / 60000);
+    label = ot > 0 ? `초과근무 +${formatDuration(ot)}` : '퇴근 가능';
+  }
+  document.title = `${label} · 출퇴근 체크`;
+}
+
 function render() {
   renderToday();
   renderLeaveAlert(getTodayRecord());
@@ -2112,6 +2133,7 @@ function render() {
   if (typeof initNewsBrief === 'function') initNewsBrief();
   updateNetworkStatusUI();
   setAttendanceButtonsEnabled(canAttendNow());
+  renderTitleClock();
 }
 
 // ── 액션 ──────────────────────────────────────────
