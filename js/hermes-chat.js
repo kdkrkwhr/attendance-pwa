@@ -260,6 +260,7 @@ function renderHermesChatFrom(messages) {
       const time = formatChatTime(m.at);
       return `<div class="chat-bubble chat-bubble-${role}" role="article">
         <p class="chat-bubble-text">${body}</p>
+        <button type="button" class="chat-copy-btn" data-copy="${encodeURIComponent(m.content)}" aria-label="메시지 복사">복사</button>
         ${time ? `<span class="chat-bubble-time">${time}</span>` : ''}
       </div>`;
     })
@@ -784,6 +785,36 @@ async function handleChatCopyLast() {
   }
 }
 
+function safeDecodeChatCopy(s) {
+  try { return decodeURIComponent(s || ''); } catch { return ''; }
+}
+
+async function handleChatCopyMessage(encoded) {
+  const text = safeDecodeChatCopy(encoded);
+  if (!text) {
+    setChatStatus('복사할 내용이 없어요', 'info');
+    return;
+  }
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+    }
+    setChatStatus('메시지를 복사했어요', 'ok');
+  } catch {
+    setChatStatus('복사에 실패했어요', 'error');
+  }
+}
+
 function handleChatTts() {
   const text = getLastAssistantReply();
   if (!text) {
@@ -1003,6 +1034,10 @@ function initHermesChat() {
   document.getElementById('chatForm')?.addEventListener('submit', handleChatSubmit);
   document.getElementById('btnChatResendLast')?.addEventListener('click', handleChatResendLast);
   document.getElementById('btnChatCopyLast')?.addEventListener('click', handleChatCopyLast);
+  document.getElementById('chatMessages')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('.chat-copy-btn');
+    if (btn) handleChatCopyMessage(btn.dataset.copy);
+  });
   document.getElementById('btnChatTts')?.addEventListener('click', handleChatTts);
   document.getElementById('btnChatClear')?.addEventListener('click', handleChatClear);
   document.getElementById('btnChatExport')?.addEventListener('click', handleChatExport);
