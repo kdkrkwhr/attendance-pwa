@@ -399,8 +399,67 @@ function detectMarketMood(text) {
   return '➡️ 보합';
 }
 
+/** 분 → "N시간 M분" 포맷 */
+function fmtMarketMins(min) {
+  min = Math.max(0, Math.round(min));
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return h > 0 ? `${h}시간 ${m}분` : `${m}분`;
+}
+
+/** News 탭 — 국내/미국 장 운영 상태·마감까지 남은 시간 (KST 기준, 외부 의존성 無) */
+function renderNewsMarketClock() {
+  const el = document.getElementById('newsMarketClock');
+  if (!el) return;
+  if (newsCategory !== 'stock') { el.classList.add('hidden'); return; }
+
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const kst = new Date(utc + 9 * 3600000); // KST
+  const dow = kst.getDay();
+  const totalMin = kst.getHours() * 60 + kst.getMinutes();
+  const weekend = dow === 0 || dow === 6;
+  const flag = newsMarket === 'us' ? '🇺🇸' : '🇰🇷';
+
+  let text = '';
+  let open = false;
+
+  if (newsMarket === 'us') {
+    const openMin = 22 * 60 + 30; // 22:30 KST (NYSE 09:30 EDT)
+    if (!weekend && (totalMin >= openMin || totalMin < 5 * 60)) {
+      open = true;
+      const endReal = totalMin >= openMin ? 29 * 60 : 5 * 60; // 05:00 KST 마감
+      text = `${flag} 장중 · 마감까지 ${fmtMarketMins(endReal - totalMin)}`;
+    } else if (weekend) {
+      text = `${flag} 주말 휴장`;
+    } else if (totalMin < openMin) {
+      text = `${flag} 장 시작까지 ${fmtMarketMins(openMin - totalMin)}`;
+    } else {
+      text = `${flag} 장 마감 🌙`;
+    }
+  } else {
+    const openMin = 9 * 60;       // 09:00 KST
+    const closeMin = 15 * 60 + 30; // 15:30 KST
+    if (!weekend && totalMin >= openMin && totalMin <= closeMin) {
+      open = true;
+      text = `${flag} 장중 · 마감까지 ${fmtMarketMins(closeMin - totalMin)}`;
+    } else if (weekend) {
+      text = `${flag} 주말 휴장`;
+    } else if (totalMin < openMin) {
+      text = `${flag} 장 시작까지 ${fmtMarketMins(openMin - totalMin)}`;
+    } else {
+      text = `${flag} 장 마감 🌙`;
+    }
+  }
+
+  el.textContent = text;
+  el.className = 'news-market-clock' + (open ? ' is-open' : '');
+  el.classList.remove('hidden');
+}
+
 function renderNewsBrief(data) {
   renderNewsMarketMood(data);
+  renderNewsMarketClock();
   const card = document.getElementById('newsBriefCard');
   const listCard = document.getElementById('newsListCard');
   const empty = document.getElementById('newsEmpty');
@@ -861,6 +920,7 @@ async function initNewsBrief() {
   bindNewsReadTracking();
   bindNewsCopySummary();
   bindNewsTTS();
+  setInterval(renderNewsMarketClock, 60000);
   syncNewsUnreadToggle();
   syncNewsPinOnlyToggle();
   syncNewsCategoryToggle();

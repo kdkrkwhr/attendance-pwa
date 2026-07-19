@@ -4934,6 +4934,21 @@ body {
   line-height: 1.4;
 }
 
+.news-market-clock {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin: 0.3rem 0 0;
+  color: var(--text-muted, #64748b);
+}
+
+.news-market-clock.is-open {
+  color: #16a34a;
+}
+
+[data-theme="dark"] .news-market-clock.is-open {
+  color: #4ade80;
+}
+
 .news-market-toggle {
   display: inline-flex;
   gap: 0.35rem;

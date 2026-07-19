@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=202">
-    <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=202">
+  <link rel="stylesheet" href="css/style.css?v=203">
+    <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=203">
   <script>
     (function () {
       try {
@@ -198,6 +198,7 @@
           <h2 class="news-hero-title">News</h2>
           <p class="news-hero-date" id="newsTodayDate"></p>
           <p class="news-market-mood hidden" id="newsMarketMood"></p>
+          <p class="news-market-clock hidden" id="newsMarketClock" aria-live="polite"></p>
           <div class="news-market-toggle" role="tablist" aria-label="뉴스 종류 선택">
             <button type="button" class="news-market-btn active" data-category="stock" role="tab" aria-selected="true">📈 주식</button>
             <button type="button" class="news-market-btn" data-category="all" role="tab" aria-selected="false">📰 전체</button>
@@ -903,7 +904,7 @@
         <section class="card card-compact" id="featureNotesCard">
           <h2 class="card-title">기능 안내</h2>
           <ul class="feature-notes" id="featureNotesList">
-          <li>설정 탭 — 날씨·뉴스 수동 새로고침 버튼 (서버 최신 데이터 즉시 반영) (v202)</li>
+          <li>News 탭 — 국내·미국 장 운영 상태·마감까지 남은 시간 실시간 표시 (v203)</li>
           <li>맛집 탭 — 찜(★) 식당 빠른 접근 바: 탭하면 지도에서 해당 식당으로 이동 (v201)</li>
           <li>오늘 탭 — 이번 주 초과근무(야근) 합계 한 줄 표시 (v200)</li>
           <li>맛집 탭 — 목록 정렬 기준 선택(거리순·이름순·평점순), 찜은 항상 상단 고정 (v199)</li>
@@ -1065,18 +1066,18 @@
     </nav>
   </div>
 
-  <script src="config.js?v=202"></script>
-  <script src="vendor/leaflet/leaflet.js?v=202"></script>
-  <script src="js/util.js?v=202"></script>
-  <script src="js/fortune.js?v=202"></script>
-  <script src="js/saju.js?v=202"></script>
-  <script src="js/lunch-map.js?v=202"></script>
-  <script src="js/user-location.js?v=202"></script>
-  <script src="js/weather-brief.js?v=202"></script>
-  <script src="js/news-brief.js?v=202"></script>
-  <script src="js/hermes-chat.js?v=202"></script>
-  <script src="js/commute-time.js?v=202"></script>
-  <script src="js/app.js?v=202"></script>
+  <script src="config.js?v=203"></script>
+  <script src="vendor/leaflet/leaflet.js?v=203"></script>
+  <script src="js/util.js?v=203"></script>
+  <script src="js/fortune.js?v=203"></script>
+  <script src="js/saju.js?v=203"></script>
+  <script src="js/lunch-map.js?v=203"></script>
+  <script src="js/user-location.js?v=203"></script>
+  <script src="js/weather-brief.js?v=203"></script>
+  <script src="js/news-brief.js?v=203"></script>
+  <script src="js/hermes-chat.js?v=203"></script>
+  <script src="js/commute-time.js?v=203"></script>
+  <script src="js/app.js?v=203"></script>
   <script>
     (function () {
       var sel = document.getElementById('fontScale');
