@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=198">
-    <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=198">
+  <link rel="stylesheet" href="css/style.css?v=199">
+    <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=199">
   <script>
     (function () {
       try {
@@ -628,6 +628,11 @@
               <select id="lunchCategoryFilter" class="lunch-map-filter" aria-label="카테고리 필터">
                 <option value="all">전체</option>
               </select>
+              <select id="lunchSortFilter" class="lunch-map-filter" aria-label="정렬 기준">
+                <option value="distance">거리순</option>
+                <option value="name">이름순</option>
+                <option value="rating">평점순</option>
+              </select>
             </div>
             <p class="lunch-map-status hidden" id="lunchMapStatus"></p>
             <button type="button" class="btn btn-ghost btn-sm lunch-btn-retry hidden" id="btnLunchMapRetry">다시 불러오기</button>
@@ -892,6 +897,7 @@
         <section class="card card-compact" id="featureNotesCard">
           <h2 class="card-title">기능 안내</h2>
           <ul class="feature-notes" id="featureNotesList">
+          <li>맛집 탭 — 목록 정렬 기준 선택(거리순·이름순·평점순), 찜은 항상 상단 고정 (v199)</li>
           <li>AI 채팅 탭 — 입력창 ↑/↓ 화살표로 이전에 보낸 질문 불러오기 (v198)</li>
           <li>AI 채팅 탭 — 개별 메시지 「복사」 버튼 (원하는 답변·질문 따로 복사) (v197)</li>
           <li>설정 탭 — 화면 글자 크기 조절(작게·보통·크게·아주 크게), 앱 전체 텍스트 확대 (v196)</li>
@@ -1050,18 +1056,18 @@
     </nav>
   </div>
 
-  <script src="config.js?v=198"></script>
-  <script src="vendor/leaflet/leaflet.js?v=198"></script>
-  <script src="js/util.js?v=198"></script>
-  <script src="js/fortune.js?v=198"></script>
-  <script src="js/saju.js?v=198"></script>
-  <script src="js/lunch-map.js?v=198"></script>
-  <script src="js/user-location.js?v=198"></script>
-  <script src="js/weather-brief.js?v=198"></script>
-  <script src="js/news-brief.js?v=198"></script>
-  <script src="js/hermes-chat.js?v=198"></script>
-  <script src="js/commute-time.js?v=198"></script>
-  <script src="js/app.js?v=198"></script>
+  <script src="config.js?v=199"></script>
+  <script src="vendor/leaflet/leaflet.js?v=199"></script>
+  <script src="js/util.js?v=199"></script>
+  <script src="js/fortune.js?v=199"></script>
+  <script src="js/saju.js?v=199"></script>
+  <script src="js/lunch-map.js?v=199"></script>
+  <script src="js/user-location.js?v=199"></script>
+  <script src="js/weather-brief.js?v=199"></script>
+  <script src="js/news-brief.js?v=199"></script>
+  <script src="js/hermes-chat.js?v=199"></script>
+  <script src="js/commute-time.js?v=199"></script>
+  <script src="js/app.js?v=199"></script>
   <script>
     (function () {
       var sel = document.getElementById('fontScale');

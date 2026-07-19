@@ -20,6 +20,7 @@ let lunchUserCircle = null;
 let lunchMapInitialViewDone = false;
 let lunchWeatherMarker = null;
 let lunchWeatherData = null;
+let lunchListSort = 'distance';
 
 const LUNCH_USER_ZOOM = 17;
 const LUNCH_FAVORITES_KEY = 'attendance-lunch-favorites';
@@ -783,15 +784,36 @@ function getFilteredLunchPlaces() {
   if (query) {
     places = places.filter((p) => p.name.toLowerCase().includes(query));
   }
+  let secondary;
+  if (lunchListSort === 'name') {
+    secondary = (a, b) => a.name.localeCompare(b.name, 'ko');
+  } else if (lunchListSort === 'rating') {
+    secondary = (a, b) => {
+      const ra = a.rating == null ? -Infinity : a.rating;
+      const rb = b.rating == null ? -Infinity : b.rating;
+      if (rb !== ra) return rb - ra;
+      return a.name.localeCompare(b.name, 'ko');
+    };
+  } else {
+    secondary = (a, b) => {
+      const da = a.distance_m ?? Infinity;
+      const db = b.distance_m ?? Infinity;
+      if (da !== db) return da - db;
+      return a.name.localeCompare(b.name, 'ko');
+    };
+  }
   return [...places].sort((a, b) => {
     const af = favs.has(a.id) ? 0 : 1;
     const bf = favs.has(b.id) ? 0 : 1;
     if (af !== bf) return af - bf;
-    const da = a.distance_m ?? Infinity;
-    const db = b.distance_m ?? Infinity;
-    if (da !== db) return da - db;
-    return a.name.localeCompare(b.name, 'ko');
+    return secondary(a, b);
   });
+}
+
+function handleLunchSortFilter() {
+  const el = document.getElementById('lunchSortFilter');
+  lunchListSort = el?.value || 'distance';
+  if (lunchMapData) renderLunchList(lunchMapData);
 }
 
 function sleep(ms) {
@@ -1216,6 +1238,7 @@ function bindLunchSheetControls() {
 function bindLunchMapControls() {
   document.getElementById('lunchCategoryFilter')?.addEventListener('change', handleLunchCategoryFilter);
   document.getElementById('lunchNameFilter')?.addEventListener('input', handleLunchCategoryFilter);
+  document.getElementById('lunchSortFilter')?.addEventListener('change', handleLunchSortFilter);
   document.getElementById('btnLunchRoulette')?.addEventListener('click', spinLunchRoulette);
   document.getElementById('btnLunchRouletteMap')?.addEventListener('click', () => {
     if (lunchRouletteWinnerId) focusLunchPlace(lunchRouletteWinnerId);
