@@ -2100,7 +2100,8 @@ function renderTitleClock() {
     label = h > 0 ? `퇴근까지 ${formatDuration(min)}` : `퇴근까지 ${min}분`;
   } else {
     const ot = Math.ceil(-diffMs / 60000);
-    label = ot > 0 ? `초과근무 +${formatDuration(ot)}` : '퇴근 가능';
+    const h = Math.floor(ot / 60);
+    label = ot > 0 ? (h > 0 ? `초과근무 +${formatDuration(ot)}` : `초과근무 +${ot}분`) : '퇴근 가능';
   }
   document.title = `${label} · 출퇴근 체크`;
 }
