@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '199';
+const APP_BUILD = '200';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -1758,6 +1758,39 @@ function renderMonthSummary() {
     el.textContent = text;
   }
 
+// 이번 주 초과근무(야근) 합계 — v200
+function renderWeekOvertime() {
+  const el = document.getElementById('weekOvertimeText');
+  if (!el) return;
+  const now = new Date();
+  const dow = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + (dow === 0 ? -6 : 1 - dow));
+  monday.setHours(0, 0, 0, 0);
+  const records = loadRecords();
+  const standard = WORK_HOURS * 60;
+  let otMin = 0;
+  let days = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const rec = records[todayKey(d)];
+    if (rec?.checkIn && rec?.checkOut) {
+      const net = calcNetWorkMinutes(rec.checkIn, rec.checkOut);
+      if (net > standard) otMin += net - standard;
+      days += 1;
+    }
+  }
+  if (days === 0) {
+    el.textContent = '이번 주 출근 기록이 아직 없어요';
+  } else if (otMin <= 0) {
+    el.textContent = '이번 주 야근 0 — 굿';
+  } else {
+    el.textContent = `이번 주 야근(초과근무) ${formatDuration(otMin)}`;
+  }
+  el.classList.remove('hidden');
+}
+
 // 이번 달 출근 달력 (미니) — v187
 function renderMonthCalendar() {
   const card = document.getElementById('monthCalCard');
@@ -1856,6 +1889,7 @@ function renderToday() {
   renderWeekStrip();
   renderWeekHeatmap();
   renderMonthSummary();
+  renderWeekOvertime();
   renderMonthCalendar();
   renderYesterdaySummary();
   renderCheckInComparison();
