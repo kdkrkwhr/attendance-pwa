@@ -11,7 +11,7 @@ const LUNCH_MINUTES = 60;
 const DAY_SPAN_MINUTES = WORK_HOURS * 60 + LUNCH_MINUTES;
 
 /** 배포 시 sw.js CACHE_NAME·index.html ?v= 와 함께 올려 주세요 */
-const APP_BUILD = '194';
+const APP_BUILD = '195';
 const APP_VERSION_KEY = 'attendance-app-version';
 const FEATURE_CHANGELOG_LIMIT = 5;
 const BACKUP_AT_KEY = 'attendance-last-backup-at';
@@ -2658,6 +2658,29 @@ function renderFeatureChangelog() {
 
   // ── 초기화 ──────────────────────────────────────────
 
+  // 헤더 빠른 테마 전환 버튼
+  function updateThemeQuickBtn() {
+    const btn = document.getElementById('btnThemeQuick');
+    if (!btn) return;
+    const theme = loadSettings().theme || 'system';
+    const map = { dark: ['🌑', '다크'], light: ['☀️', '라이트'], system: ['🌗', '시스템'] };
+    const [icon, label] = map[theme] || map.system;
+    btn.textContent = icon;
+    btn.title = `테마: ${label} (탭하여 전환)`;
+    btn.setAttribute('aria-label', `테마: ${label}`);
+  }
+
+  function cycleTheme() {
+    const order = ['light', 'dark', 'system'];
+    const cur = loadSettings().theme || 'system';
+    const next = order[(order.indexOf(cur) + 1) % order.length];
+    saveSettings({ ...loadSettings(), theme: next });
+    const themeEl = document.getElementById('themeMode');
+    if (themeEl) themeEl.value = next;
+    applyTheme(next);
+    updateThemeQuickBtn();
+  }
+
   function init() {
     window.APP_VERSION = APP_BUILD;
   consumeWifiDeepLink();
@@ -2680,6 +2703,8 @@ function renderFeatureChangelog() {
   });
 
   document.getElementById('btnInstall')?.addEventListener('click', handleInstall);
+  document.getElementById('btnThemeQuick')?.addEventListener('click', cycleTheme);
+  updateThemeQuickBtn();
   document.getElementById('btnCheckIn')?.addEventListener('click', handleCheckIn);
   document.getElementById('networkStatus')?.addEventListener('click', () => {
     refreshNetworkGuard().then(() => render());
