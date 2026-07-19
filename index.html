@@ -15,8 +15,8 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=201">
-    <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=201">
+  <link rel="stylesheet" href="css/style.css?v=202">
+    <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=202">
   <script>
     (function () {
       try {
@@ -894,11 +894,16 @@
           <p class="field-hint" id="dataStatusStorage"></p>
           <p class="field-hint" id="dataStatusSw"></p>
           <p class="field-hint" id="dataStatusNotify"></p>
+          <div class="setting-row data-refresh-row">
+            <button type="button" class="btn btn-ghost" id="btnRefreshData">날씨·뉴스 새로고침</button>
+            <span class="data-refresh-status hidden" id="dataRefreshStatus"></span>
+          </div>
           </section>
 
         <section class="card card-compact" id="featureNotesCard">
           <h2 class="card-title">기능 안내</h2>
           <ul class="feature-notes" id="featureNotesList">
+          <li>설정 탭 — 날씨·뉴스 수동 새로고침 버튼 (서버 최신 데이터 즉시 반영) (v202)</li>
           <li>맛집 탭 — 찜(★) 식당 빠른 접근 바: 탭하면 지도에서 해당 식당으로 이동 (v201)</li>
           <li>오늘 탭 — 이번 주 초과근무(야근) 합계 한 줄 표시 (v200)</li>
           <li>맛집 탭 — 목록 정렬 기준 선택(거리순·이름순·평점순), 찜은 항상 상단 고정 (v199)</li>
@@ -1060,18 +1065,18 @@
     </nav>
   </div>
 
-  <script src="config.js?v=201"></script>
-  <script src="vendor/leaflet/leaflet.js?v=201"></script>
-  <script src="js/util.js?v=201"></script>
-  <script src="js/fortune.js?v=201"></script>
-  <script src="js/saju.js?v=201"></script>
-  <script src="js/lunch-map.js?v=201"></script>
-  <script src="js/user-location.js?v=201"></script>
-  <script src="js/weather-brief.js?v=201"></script>
-  <script src="js/news-brief.js?v=201"></script>
-  <script src="js/hermes-chat.js?v=201"></script>
-  <script src="js/commute-time.js?v=201"></script>
-  <script src="js/app.js?v=201"></script>
+  <script src="config.js?v=202"></script>
+  <script src="vendor/leaflet/leaflet.js?v=202"></script>
+  <script src="js/util.js?v=202"></script>
+  <script src="js/fortune.js?v=202"></script>
+  <script src="js/saju.js?v=202"></script>
+  <script src="js/lunch-map.js?v=202"></script>
+  <script src="js/user-location.js?v=202"></script>
+  <script src="js/weather-brief.js?v=202"></script>
+  <script src="js/news-brief.js?v=202"></script>
+  <script src="js/hermes-chat.js?v=202"></script>
+  <script src="js/commute-time.js?v=202"></script>
+  <script src="js/app.js?v=202"></script>
   <script>
     (function () {
       var sel = document.getElementById('fontScale');
@@ -1084,6 +1089,37 @@
         var fs = parseFloat(sel.value) || 1;
         document.documentElement.style.fontSize = (16 * fs) + 'px';
         try { localStorage.setItem('attendance-fontscale', String(fs)); } catch (e) {}
+      });
+    })();
+  </script>
+  <script>
+    (function () {
+      var btn = document.getElementById('btnRefreshData');
+      if (!btn) return;
+      btn.addEventListener('click', async function () {
+        var st = document.getElementById('dataRefreshStatus');
+        var orig = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = '갱신 중…';
+        if (st) { st.textContent = '서버에서 받는 중…'; st.classList.remove('hidden'); }
+        try {
+          // 기존 전역 함수 재사용 (이벤트 중복 바인딩 없음)
+          if (typeof loadTodayWeather === 'function') {
+            var w = await loadTodayWeather();
+            if (w && typeof renderWeatherBrief === 'function') renderWeatherBrief(w);
+          }
+          if (typeof invalidateNewsCache === 'function') invalidateNewsCache();
+          if (typeof loadTodayNews === 'function') {
+            var n = await loadTodayNews(true);
+            if (n && typeof renderNewsBrief === 'function') renderNewsBrief(n);
+          }
+          if (st) { st.textContent = '완료 ✓'; setTimeout(function () { st.classList.add('hidden'); }, 2500); }
+        } catch (e) {
+          if (st) st.textContent = '실패: ' + (e && e.message ? e.message : e);
+        } finally {
+          btn.disabled = false;
+          btn.textContent = orig;
+        }
       });
     })();
   </script>
