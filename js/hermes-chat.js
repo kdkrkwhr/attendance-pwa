@@ -1049,17 +1049,55 @@ function initHermesChat() {
 
   const input = document.getElementById('chatInput');
     if (input) {
+      let chatHistoryIdx = -1;
+      let chatHistoryDraft = '';
+      const getSentTexts = () =>
+        loadChatMessages().filter((m) => m.role === 'user' && m.content).map((m) => m.content);
+      const recallSet = (val) => {
+        input.value = val;
+        autosize();
+        updateChatCharCount();
+      };
       updateChatCharCount();
       const autosize = () => {
         input.style.height = 'auto';
         input.style.height = `${Math.min(input.scrollHeight, 112)}px`;
       };
       input.addEventListener('input', autosize);
-      input.addEventListener('input', updateChatCharCount);
+      input.addEventListener('input', () => {
+        chatHistoryIdx = -1;
+        updateChatCharCount();
+      });
       input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
           e.preventDefault();
           handleChatSubmit(e);
+          return;
+        }
+        if (e.key === 'ArrowUp' && !e.shiftKey) {
+          e.preventDefault();
+          const sent = getSentTexts();
+          if (!sent.length) return;
+          if (chatHistoryIdx === -1) {
+            chatHistoryDraft = input.value;
+            chatHistoryIdx = sent.length - 1;
+          } else if (chatHistoryIdx > 0) {
+            chatHistoryIdx -= 1;
+          } else {
+            return;
+          }
+          recallSet(sent[chatHistoryIdx]);
+        } else if (e.key === 'ArrowDown' && !e.shiftKey) {
+          e.preventDefault();
+          const sent = getSentTexts();
+          if (chatHistoryIdx === -1) return;
+          if (chatHistoryIdx < sent.length - 1) {
+            chatHistoryIdx += 1;
+            recallSet(sent[chatHistoryIdx]);
+          } else {
+            chatHistoryIdx = -1;
+            recallSet(chatHistoryDraft);
+          }
         }
       });
     }
