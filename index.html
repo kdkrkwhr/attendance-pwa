@@ -15,13 +15,17 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="css/style.css?v=195">
-    <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=195">
+  <link rel="stylesheet" href="css/style.css?v=196">
+    <link rel="stylesheet" href="vendor/leaflet/leaflet.css?v=196">
   <script>
     (function () {
       try {
         var t = JSON.parse(localStorage.getItem('attendance-settings') || '{}').theme;
         if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+      try {
+        var fs = parseFloat(localStorage.getItem('attendance-fontscale') || '1');
+        if (fs && fs > 0) document.documentElement.style.fontSize = (16 * fs) + 'px';
       } catch (e) {}
     })();
   </script>
@@ -783,6 +787,15 @@
             <label for="wakeLockToggle">화면 켜짐 유지 (Wake Lock)</label>
             <input type="checkbox" id="wakeLockToggle">
           </div>
+          <div class="setting-row">
+            <label for="fontScale">글자 크기</label>
+            <select id="fontScale">
+              <option value="0.875">작게</option>
+              <option value="1" selected>보통</option>
+              <option value="1.125">크게</option>
+              <option value="1.25">아주 크게</option>
+            </select>
+          </div>
         </section>
 
         <section class="card">
@@ -879,6 +892,7 @@
         <section class="card card-compact" id="featureNotesCard">
           <h2 class="card-title">기능 안내</h2>
           <ul class="feature-notes" id="featureNotesList">
+          <li>설정 탭 — 화면 글자 크기 조절(작게·보통·크게·아주 크게), 앱 전체 텍스트 확대 (v196)</li>
           <li>헤더 — 테마 빠른 전환 버튼(라이트·다크·시스템 순환) (v195)</li>
           <li>설정 탭 — 테마 '시간대 자동'(낮 06~18시 라이트 / 그 외 다크) 옵션 추가 (v194)</li>
           <li>오늘 탭 — 이번 달 잔여 필요 근무시간(목표 8h × 평일 기준) 한 줄 표시 (v193)</li>
@@ -1034,17 +1048,32 @@
     </nav>
   </div>
 
-  <script src="config.js?v=195"></script>
-  <script src="vendor/leaflet/leaflet.js?v=195"></script>
-  <script src="js/util.js?v=195"></script>
-  <script src="js/fortune.js?v=195"></script>
-  <script src="js/saju.js?v=195"></script>
-  <script src="js/lunch-map.js?v=195"></script>
-  <script src="js/user-location.js?v=195"></script>
-  <script src="js/weather-brief.js?v=195"></script>
-  <script src="js/news-brief.js?v=195"></script>
-  <script src="js/hermes-chat.js?v=195"></script>
-  <script src="js/commute-time.js?v=195"></script>
-  <script src="js/app.js?v=195"></script>
+  <script src="config.js?v=196"></script>
+  <script src="vendor/leaflet/leaflet.js?v=196"></script>
+  <script src="js/util.js?v=196"></script>
+  <script src="js/fortune.js?v=196"></script>
+  <script src="js/saju.js?v=196"></script>
+  <script src="js/lunch-map.js?v=196"></script>
+  <script src="js/user-location.js?v=196"></script>
+  <script src="js/weather-brief.js?v=196"></script>
+  <script src="js/news-brief.js?v=196"></script>
+  <script src="js/hermes-chat.js?v=196"></script>
+  <script src="js/commute-time.js?v=196"></script>
+  <script src="js/app.js?v=196"></script>
+  <script>
+    (function () {
+      var sel = document.getElementById('fontScale');
+      if (!sel) return;
+      try {
+        var saved = localStorage.getItem('attendance-fontscale');
+        if (saved) sel.value = saved;
+      } catch (e) {}
+      sel.addEventListener('change', function () {
+        var fs = parseFloat(sel.value) || 1;
+        document.documentElement.style.fontSize = (16 * fs) + 'px';
+        try { localStorage.setItem('attendance-fontscale', String(fs)); } catch (e) {}
+      });
+    })();
+  </script>
 </body>
 </html>
